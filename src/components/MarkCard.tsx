@@ -101,7 +101,7 @@ export function MarkCard({
   };
 
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-4 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <article className="rounded-lg border border-gray-200 bg-white p-4 pb-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2">
@@ -132,17 +132,17 @@ export function MarkCard({
         </div>
         <StatusBadge status={mark.status} />
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
         <span>{supportVotes} support</span>
         <span>{opposeVotes} oppose</span>
         <span>{mark.dispute_count ?? 0} disputes</span>
         {canVote && !isWithdrawn && (
-          <span className="flex items-center gap-1">
+          <span className="flex items-center gap-2">
             <button
               type="button"
               onClick={() => handleVote('support')}
               disabled={pending}
-              className={`rounded px-2 py-0.5 text-xs font-medium disabled:opacity-50 ${
+              className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
                 vote === 'SUPPORT' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
@@ -152,7 +152,7 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('oppose')}
               disabled={pending}
-              className={`rounded px-2 py-0.5 text-xs font-medium disabled:opacity-50 ${
+              className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
                 vote === 'OPPOSE' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
             >
@@ -163,14 +163,14 @@ export function MarkCard({
         {showBookmark && <BookmarkButton markId={mark.id} bookmarked={bookmarked} />}
         <Link
           href={`/mark/${mark.id}?tab=comments`}
-          className="rounded bg-gray-100 px-2 py-0.5 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+          className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
           Comment
         </Link>
         {showDisputeButton && !isWithdrawn && (
           <Link
             href={`/mark/${mark.id}`}
-            className="rounded border border-gray-300 bg-white px-2 py-0.5 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+            className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
             Dispute
           </Link>

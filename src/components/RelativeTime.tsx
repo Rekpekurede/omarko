@@ -1,6 +1,6 @@
 'use client';
 
-import { formatTimestamp } from '@/lib/utils';
+import { formatMarkTime } from '@/lib/time';
 
 interface RelativeTimeProps {
   dateString: string;
@@ -14,7 +14,7 @@ interface RelativeTimeProps {
 export function RelativeTime({ dateString, className }: RelativeTimeProps) {
   return (
     <span className={className} suppressHydrationWarning>
-      {formatTimestamp(dateString)}
+      {formatMarkTime(dateString)}
     </span>
   );
 }

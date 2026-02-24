@@ -96,7 +96,7 @@ export function FeedList({
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="rounded border border-black bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50"
+            className="min-h-[44px] touch-manipulation rounded border border-black bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
           >
             {loading ? 'Loading…' : 'Load more'}
           </button>

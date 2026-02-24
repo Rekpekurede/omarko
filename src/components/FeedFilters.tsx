@@ -42,7 +42,7 @@ export function FeedFilters({
           aria-label="Filter by domain"
           value={currentDomain}
           onChange={(e) => setParam('domain', e.target.value)}
-          className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           <option value="all">All domains</option>
           {DOMAINS.map((d) => (
@@ -53,7 +53,7 @@ export function FeedFilters({
           aria-label="Filter by claim type"
           value={currentClaimType}
           onChange={(e) => setParam('claim_type', e.target.value)}
-          className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           <option value="all">All claim types</option>
           {CLAIM_TYPES.map((c) => (
