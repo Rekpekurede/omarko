@@ -1,0 +1,36 @@
+import Image from 'next/image';
+
+interface AvatarProps {
+  username: string;
+  avatarUrl?: string | null;
+  size?: 'sm' | 'md' | 'lg';
+  className?: string;
+}
+
+const sizeClasses = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-12 w-12' };
+const sizePx = { sm: 32, md: 40, lg: 48 };
+
+export function Avatar({ username, avatarUrl, size = 'sm', className = '' }: AvatarProps) {
+  const fallback = username.charAt(0).toUpperCase();
+
+  if (avatarUrl) {
+    return (
+      <Image
+        src={avatarUrl}
+        alt={`@${username} avatar`}
+        width={sizePx[size]}
+        height={sizePx[size]}
+        className={`rounded-full object-cover ${sizeClasses[size]} ${className}`}
+        unoptimized
+      />
+    );
+  }
+
+  return (
+    <span
+      className={`flex shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-700 ${sizeClasses[size]} ${className}`}
+    >
+      {fallback}
+    </span>
+  );
+}

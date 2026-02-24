@@ -1,0 +1,324 @@
+import Link from 'next/link';
+import { createClient } from '@/lib/supabase/server';
+import { MarkCard } from '@/components/MarkCard';
+import { ProfileTabs } from '@/components/ProfileTabs';
+import { Avatar } from '@/components/Avatar';
+import { AvatarUpload } from '@/components/AvatarUpload';
+import { FollowButton } from '@/components/FollowButton';
+import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+
+const PROFILE_MARKS_LIMIT = 20;
+const SUPPORTED_LIMIT = 20;
+
+interface PageProps {
+  params: Promise<{ username: string }>;
+  searchParams: Promise<{ domain?: string; claim_type?: string; disputed_only?: string; tab?: string }>;
+}
+
+export const revalidate = 0;
+
+function ProfileNotFound({ username }: { username: string }) {
+  return (
+    <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
+      <h1 className="text-xl font-bold">Profile not found</h1>
+      <p className="mt-2 text-gray-600">No profile found for @{username}</p>
+      <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
+        Back to feed
+      </Link>
+    </div>
+  );
+}
+
+function ProfileError({ message }: { message: string }) {
+  return (
+    <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
+      <h1 className="text-xl font-bold text-red-800">Something went wrong</h1>
+      <p className="mt-2 text-red-600">{message}</p>
+      <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
+        Back to feed
+      </Link>
+    </div>
+  );
+}
+
+export default async function ProfilePage({ params, searchParams }: PageProps) {
+  const uname = decodeURIComponent((await params).username);
+  const { domain, claim_type, disputed_only, tab } = await searchParams;
+
+  let profile: { id: string; username: string; bio?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number } | null = null;
+
+  try {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Profile lookup: RPC first (bypasses RLS), fallback to direct query with ilike
+    let profileRows: { id: string; username: string; bio?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
+    let profileError: unknown = null;
+
+    try {
+      const rpcRes = await supabase.rpc('get_profile_by_username', { p_username: uname });
+      profileError = rpcRes.error;
+      profileRows = rpcRes.data;
+    } catch (rpcErr) {
+      console.error('[ProfilePage] profile RPC error', rpcErr);
+      profileError = rpcErr;
+    }
+
+    if (profileError) {
+      console.error('[ProfilePage] profile lookup error', profileError);
+    }
+
+    profile = profileRows?.[0] ?? null;
+
+    // Fallback: direct profiles query (case-insensitive via ilike)
+    if (!profile) {
+      try {
+        const { data: directRows } = await supabase
+          .from('profiles')
+          .select('id, username, bio, avatar_url, disputes_raised, disputes_won, disputes_lost, disputes_conceded')
+          .ilike('username', uname)
+          .limit(1);
+        profile = directRows?.[0] ?? null;
+      } catch (directErr) {
+        console.error('[ProfilePage] profile direct fallback error', directErr);
+      }
+    }
+
+    if (!profile) {
+      return <ProfileNotFound username={uname} />;
+    }
+
+    const isOwner = !!user && user.id === profile.id;
+    const currentTab = (tab === 'challenges' || tab === 'comments' || tab === 'supported') ? tab : 'marks';
+
+    let followersCount = 0;
+    let followingCount = 0;
+    let isFollowing = false;
+    try {
+      const [followersRes, followingRes, followRow] = await Promise.all([
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
+        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
+        user ? supabase.from('follows').select('id').eq('follower_id', user.id).eq('following_id', profile.id).maybeSingle() : Promise.resolve({ data: null }),
+      ]);
+      followersCount = followersRes.count ?? 0;
+      followingCount = followingRes.count ?? 0;
+      isFollowing = !!followRow.data;
+    } catch {
+      // follows table may not exist yet
+    }
+
+    // Marks query (profiles!marks_user_id_fkey already in MARK_WITH_OWNER_USERNAME_SELECT)
+    let marksWithProfile: Array<Record<string, unknown> & { id: string; profiles?: { username: string } }> = [];
+    let marksNextCursor: string | null = null;
+    let totalMarks: number | null = null;
+    let champions = 0;
+    let supplanted = 0;
+    let supportedMarks: typeof marksWithProfile = [];
+    let supportedNextCursor: string | null = null;
+    let challenges: Array<{ id: string; mark_id: string; evidence_text: string; outcome?: string; created_at: string }> = [];
+    let comments: Array<{ id: string; mark_id: string; content: string; created_at: string }> = [];
+    let withdrawnMarks: typeof marksWithProfile = [];
+
+    try {
+      let marksQuery = supabase
+        .from('marks')
+        .select(MARK_WITH_OWNER_USERNAME_SELECT)
+        .eq('user_id', profile.id)
+        .is('withdrawn_at', null)
+        .order('created_at', { ascending: false })
+        .limit(PROFILE_MARKS_LIMIT);
+
+      if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
+        marksQuery = marksQuery.eq('domain', domain);
+      }
+      if (claim_type && claim_type !== 'all' && CLAIM_TYPES.includes(claim_type as (typeof CLAIM_TYPES)[number])) {
+        marksQuery = marksQuery.eq('claim_type', claim_type);
+      }
+      if (disputed_only === 'true') {
+        marksQuery = marksQuery.gt('dispute_count', 0);
+      }
+
+      const { data: marks, error: marksErr } = await marksQuery;
+      if (marksErr) {
+        console.error('[ProfilePage] marks query error', marksErr);
+      } else {
+        marksWithProfile = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        marksNextCursor = marksWithProfile.length === PROFILE_MARKS_LIMIT && marksWithProfile[marksWithProfile.length - 1]
+          ? marksWithProfile[marksWithProfile.length - 1].id
+          : null;
+      }
+    } catch (marksErr) {
+      console.error('[ProfilePage] marks query error', marksErr);
+    }
+
+    try {
+      const { count } = await supabase
+        .from('marks')
+        .select('id', { count: 'exact', head: true })
+        .eq('user_id', profile.id)
+        .is('withdrawn_at', null);
+      totalMarks = count ?? 0;
+    } catch {
+      totalMarks = 0;
+    }
+
+    try {
+      const { data: allForStats } = await supabase
+        .from('marks')
+        .select('status')
+        .eq('user_id', profile.id)
+        .is('withdrawn_at', null);
+      champions = (allForStats ?? []).filter((m) => m.status === 'CHAMPION').length;
+      supplanted = (allForStats ?? []).filter((m) => m.status === 'SUPPLANTED').length;
+    } catch {
+      // ignore
+    }
+
+    try {
+      const { data: supportedVotes } = await supabase
+        .from('votes')
+        .select('mark_id')
+        .eq('voter_id', profile.id)
+        .eq('vote_type', 'SUPPORT')
+        .order('created_at', { ascending: false })
+        .limit(SUPPORTED_LIMIT);
+      const supportedMarkIds = (supportedVotes ?? []).map((v) => v.mark_id);
+      if (supportedMarkIds.length > 0) {
+        const { data: sm } = await supabase
+          .from('marks')
+          .select(MARK_WITH_OWNER_USERNAME_SELECT)
+          .in('id', supportedMarkIds)
+          .is('withdrawn_at', null);
+        const orderMap = new Map(supportedMarkIds.map((id, i) => [id, i]));
+        const sorted = (sm ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+        supportedMarks = sorted.map((m) => {
+          const p = m.profiles as { username?: string; avatar_url?: string | null } | { username?: string; avatar_url?: string | null }[] | null;
+          const u = (p && (Array.isArray(p) ? p[0]?.username : p.username)) ?? profile!.username;
+          const av = (p && (Array.isArray(p) ? p[0]?.avatar_url : p.avatar_url)) ?? profile!.avatar_url;
+          return { ...m, profiles: { username: u, avatar_url: av } };
+        });
+      }
+      supportedNextCursor = supportedMarkIds.length === SUPPORTED_LIMIT && supportedMarkIds[supportedMarkIds.length - 1]
+        ? supportedMarkIds[supportedMarkIds.length - 1]
+        : null;
+    } catch (err) {
+      console.error('[ProfilePage] supported marks error', err);
+    }
+
+    try {
+      const { data: ch } = await supabase
+        .from('challenges')
+        .select('id, mark_id, evidence_text, outcome, created_at')
+        .eq('challenger_id', profile.id)
+        .order('created_at', { ascending: false });
+      challenges = ch ?? [];
+    } catch (err) {
+      console.error('[ProfilePage] challenges error', err);
+    }
+
+    try {
+      const { data: cm } = await supabase
+        .from('comments')
+        .select('id, mark_id, content, created_at')
+        .eq('user_id', profile.id)
+        .order('created_at', { ascending: false });
+      comments = cm ?? [];
+    } catch (err) {
+      console.error('[ProfilePage] comments error', err);
+    }
+
+    if (isOwner) {
+      try {
+        const { data: withdrawn } = await supabase
+          .from('marks')
+          .select(MARK_WITH_OWNER_USERNAME_SELECT)
+          .eq('user_id', profile.id)
+          .not('withdrawn_at', 'is', null)
+          .order('withdrawn_at', { ascending: false });
+        withdrawnMarks = (withdrawn ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+      } catch (err) {
+        console.error('[ProfilePage] withdrawn marks error', err);
+      }
+    }
+
+    return (
+      <div className="space-y-6">
+        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
+          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
+            {isOwner ? (
+              <AvatarUpload username={profile.username} avatarUrl={profile.avatar_url} />
+            ) : (
+              <Avatar username={profile.username} avatarUrl={profile.avatar_url} size="lg" />
+            )}
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-3">
+                <h1 className="text-2xl font-bold">@{profile.username}</h1>
+                {!isOwner && user && (
+                  <FollowButton username={profile.username} initialFollowing={isFollowing} />
+                )}
+              </div>
+              {profile.bio && <p className="mt-2 text-gray-600">{profile.bio}</p>}
+              <div className="mt-2 flex gap-4 text-sm text-gray-500">
+                <span>Followers: {followersCount}</span>
+                <span>Following: {followingCount}</span>
+              </div>
+            </div>
+          </div>
+          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
+            <dt className="text-gray-500">Marks created</dt>
+            <dd className="font-medium">{totalMarks ?? 0}</dd>
+            <dt className="text-gray-500">Champions</dt>
+            <dd className="font-medium">{champions}</dd>
+            <dt className="text-gray-500">Supplanted</dt>
+            <dd className="font-medium">{supplanted}</dd>
+            <dt className="text-gray-500">Raised Disputes</dt>
+            <dd className="font-medium">{profile.disputes_raised ?? 0}</dd>
+            <dt className="text-gray-500">Disputes</dt>
+            <dd className="font-medium">{profile.disputes_won ?? 0}</dd>
+            <dt className="text-gray-500">Lost Disputes</dt>
+            <dd className="font-medium">{profile.disputes_lost ?? 0}</dd>
+            <dt className="text-gray-500">Conceded Disputes</dt>
+            <dd className="font-medium">{profile.disputes_conceded ?? 0}</dd>
+          </dl>
+        </div>
+        <div>
+          <ProfileTabs
+            username={profile.username}
+            currentTab={currentTab}
+            marks={marksWithProfile as unknown as import('@/lib/types').Mark[]}
+            marksNextCursor={marksNextCursor}
+            domain={domain ?? 'all'}
+            claimType={claim_type ?? 'all'}
+            disputedOnly={disputed_only === 'true'}
+            supportedMarks={supportedMarks as unknown as import('@/lib/types').Mark[]}
+            supportedNextCursor={supportedNextCursor}
+            challenges={challenges}
+            comments={comments}
+            currentUserId={user?.id ?? null}
+          />
+        </div>
+
+        {isOwner && withdrawnMarks.length > 0 && (
+          <div>
+            <h2 className="mb-3 text-lg font-semibold">My Withdrawn</h2>
+            <ul className="space-y-4">
+              {withdrawnMarks.map((mark) => (
+                <li key={mark.id}>
+                  <MarkCard mark={mark as unknown as import('@/lib/types').Mark} showDisputeButton={false} />
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
+    );
+  } catch (err) {
+    console.error('[ProfilePage] unexpected error', err);
+    return (
+      <ProfileError
+        message={err instanceof Error ? err.message : 'Failed to load profile. Please try again.'}
+      />
+    );
+  }
+}
