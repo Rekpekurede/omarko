@@ -28,7 +28,7 @@ export const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discove
 export type Domain = (typeof DOMAINS)[number];
 export type ClaimType = (typeof CLAIM_TYPES)[number];
 
-export type NotificationType = 'DISPUTE_CREATED' | 'MARK_SUPPLANTED' | 'MARK_CHAMPION' | 'MARK_WITHDRAWN';
+export type NotificationType = 'DISPUTE_CREATED' | 'MARK_SUPPLANTED' | 'MARK_CHAMPION' | 'MARK_WITHDRAWN' | 'COMMENT_CREATED';
 
 export interface Notification {
   id: string;

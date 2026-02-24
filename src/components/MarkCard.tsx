@@ -50,20 +50,11 @@ export function MarkCard({
     const newVote = type.toUpperCase() as 'SUPPORT' | 'OPPOSE';
     setPending(true);
 
-    const prevSupport = supportVotes;
-    const prevOppose = opposeVotes;
     const prevVote = vote;
-
     if (prevVote === newVote) {
       setPending(false);
       return;
     }
-
-    setVote(newVote);
-    if (prevVote === 'SUPPORT') setSupportVotes((s) => Math.max(0, s - 1));
-    else if (prevVote === 'OPPOSE') setOpposeVotes((o) => Math.max(0, o - 1));
-    if (newVote === 'SUPPORT') setSupportVotes((s) => s + 1);
-    else setOpposeVotes((o) => o + 1);
 
     const method = prevVote ? 'PATCH' : 'POST';
     const res = await fetch(`/api/marks/${mark.id}/vote`, {
@@ -74,9 +65,6 @@ export function MarkCard({
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setVote(prevVote);
-      setSupportVotes(prevSupport);
-      setOpposeVotes(prevOppose);
       if (res.status === 409) {
         const patchRes = await fetch(`/api/marks/${mark.id}/vote`, {
           method: 'PATCH',
@@ -85,15 +73,20 @@ export function MarkCard({
         });
         const patchData = await patchRes.json().catch(() => ({}));
         if (patchRes.ok && patchData) {
-          setSupportVotes(patchData.support_votes ?? prevSupport);
-          setOpposeVotes(patchData.oppose_votes ?? prevOppose);
+          setSupportVotes(patchData.support_votes ?? supportVotes);
+          setOpposeVotes(patchData.oppose_votes ?? opposeVotes);
+          setVote(newVote);
           onVoteUpdate?.(patchData);
           onVoteSuccess?.(mark.id, newVote);
         }
       }
-    } else if (data) {
+      setPending(false);
+      return;
+    }
+    if (data) {
       setSupportVotes(data.support_votes ?? supportVotes);
       setOpposeVotes(data.oppose_votes ?? opposeVotes);
+      setVote(newVote);
       onVoteUpdate?.(data);
       onVoteSuccess?.(mark.id, newVote);
     }

@@ -25,8 +25,6 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
     setIsPending(true);
 
     const prevVote = vote;
-    setVote(voteType);
-
     const method = prevVote ? 'PATCH' : 'POST';
     const res = await fetch(`/api/marks/${markId}/vote`, {
       method,
@@ -36,7 +34,6 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setVote(prevVote);
       if (res.status === 401) setError('You must sign in to vote.');
       else if (res.status === 409) setError('You have already voted on this mark.');
       else if (res.status === 400) setError(data.error ?? 'Invalid request.');
@@ -44,6 +41,7 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
       setIsPending(false);
       return;
     }
+    setVote(voteType);
     router.refresh();
     setIsPending(false);
   };
@@ -53,18 +51,15 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
     setError(null);
     setIsPending(true);
 
-    const prevVote = vote;
-    setVote(null);
-
     const res = await fetch(`/api/marks/${markId}/vote`, { method: 'DELETE' });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      setVote(prevVote);
       setError(data.error ?? 'Failed to remove vote');
       setIsPending(false);
       return;
     }
+    setVote(null);
     router.refresh();
     setIsPending(false);
   };
