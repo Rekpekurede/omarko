@@ -116,7 +116,21 @@ export function MarkCard({
               </span>
             )}
           </div>
-          <p className="mt-2 text-sm text-gray-600 line-clamp-2 dark:text-gray-300">{mark.content}</p>
+          {mark.image_url && (
+            <Link href={`/mark/${mark.id}`} className="mt-2 block">
+              <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img
+                  src={mark.image_url}
+                  alt=""
+                  className="h-full w-full object-cover"
+                />
+              </div>
+            </Link>
+          )}
+          {mark.content && (
+            <p className="mt-2 text-sm text-gray-600 line-clamp-2 dark:text-gray-300">{mark.content}</p>
+          )}
           <div className="mt-2 flex flex-wrap items-center gap-2">
             {mark.domain && (
               <span className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">

@@ -59,7 +59,7 @@ export function ProfileMarksList({
         ))}
       </ul>
       {marks.length === 0 && (
-        <p className="text-sm text-gray-500">No marks yet.</p>
+        <p className="py-8 text-center text-gray-500 dark:text-gray-400">No marks yet.</p>
       )}
       {nextCursor && (
         <div className="mt-4 flex justify-center">

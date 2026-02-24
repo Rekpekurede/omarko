@@ -46,6 +46,7 @@ export interface Mark {
   user_id: string;
   title?: string | null;
   content: string;
+  image_url?: string | null;
   category: string;
   domain: string;
   claim_type: string;

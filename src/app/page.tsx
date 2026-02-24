@@ -61,6 +61,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
 
   return (
     <div>
+      <h1 className="mb-4 text-2xl font-bold dark:text-white">Feed</h1>
       {error && (
         <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error.message}

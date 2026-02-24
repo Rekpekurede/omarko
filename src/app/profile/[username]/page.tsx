@@ -2,9 +2,8 @@ import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { MarkCard } from '@/components/MarkCard';
 import { ProfileTabs } from '@/components/ProfileTabs';
-import { Avatar } from '@/components/Avatar';
-import { AvatarUpload } from '@/components/AvatarUpload';
-import { FollowButton } from '@/components/FollowButton';
+import { ProfileHeader } from '@/components/profile/ProfileHeader';
+import { ProfileStats } from '@/components/profile/ProfileStats';
 import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
@@ -244,43 +243,26 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
 
     return (
       <div className="space-y-6">
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm">
-          <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
-            {isOwner ? (
-              <AvatarUpload username={profile.username} avatarUrl={profile.avatar_url} />
-            ) : (
-              <Avatar username={profile.username} avatarUrl={profile.avatar_url} size="lg" />
-            )}
-            <div className="min-w-0 flex-1">
-              <div className="flex flex-wrap items-center gap-3">
-                <h1 className="text-2xl font-bold">@{profile.username}</h1>
-                {!isOwner && user && (
-                  <FollowButton username={profile.username} initialFollowing={isFollowing} />
-                )}
-              </div>
-              {profile.bio && <p className="mt-2 text-gray-600">{profile.bio}</p>}
-              <div className="mt-2 flex gap-4 text-sm text-gray-500">
-                <span>Followers: {followersCount}</span>
-                <span>Following: {followingCount}</span>
-              </div>
-            </div>
-          </div>
-          <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-1 text-sm sm:grid-cols-4">
-            <dt className="text-gray-500">Marks created</dt>
-            <dd className="font-medium">{totalMarks ?? 0}</dd>
-            <dt className="text-gray-500">Champions</dt>
-            <dd className="font-medium">{champions}</dd>
-            <dt className="text-gray-500">Supplanted</dt>
-            <dd className="font-medium">{supplanted}</dd>
-            <dt className="text-gray-500">Raised Disputes</dt>
-            <dd className="font-medium">{profile.disputes_raised ?? 0}</dd>
-            <dt className="text-gray-500">Disputes</dt>
-            <dd className="font-medium">{profile.disputes_won ?? 0}</dd>
-            <dt className="text-gray-500">Lost Disputes</dt>
-            <dd className="font-medium">{profile.disputes_lost ?? 0}</dd>
-            <dt className="text-gray-500">Conceded Disputes</dt>
-            <dd className="font-medium">{profile.disputes_conceded ?? 0}</dd>
-          </dl>
+        <ProfileHeader
+          username={profile.username}
+          bio={profile.bio ?? null}
+          avatarUrl={profile.avatar_url ?? null}
+          isOwner={isOwner}
+          isFollowing={isFollowing}
+          followersCount={followersCount}
+          followingCount={followingCount}
+        />
+        <div>
+          <h2 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">Stats</h2>
+          <ProfileStats
+            totalMarks={totalMarks ?? 0}
+            champions={champions}
+            supplanted={supplanted}
+            disputesRaised={profile.disputes_raised ?? 0}
+            disputesWon={profile.disputes_won ?? 0}
+            disputesLost={profile.disputes_lost ?? 0}
+            disputesConceded={profile.disputes_conceded ?? 0}
+          />
         </div>
         <div>
           <ProfileTabs

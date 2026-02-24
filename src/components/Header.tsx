@@ -26,6 +26,9 @@ export async function Header({ brandFontClass }: HeaderProps) {
             OMarko
           </Link>
           <nav className="flex items-center gap-4">
+          <Link href="/" className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
+            Feed
+          </Link>
           {user ? (
             <>
               <Link href="/bookmarks" className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">

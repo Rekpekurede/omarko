@@ -25,7 +25,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
     .eq('id', id)
     .single();
 
@@ -87,6 +87,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const displayUsername = profileObj?.username ?? 'unknown';
   const avatarUrl = profileObj?.avatar_url ?? null;
   const content = (mark as { content?: string }).content ?? '';
+  const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
 
   const { data: versions } = await supabase
     .from('mark_versions')
@@ -130,10 +131,11 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
               )}
             </div>
             {isWithdrawn && withdrawnByUsername && (
-              <p className="mt-1 text-sm text-gray-600">Withdrawn by @{withdrawnByUsername}</p>
+              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Withdrawn by @{withdrawnByUsername}</p>
             )}
             <MarkContentWithEdit
               content={content}
+              imageUrl={imageUrl}
               markId={mark.id}
               canEdit={isOwner && !hasChallenges && !isWithdrawn}
             />

@@ -3,12 +3,12 @@ import Image from 'next/image';
 interface AvatarProps {
   username: string;
   avatarUrl?: string | null;
-  size?: 'sm' | 'md' | 'lg';
+  size?: 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
 
-const sizeClasses = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-12 w-12' };
-const sizePx = { sm: 32, md: 40, lg: 48 };
+const sizeClasses = { sm: 'h-8 w-8', md: 'h-10 w-10', lg: 'h-12 w-12', xl: 'h-20 w-20' };
+const sizePx = { sm: 32, md: 40, lg: 48, xl: 80 };
 
 export function Avatar({ username, avatarUrl, size = 'sm', className = '' }: AvatarProps) {
   const fallback = username.charAt(0).toUpperCase();

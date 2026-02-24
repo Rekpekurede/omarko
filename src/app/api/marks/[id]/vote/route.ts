@@ -62,7 +62,7 @@ export async function POST(
 
   const { data: mark } = await supabase
     .from('marks')
-    .select('id, user_id, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
     .eq('id', markId)
     .single();
 
@@ -119,7 +119,7 @@ export async function PATCH(
 
   const { data: mark } = await supabase
     .from('marks')
-    .select('id, user_id, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
     .eq('id', markId)
     .single();
 
@@ -151,7 +151,7 @@ export async function DELETE(
 
   const { data: mark } = await supabase
     .from('marks')
-    .select('id, user_id, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
     .eq('id', markId)
     .single();
 

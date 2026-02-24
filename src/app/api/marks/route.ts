@@ -11,19 +11,21 @@ export async function POST(request: Request) {
   const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'General'];
   const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'];
 
-  let body: { content?: string; category?: string; domain?: string; claim_type?: string };
+  let body: { content?: string; image_url?: string; category?: string; domain?: string; claim_type?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const content = body.content?.trim();
+  const content = body.content?.trim() ?? '';
+  const imageUrl = body.image_url?.trim() || null;
   const domain = body.domain?.trim();
   const claimType = body.claim_type?.trim();
-  if (!content) {
+
+  if (!content && !imageUrl) {
     return NextResponse.json(
-      { error: 'Content is required' },
+      { error: 'At least one of content or image is required' },
       { status: 400 }
     );
   }
@@ -43,7 +45,7 @@ export async function POST(request: Request) {
 
   const { data, error } = await supabase
     .from('marks')
-    .insert({ user_id: user.id, title: '', content, category, domain, claim_type: claimType })
+    .insert({ user_id: user.id, title: '', content: content || '', category, domain, claim_type: claimType, image_url: imageUrl })
     .select('id')
     .single();
 
