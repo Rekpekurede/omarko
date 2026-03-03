@@ -7,31 +7,83 @@ interface VoteButtonsProps {
   markId: string;
   canVote: boolean;
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
+  initialSupportVotes?: number;
+  initialOpposeVotes?: number;
   onVoteUpdate?: (updated: { support_votes?: number; oppose_votes?: number; userVote?: 'SUPPORT' | 'OPPOSE' | null }) => void;
 }
 
-export function VoteButtons({ markId, canVote, currentVote = null, onVoteUpdate }: VoteButtonsProps) {
+function applyVoteTransition(
+  prevVote: 'SUPPORT' | 'OPPOSE' | null,
+  nextVote: 'SUPPORT' | 'OPPOSE'
+): { vote: 'SUPPORT' | 'OPPOSE' | null; supportDelta: number; opposeDelta: number } {
+  if (prevVote === nextVote) {
+    return {
+      vote: null,
+      supportDelta: nextVote === 'SUPPORT' ? -1 : 0,
+      opposeDelta: nextVote === 'OPPOSE' ? -1 : 0,
+    };
+  }
+  if (prevVote === null) {
+    return {
+      vote: nextVote,
+      supportDelta: nextVote === 'SUPPORT' ? 1 : 0,
+      opposeDelta: nextVote === 'OPPOSE' ? 1 : 0,
+    };
+  }
+  return {
+    vote: nextVote,
+    supportDelta: nextVote === 'SUPPORT' ? 1 : -1,
+    opposeDelta: nextVote === 'OPPOSE' ? 1 : -1,
+  };
+}
+
+export function VoteButtons({
+  markId,
+  canVote,
+  currentVote = null,
+  initialSupportVotes = 0,
+  initialOpposeVotes = 0,
+  onVoteUpdate,
+}: VoteButtonsProps) {
   const router = useRouter();
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
+  const [supportVotes, setSupportVotes] = useState(initialSupportVotes);
+  const [opposeVotes, setOpposeVotes] = useState(initialOpposeVotes);
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
 
   useEffect(() => {
     setVote(currentVote);
-  }, [currentVote]);
+    setSupportVotes(initialSupportVotes);
+    setOpposeVotes(initialOpposeVotes);
+  }, [currentVote, initialSupportVotes, initialOpposeVotes]);
 
   const handleVote = async (voteType: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || isPending) return;
     setError(null);
     setIsPending(true);
+
+    const prev = {
+      vote,
+      supportVotes,
+      opposeVotes,
+    };
+    const optimistic = applyVoteTransition(vote, voteType);
+    setVote(optimistic.vote);
+    setSupportVotes((v) => Math.max(0, v + optimistic.supportDelta));
+    setOpposeVotes((v) => Math.max(0, v + optimistic.opposeDelta));
+
     const res = await fetch(`/api/marks/${markId}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: voteType }),
+      body: JSON.stringify({ voteType }),
     });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      setVote(prev.vote);
+      setSupportVotes(prev.supportVotes);
+      setOpposeVotes(prev.opposeVotes);
       if (res.status === 401) setError('You must sign in to vote.');
       else if (res.status === 409) setError('You have already voted on this mark.');
       else if (res.status === 400) setError(data.error ?? 'Invalid request.');
@@ -40,6 +92,8 @@ export function VoteButtons({ markId, canVote, currentVote = null, onVoteUpdate 
       return;
     }
     setVote((data.userVote as 'SUPPORT' | 'OPPOSE' | null) ?? null);
+    setSupportVotes((data.support_votes as number | undefined) ?? prev.supportVotes);
+    setOpposeVotes((data.oppose_votes as number | undefined) ?? prev.opposeVotes);
     onVoteUpdate?.(data);
     router.refresh();
     setIsPending(false);
@@ -61,6 +115,10 @@ export function VoteButtons({ markId, canVote, currentVote = null, onVoteUpdate 
 
   return (
     <div className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+        <span>Support: {supportVotes}</span>
+        <span>Oppose: {opposeVotes}</span>
+      </div>
       <div className="flex items-center gap-2">
         <button
           type="button"

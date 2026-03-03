@@ -3,6 +3,8 @@ import { Sora } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
+import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
+import { CreateMarkModal } from "@/components/CreateMarkModal";
 
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
 
@@ -47,8 +49,11 @@ export default function RootLayout({
       </head>
       <body className="min-h-screen bg-white text-black antialiased dark:bg-gray-950 dark:text-gray-100">
         <ThemeProvider>
-          <Header brandFontClass={sora.className} />
-          <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+          <CreateMarkModalProvider>
+            <Header brandFontClass={sora.className} />
+            <CreateMarkModal />
+            <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+          </CreateMarkModalProvider>
         </ThemeProvider>
       </body>
     </html>

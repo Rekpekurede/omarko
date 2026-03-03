@@ -4,6 +4,7 @@ import { signOut } from '@/lib/actions';
 import { NotificationsBell } from './NotificationsBell';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
+import { CreateMarkButton } from './CreateMarkButton';
 
 interface HeaderProps {
   brandFontClass?: string;
@@ -36,9 +37,7 @@ export async function Header({ brandFontClass }: HeaderProps) {
               </Link>
               <NotificationsBell />
               <ThemeToggle />
-              <Link href="/create" className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
-                Create
-              </Link>
+              <CreateMarkButton />
               {profile && (
                 <Link href={`/profile/${profile.username}`} className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
                   Profile

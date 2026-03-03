@@ -11,15 +11,15 @@ export async function POST(request: Request) {
   const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'General'];
   const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'];
 
-  let body: { content?: string; image_url?: string; category?: string; domain?: string; claim_type?: string };
+  let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; category?: string; domain?: string; claim_type?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const content = body.content?.trim() ?? '';
-  const imageUrl = body.image_url?.trim() || null;
+  const content = (body.content ?? '').trim();
+  const imageUrl = body.image_url?.trim() || body.media_url?.trim() || body.image_path?.trim() || null;
   const domain = body.domain?.trim();
   const claimType = body.claim_type?.trim();
 

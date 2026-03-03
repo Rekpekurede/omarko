@@ -1,6 +1,16 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
+const VOTE_ROUTE_VERSION = 'vote-route-v3-uppercase-guard';
+
+function normalizeVoteType(input: unknown): 'SUPPORT' | 'OPPOSE' {
+  const normalized = String(input ?? '').trim().toUpperCase();
+  if (normalized !== 'SUPPORT' && normalized !== 'OPPOSE') {
+    throw new Error(`Invalid vote_type incoming: ${String(input)}`);
+  }
+  return normalized as 'SUPPORT' | 'OPPOSE';
+}
+
 export async function POST(
   request: Request,
   { params }: { params: Promise<{ id: string }> }
@@ -18,11 +28,14 @@ export async function POST(
     console.error('[vote.POST] invalid json', { markId, err });
     return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
   }
-  const rawType = body.type || body.vote_type;
-  const incomingType = rawType?.toUpperCase();
-
-  if (incomingType !== 'SUPPORT' && incomingType !== 'OPPOSE') {
-    return NextResponse.json({ error: 'Invalid vote type' }, { status: 400 });
+  console.log('[vote.POST] request received', { routeVersion: VOTE_ROUTE_VERSION, markId, body });
+  let voteType: 'SUPPORT' | 'OPPOSE';
+  try {
+    voteType = normalizeVoteType(body.vote_type ?? (body as { voteType?: unknown }).voteType ?? body.type);
+    console.log('[vote.POST] normalized vote_type', { routeVersion: VOTE_ROUTE_VERSION, markId, voteType });
+  } catch (err) {
+    console.error('[vote.POST] invalid vote_type payload', { markId, body, err });
+    return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid vote type' }, { status: 400 });
   }
 
   // 1. Check for existing vote
@@ -43,8 +56,8 @@ export async function POST(
     return NextResponse.json({ error: existingErr.message }, { status: 500 });
   }
 
-  let userVote: 'SUPPORT' | 'OPPOSE' | null = incomingType;
-  if (existing?.vote_type === incomingType) {
+  let userVote: 'SUPPORT' | 'OPPOSE' | null = voteType;
+  if (existing?.vote_type === voteType) {
     // TOGGLE OFF: User clicked the same button, remove the vote
     const { error: deleteErr } = await supabase.from('votes').delete().eq('mark_id', markId).eq('voter_id', user.id);
     if (deleteErr) {
@@ -60,16 +73,18 @@ export async function POST(
     userVote = null;
   } else {
     // UPSERT: Insert new or change existing (Support -> Oppose)
-    const { error: upsertErr } = await supabase.from('votes').upsert({
+    const payload = {
       mark_id: markId,
       voter_id: user.id,
-      vote_type: incomingType,
-    }, { onConflict: 'mark_id,voter_id' });
+      vote_type: voteType,
+    };
+    console.log('[vote.POST] upsert payload:', { routeVersion: VOTE_ROUTE_VERSION, payload });
+    const { error: upsertErr } = await supabase.from('votes').upsert(payload, { onConflict: 'mark_id,voter_id' });
     if (upsertErr) {
       console.error('[vote.POST] upsert vote failed', {
         markId,
         userId: user.id,
-        voteType: incomingType,
+        voteType,
         code: upsertErr.code,
         message: upsertErr.message,
         details: upsertErr.details,

@@ -1,7 +1,7 @@
 /** Supabase Storage helpers */
 
 export const AVATARS_BUCKET = 'avatars';
-export const MARK_IMAGES_BUCKET = 'mark-images';
+export const MARK_IMAGES_BUCKET = 'mark-media';
 
 /** Avatar path for a user: {user_id}.png */
 export function avatarPath(userId: string): string {

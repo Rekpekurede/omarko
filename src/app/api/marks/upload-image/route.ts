@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { markImagePath, markImagePublicUrl } from '@/lib/storage';
+import { MARK_IMAGES_BUCKET, markImagePath, markImagePublicUrl } from '@/lib/storage';
 import { randomUUID } from 'crypto';
 
 export async function POST(request: Request) {
@@ -26,10 +26,16 @@ export async function POST(request: Request) {
   const path = markImagePath(user.id, filename);
 
   const { error } = await supabase.storage
-    .from('mark-images')
+    .from(MARK_IMAGES_BUCKET)
     .upload(path, file, { upsert: false, contentType: file.type });
 
   if (error) {
+    if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
+      return NextResponse.json(
+        { error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads.` },
+        { status: 500 }
+      );
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 

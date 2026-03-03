@@ -54,7 +54,7 @@ export function MarkCard({
     const res = await fetch(`/api/marks/${mark.id}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type: nextVote }),
+      body: JSON.stringify({ voteType: nextVote }),
     });
     const data = await res.json().catch(() => ({}));
 

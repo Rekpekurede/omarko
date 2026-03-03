@@ -151,11 +151,17 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
           {user && <BookmarkButton markId={mark.id} bookmarked={isBookmarked} />}
-          <span className="text-sm text-gray-500 dark:text-gray-400">Support: {mark.support_votes ?? 0}</span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">Oppose: {mark.oppose_votes ?? 0}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">Challenges: {mark.dispute_count ?? 0}</span>
           <span className="text-sm text-gray-500 dark:text-gray-400">Disputes: {mark.disputes_survived ?? 0}</span>
-          {!isWithdrawn && user && <VoteButtons markId={mark.id} canVote={canVote} currentVote={currentVote} />}
+          {!isWithdrawn && user && (
+            <VoteButtons
+              markId={mark.id}
+              canVote={canVote}
+              currentVote={currentVote}
+              initialSupportVotes={mark.support_votes ?? 0}
+              initialOpposeVotes={mark.oppose_votes ?? 0}
+            />
+          )}
           {isWithdrawn && (
             <span className="text-sm text-gray-400" title="Voting and disputing are disabled for withdrawn marks">
               Voting and disputing disabled
