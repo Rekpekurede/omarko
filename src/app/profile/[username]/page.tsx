@@ -45,14 +45,14 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
   const uname = decodeURIComponent((await params).username);
   const { domain, claim_type, disputed_only, tab } = await searchParams;
 
-  let profile: { id: string; username: string; bio?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number } | null = null;
+  let profile: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number } | null = null;
 
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
 
     // Profile lookup: RPC first (bypasses RLS), fallback to direct query with ilike
-    let profileRows: { id: string; username: string; bio?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
+    let profileRows: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
     let profileError: unknown = null;
 
     try {
@@ -75,7 +75,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       try {
         const { data: directRows } = await supabase
           .from('profiles')
-          .select('id, username, bio, avatar_url, disputes_raised, disputes_won, disputes_lost, disputes_conceded')
+          .select('id, username, display_name, bio, location, website, avatar_url, disputes_raised, disputes_won, disputes_lost, disputes_conceded')
           .ilike('username', uname)
           .limit(1);
         profile = directRows?.[0] ?? null;
@@ -142,7 +142,39 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       if (marksErr) {
         console.error('[ProfilePage] marks query error', marksErr);
       } else {
-        marksWithProfile = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const rawMarks = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const markIds = rawMarks.map((m) => m.id);
+        const commentsCountMap: Record<string, number> = {};
+        const latestCommentsMap: Record<string, { username: string; content: string; created_at: string }[]> = {};
+        if (markIds.length > 0) {
+          const [countRes, commentsRes] = await Promise.all([
+            supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds }).then((r) => (r.error ? { data: [] } : r)),
+            supabase.from('comments').select('mark_id, content, created_at, profiles!comments_user_id_fkey(username)').in('mark_id', markIds).order('created_at', { ascending: false }).limit(100),
+          ]);
+          for (const row of countRes.data ?? []) {
+            commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+          }
+          const byMark = new Map<string, { username: string; content: string; created_at: string }[]>();
+          for (const c of commentsRes.data ?? []) {
+            const mid = c.mark_id;
+            const arr = byMark.get(mid) ?? [];
+            if (arr.length < 2) {
+              const p = c.profiles as { username?: string } | { username?: string }[] | null;
+              const u = (p && (Array.isArray(p) ? p[0]?.username : (p as { username?: string }).username)) ?? 'unknown';
+              arr.push({ username: u, content: c.content, created_at: c.created_at });
+              byMark.set(mid, arr);
+            }
+          }
+          for (const mid of markIds) {
+            latestCommentsMap[mid] = byMark.get(mid) ?? [];
+            if (!(mid in commentsCountMap)) commentsCountMap[mid] = 0;
+          }
+        }
+        marksWithProfile = rawMarks.map((m) => ({
+          ...m,
+          comments_count: commentsCountMap[m.id] ?? 0,
+          latest_comments: latestCommentsMap[m.id] ?? [],
+        }));
         marksNextCursor = marksWithProfile.length === PROFILE_MARKS_LIMIT && marksWithProfile[marksWithProfile.length - 1]
           ? marksWithProfile[marksWithProfile.length - 1].id
           : null;
@@ -245,7 +277,10 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       <div className="space-y-6">
         <ProfileHeader
           username={profile.username}
+          displayName={profile.display_name ?? null}
           bio={profile.bio ?? null}
+          location={profile.location ?? null}
+          website={profile.website ?? null}
           avatarUrl={profile.avatar_url ?? null}
           isOwner={isOwner}
           isFollowing={isFollowing}

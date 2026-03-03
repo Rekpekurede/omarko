@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
-import { StatusBadge } from '@/components/StatusBadge';
+import { MarkStatusLabel } from '@/components/MarkStatusLabel';
 import { VoteButtons } from '@/components/VoteButtons';
 import { Avatar } from '@/components/Avatar';
 import { WithdrawContestButtons } from '@/components/WithdrawContestButtons';
@@ -125,9 +125,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                 </span>
               </div>
               {isWithdrawn && (
-                <span className="inline-flex items-center rounded bg-gray-300 px-2 py-0.5 text-xs font-medium text-gray-800">
-                  WITHDRAWN
-                </span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">Withdrawn</span>
               )}
             </div>
             {isWithdrawn && withdrawnByUsername && (
@@ -147,7 +145,9 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
               </p>
             )}
           </div>
-          <StatusBadge status={mark.status as import('@/lib/types').MarkStatus} />
+          {mark.status !== 'ACTIVE' && (
+            <MarkStatusLabel status={mark.status as import('@/lib/types').MarkStatus} />
+          )}
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
           {user && <BookmarkButton markId={mark.id} bookmarked={isBookmarked} />}

@@ -41,6 +41,12 @@ export interface Notification {
   created_at: string;
 }
 
+export interface CommentPreview {
+  username: string;
+  content: string;
+  created_at: string;
+}
+
 export interface Mark {
   id: string;
   user_id: string;
@@ -62,6 +68,8 @@ export interface Mark {
   created_at: string;
   updated_at: string;
   profiles?: MarkProfile | null;
+  comments_count?: number;
+  latest_comments?: CommentPreview[];
 }
 
 export type ChallengeOutcome = 'PENDING' | 'WON' | 'LOST' | 'CONCEDED' | 'WITHDRAWN';

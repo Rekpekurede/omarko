@@ -2,10 +2,11 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { StatusBadge } from './StatusBadge';
+import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
+import { formatMarkTime } from '@/lib/time';
 import type { Mark } from '@/lib/types';
 
 interface MarkCardProps {
@@ -47,65 +48,48 @@ export function MarkCard({
 
   const handleVote = async (type: 'support' | 'oppose') => {
     if (!canVote || pending) return;
-    const newVote = type.toUpperCase() as 'SUPPORT' | 'OPPOSE';
     setPending(true);
 
-    const prevVote = vote;
-    if (prevVote === newVote) {
-      setPending(false);
-      return;
-    }
-
-    const method = prevVote ? 'PATCH' : 'POST';
     const res = await fetch(`/api/marks/${mark.id}/vote`, {
-      method,
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type }),
     });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
-      if (res.status === 409) {
-        const patchRes = await fetch(`/api/marks/${mark.id}/vote`, {
-          method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ type }),
-        });
-        const patchData = await patchRes.json().catch(() => ({}));
-        if (patchRes.ok && patchData) {
-          setSupportVotes(patchData.support_votes ?? supportVotes);
-          setOpposeVotes(patchData.oppose_votes ?? opposeVotes);
-          setVote(newVote);
-          onVoteUpdate?.(patchData);
-          onVoteSuccess?.(mark.id, newVote);
-        }
-      }
       setPending(false);
       return;
     }
     if (data) {
       setSupportVotes(data.support_votes ?? supportVotes);
       setOpposeVotes(data.oppose_votes ?? opposeVotes);
-      setVote(newVote);
+      setVote(data.userVote ?? null);
       onVoteUpdate?.(data);
-      onVoteSuccess?.(mark.id, newVote);
+      if (data.userVote) onVoteSuccess?.(mark.id, data.userVote);
     }
     setPending(false);
   };
+
+  const commentsCount = mark.comments_count ?? 0;
+  const latestComments = mark.latest_comments ?? [];
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 pb-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
       <div className="flex items-start justify-between gap-2">
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 flex-wrap">
             <Avatar username={username} avatarUrl={avatarUrl} size="sm" />
             <Link href={`/profile/${encodeURIComponent(username)}`} className="font-medium text-black hover:underline dark:text-white">
               @{username}
             </Link>
             <RelativeTime dateString={mark.created_at} className="text-xs text-gray-500 dark:text-gray-400" />
+            {mark.status !== 'ACTIVE' && (
+              <MarkStatusLabel status={mark.status} />
+            )}
             {isWithdrawn && (
-              <span className="inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700">
-                WITHDRAWN
+              <span className="inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
+                Withdrawn
               </span>
             )}
           </div>
@@ -136,13 +120,31 @@ export function MarkCard({
               </span>
             )}
           </div>
+          {latestComments.length > 0 && (
+            <div className="mt-2 space-y-1 border-l-2 border-gray-200 pl-2 text-xs dark:border-gray-700">
+              {latestComments.map((c, i) => (
+                <p key={i} className="text-gray-600 dark:text-gray-400 line-clamp-1">
+                  <span className="font-medium text-gray-700 dark:text-gray-300">@{c.username}</span>
+                  {' '}
+                  <span className="text-gray-500 dark:text-gray-500">{formatMarkTime(c.created_at)}</span>
+                  {': '}
+                  <span className="line-clamp-1">{c.content}</span>
+                </p>
+              ))}
+              <Link href={`/mark/${mark.id}?tab=comments`} className="text-gray-500 hover:underline dark:text-gray-400">
+                View all comments
+              </Link>
+            </div>
+          )}
         </div>
-        <StatusBadge status={mark.status} />
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
         <span>{supportVotes} support</span>
         <span>{opposeVotes} oppose</span>
         <span>{mark.dispute_count ?? 0} disputes</span>
+        <Link href={`/mark/${mark.id}?tab=comments`} className="hover:underline">
+          {commentsCount} comment{commentsCount !== 1 ? 's' : ''}
+        </Link>
         {canVote && !isWithdrawn && (
           <span className="flex items-center gap-2">
             <button
@@ -172,7 +174,7 @@ export function MarkCard({
           href={`/mark/${mark.id}?tab=comments`}
           className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
         >
-          Comment
+          Reply
         </Link>
         {showDisputeButton && !isWithdrawn && (
           <Link

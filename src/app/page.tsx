@@ -45,6 +45,45 @@ export default async function FeedPage({ searchParams }: PageProps) {
     ? list[list.length - 1].id
     : null;
 
+  const markIds = list.map((m) => m.id);
+  const commentsCountMap: Record<string, number> = {};
+  const latestCommentsMap: Record<string, { username: string; content: string; created_at: string }[]> = {};
+  if (markIds.length > 0) {
+    const [countRes, commentsRes] = await Promise.all([
+      supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds }).then((r) => (r.error ? { data: [] } : r)),
+      supabase
+        .from('comments')
+        .select('mark_id, content, created_at, profiles!comments_user_id_fkey(username)')
+        .in('mark_id', markIds)
+        .order('created_at', { ascending: false })
+        .limit(100),
+    ]);
+    for (const row of countRes.data ?? []) {
+      commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+    }
+    const byMark = new Map<string, { username: string; content: string; created_at: string }[]>();
+    for (const c of commentsRes.data ?? []) {
+      const mid = c.mark_id;
+      const arr = byMark.get(mid) ?? [];
+      if (arr.length < 2) {
+        const p = c.profiles as { username?: string } | { username?: string }[] | null;
+        const u = (p && (Array.isArray(p) ? p[0]?.username : (p as { username?: string }).username)) ?? 'unknown';
+        arr.push({ username: u, content: c.content, created_at: c.created_at });
+        byMark.set(mid, arr);
+      }
+    }
+    for (const mid of markIds) {
+      latestCommentsMap[mid] = byMark.get(mid) ?? [];
+      if (!(mid in commentsCountMap)) commentsCountMap[mid] = 0;
+    }
+  }
+
+  const listWithComments = list.map((m) => ({
+    ...m,
+    comments_count: commentsCountMap[m.id] ?? 0,
+    latest_comments: latestCommentsMap[m.id] ?? [],
+  }));
+
   const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
@@ -74,7 +113,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
       />
       <FeedList
         key={`${domain}-${claimType}-${disputedOnly}`}
-        initialMarks={list}
+        initialMarks={listWithComments}
         initialNextCursor={nextCursor}
         domain={domain}
         claimType={claimType}
