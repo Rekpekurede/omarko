@@ -1,4 +1,4 @@
--- Migration: vote persistence + comment_count sync
+-- Migration: vote persistence fixes
 -- Safe to run multiple times.
 
 -- =====================================================
@@ -89,62 +89,3 @@ $$;
 
 GRANT EXECUTE ON FUNCTION public.recompute_mark_votes(uuid) TO authenticated;
 
--- =====================================================
--- 2) Comment count on marks
--- =====================================================
-
-ALTER TABLE public.marks
-  ADD COLUMN IF NOT EXISTS comment_count integer NOT NULL DEFAULT 0;
-
--- Backfill from existing comments.
-UPDATE public.marks m
-SET comment_count = COALESCE(c.cnt, 0)
-FROM (
-  SELECT mark_id, COUNT(*)::int AS cnt
-  FROM public.comments
-  GROUP BY mark_id
-) c
-WHERE c.mark_id = m.id;
-
-UPDATE public.marks
-SET comment_count = 0
-WHERE comment_count IS NULL;
-
--- Keep comment_count synchronized via trigger.
-CREATE OR REPLACE FUNCTION public.update_mark_comment_count()
-RETURNS trigger
-LANGUAGE plpgsql
-SECURITY DEFINER
-SET search_path = public
-AS $$
-BEGIN
-  IF TG_OP = 'INSERT' THEN
-    UPDATE public.marks
-    SET comment_count = comment_count + 1, updated_at = NOW()
-    WHERE id = NEW.mark_id;
-    RETURN NEW;
-  ELSIF TG_OP = 'DELETE' THEN
-    UPDATE public.marks
-    SET comment_count = GREATEST(comment_count - 1, 0), updated_at = NOW()
-    WHERE id = OLD.mark_id;
-    RETURN OLD;
-  ELSIF TG_OP = 'UPDATE' THEN
-    IF NEW.mark_id <> OLD.mark_id THEN
-      UPDATE public.marks
-      SET comment_count = GREATEST(comment_count - 1, 0), updated_at = NOW()
-      WHERE id = OLD.mark_id;
-      UPDATE public.marks
-      SET comment_count = comment_count + 1, updated_at = NOW()
-      WHERE id = NEW.mark_id;
-    END IF;
-    RETURN NEW;
-  END IF;
-  RETURN NULL;
-END;
-$$;
-
-DROP TRIGGER IF EXISTS comments_comment_count_trigger ON public.comments;
-CREATE TRIGGER comments_comment_count_trigger
-  AFTER INSERT OR DELETE OR UPDATE OF mark_id ON public.comments
-  FOR EACH ROW
-  EXECUTE FUNCTION public.update_mark_comment_count();

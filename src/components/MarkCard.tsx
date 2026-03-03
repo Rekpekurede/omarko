@@ -73,7 +73,7 @@ export function MarkCard({
     setPending(false);
   };
 
-  const commentsCount = mark.comment_count ?? 0;
+  const commentsCount = mark.comments_count ?? 0;
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 pb-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">

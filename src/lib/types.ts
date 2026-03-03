@@ -68,7 +68,7 @@ export interface Mark {
   created_at: string;
   updated_at: string;
   profiles?: MarkProfile | null;
-  comment_count?: number;
+  comments_count?: number;
 }
 
 export type ChallengeOutcome = 'PENDING' | 'WON' | 'LOST' | 'CONCEDED' | 'WITHDRAWN';

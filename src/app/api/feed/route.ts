@@ -51,17 +51,29 @@ export async function GET(request: Request) {
     ? encodeURIComponent(list[list.length - 1].id)
     : null;
 
+  const markIds = list.map((m) => m.id);
+  const commentsCountMap: Record<string, number> = {};
+  if (markIds.length > 0) {
+    const countRes = await supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds });
+    if (!countRes.error) {
+      for (const row of countRes.data ?? []) {
+        commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+      }
+    }
+  }
+  const listWithCounts = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
+
   const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
-  if (user && list.length > 0) {
+  if (user && listWithCounts.length > 0) {
     const [bRes, vRes] = await Promise.all([
-      supabase.from('bookmarks').select('mark_id').eq('user_id', user.id).in('mark_id', list.map((m) => m.id)),
-      supabase.from('votes').select('mark_id, vote_type').eq('voter_id', user.id).in('mark_id', list.map((m) => m.id)),
+      supabase.from('bookmarks').select('mark_id').eq('user_id', user.id).in('mark_id', listWithCounts.map((m) => m.id)),
+      supabase.from('votes').select('mark_id, vote_type').eq('voter_id', user.id).in('mark_id', listWithCounts.map((m) => m.id)),
     ]);
     bookmarkIds = (bRes.data ?? []).map((x) => x.mark_id);
     voteMap = Object.fromEntries((vRes.data ?? []).map((v) => [v.mark_id, v.vote_type as 'SUPPORT' | 'OPPOSE']));
   }
 
-  return NextResponse.json({ marks: list, nextCursor, bookmarkIds, voteMap });
+  return NextResponse.json({ marks: listWithCounts, nextCursor, bookmarkIds, voteMap });
 }

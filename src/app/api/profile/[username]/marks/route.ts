@@ -61,8 +61,19 @@ export async function GET(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile.username } }));
-  const nextCursor = list.length === limit && list[list.length - 1]
-    ? encodeURIComponent(list[list.length - 1].id)
+  const markIds = list.map((m) => m.id);
+  const commentsCountMap: Record<string, number> = {};
+  if (markIds.length > 0) {
+    const countRes = await supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds });
+    if (!countRes.error) {
+      for (const row of countRes.data ?? []) {
+        commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+      }
+    }
+  }
+  const listWithCounts = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
+  const nextCursor = listWithCounts.length === limit && listWithCounts[listWithCounts.length - 1]
+    ? encodeURIComponent(listWithCounts[listWithCounts.length - 1].id)
     : null;
-  return NextResponse.json({ marks: list, nextCursor });
+  return NextResponse.json({ marks: listWithCounts, nextCursor });
 }

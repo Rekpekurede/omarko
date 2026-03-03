@@ -25,7 +25,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, comment_count, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
     .eq('id', id)
     .single();
 

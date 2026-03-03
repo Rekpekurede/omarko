@@ -142,7 +142,18 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       if (marksErr) {
         console.error('[ProfilePage] marks query error', marksErr);
       } else {
-        marksWithProfile = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const markIds = list.map((m) => m.id);
+        const commentsCountMap: Record<string, number> = {};
+        if (markIds.length > 0) {
+          const countRes = await supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds });
+          if (!countRes.error) {
+            for (const row of countRes.data ?? []) {
+              commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+            }
+          }
+        }
+        marksWithProfile = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
         marksNextCursor = marksWithProfile.length === PROFILE_MARKS_LIMIT && marksWithProfile[marksWithProfile.length - 1]
           ? marksWithProfile[marksWithProfile.length - 1].id
           : null;

@@ -34,11 +34,10 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const { data: markRow } = await supabase
-    .from('marks')
-    .select('comment_count')
-    .eq('id', markId)
-    .single();
+  const { count } = await supabase
+    .from('comments')
+    .select('id', { count: 'exact', head: true })
+    .eq('mark_id', markId);
 
-  return NextResponse.json({ ...comment, comment_count: markRow?.comment_count ?? 0 });
+  return NextResponse.json({ ...comment, comments_count: count ?? 0 });
 }
