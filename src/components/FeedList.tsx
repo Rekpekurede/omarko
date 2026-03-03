@@ -81,7 +81,14 @@ export function FeedList({
                 }
               }}
               onVoteSuccess={(markId, newVote) => {
-                setVoteMapState((prev) => ({ ...prev, [markId]: newVote }));
+                setVoteMapState((prev) => {
+                  if (!newVote) {
+                    const next = { ...prev };
+                    delete next[markId];
+                    return next;
+                  }
+                  return { ...prev, [markId]: newVote };
+                });
               }}
             />
           </li>

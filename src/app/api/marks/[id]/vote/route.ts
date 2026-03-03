@@ -11,7 +11,13 @@ export async function POST(
 
   if (!user) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
-  const body = await request.json();
+  let body: { type?: string; vote_type?: string };
+  try {
+    body = await request.json();
+  } catch (err) {
+    console.error('[vote.POST] invalid json', { markId, err });
+    return NextResponse.json({ error: 'Invalid JSON body' }, { status: 400 });
+  }
   const rawType = body.type || body.vote_type;
   const incomingType = rawType?.toUpperCase();
 
@@ -20,38 +26,102 @@ export async function POST(
   }
 
   // 1. Check for existing vote
-  const { data: existing } = await supabase
+  const { data: existing, error: existingErr } = await supabase
     .from('votes')
     .select('vote_type')
     .eq('mark_id', markId)
     .eq('voter_id', user.id)
     .maybeSingle();
+  if (existingErr) {
+    console.error('[vote.POST] select existing failed', {
+      markId,
+      userId: user.id,
+      code: existingErr.code,
+      message: existingErr.message,
+      details: existingErr.details,
+    });
+    return NextResponse.json({ error: existingErr.message }, { status: 500 });
+  }
 
+  let userVote: 'SUPPORT' | 'OPPOSE' | null = incomingType;
   if (existing?.vote_type === incomingType) {
     // TOGGLE OFF: User clicked the same button, remove the vote
-    await supabase.from('votes').delete().eq('mark_id', markId).eq('voter_id', user.id);
+    const { error: deleteErr } = await supabase.from('votes').delete().eq('mark_id', markId).eq('voter_id', user.id);
+    if (deleteErr) {
+      console.error('[vote.POST] delete vote failed', {
+        markId,
+        userId: user.id,
+        code: deleteErr.code,
+        message: deleteErr.message,
+        details: deleteErr.details,
+      });
+      return NextResponse.json({ error: deleteErr.message }, { status: 500 });
+    }
+    userVote = null;
   } else {
     // UPSERT: Insert new or change existing (Support -> Oppose)
-    await supabase.from('votes').upsert({
+    const { error: upsertErr } = await supabase.from('votes').upsert({
       mark_id: markId,
       voter_id: user.id,
       vote_type: incomingType,
     }, { onConflict: 'mark_id,voter_id' });
+    if (upsertErr) {
+      console.error('[vote.POST] upsert vote failed', {
+        markId,
+        userId: user.id,
+        voteType: incomingType,
+        code: upsertErr.code,
+        message: upsertErr.message,
+        details: upsertErr.details,
+      });
+      return NextResponse.json({ error: upsertErr.message }, { status: 500 });
+    }
   }
 
-  // 2. Trigger Recompute
-  await supabase.rpc('recompute_mark', { mark_uuid: markId });
+  // 2. Trigger Recompute (prefer votes-only recompute, fallback to existing status recompute)
+  let recomputeErr: { code?: string; message: string; details?: string } | null = null;
+  const recomputeVotesRes = await supabase.rpc('recompute_mark_votes', { mark_uuid: markId });
+  if (recomputeVotesRes.error) {
+    console.error('[vote.POST] recompute_mark_votes failed, trying compute_mark_status', {
+      markId,
+      code: recomputeVotesRes.error.code,
+      message: recomputeVotesRes.error.message,
+      details: recomputeVotesRes.error.details,
+    });
+    const recomputeStatusRes = await supabase.rpc('compute_mark_status', { mark_uuid: markId });
+    if (recomputeStatusRes.error) {
+      recomputeErr = recomputeStatusRes.error;
+    }
+  }
+  if (recomputeErr) {
+    console.error('[vote.POST] recompute failed', {
+      markId,
+      code: recomputeErr.code,
+      message: recomputeErr.message,
+      details: recomputeErr.details,
+    });
+    return NextResponse.json({ error: recomputeErr.message }, { status: 500 });
+  }
 
   // 3. Return authoritative state
-  const { data: updatedMark } = await supabase
+  const { data: updatedMark, error: markErr } = await supabase
     .from('marks')
     .select('support_votes, oppose_votes, status')
     .eq('id', markId)
     .single();
+  if (markErr) {
+    console.error('[vote.POST] fetch updated mark failed', {
+      markId,
+      code: markErr.code,
+      message: markErr.message,
+      details: markErr.details,
+    });
+    return NextResponse.json({ error: markErr.message }, { status: 500 });
+  }
 
   return NextResponse.json({
     markId,
-    userVote: existing?.vote_type === incomingType ? null : incomingType,
+    userVote,
     support_votes: updatedMark?.support_votes || 0,
     oppose_votes: updatedMark?.oppose_votes || 0
   });

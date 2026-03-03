@@ -6,7 +6,6 @@ import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
-import { formatMarkTime } from '@/lib/time';
 import type { Mark } from '@/lib/types';
 
 interface MarkCardProps {
@@ -17,7 +16,7 @@ interface MarkCardProps {
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
   canVote?: boolean;
   onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
-  onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE') => void;
+  onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE' | null) => void;
 }
 
 function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null } | null {
@@ -45,19 +44,22 @@ export function MarkCard({
   const [opposeVotes, setOpposeVotes] = useState(mark.oppose_votes ?? 0);
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleVote = async (type: 'support' | 'oppose') => {
+  const handleVote = async (nextVote: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || pending) return;
+    setError(null);
     setPending(true);
 
     const res = await fetch(`/api/marks/${mark.id}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ type }),
+      body: JSON.stringify({ type: nextVote }),
     });
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      setError(data.error ?? 'Vote failed');
       setPending(false);
       return;
     }
@@ -66,13 +68,12 @@ export function MarkCard({
       setOpposeVotes(data.oppose_votes ?? opposeVotes);
       setVote(data.userVote ?? null);
       onVoteUpdate?.(data);
-      if (data.userVote) onVoteSuccess?.(mark.id, data.userVote);
+      onVoteSuccess?.(mark.id, data.userVote ?? null);
     }
     setPending(false);
   };
 
-  const commentsCount = mark.comments_count ?? 0;
-  const latestComments = mark.latest_comments ?? [];
+  const commentsCount = mark.comment_count ?? 0;
 
   return (
     <article className="rounded-lg border border-gray-200 bg-white p-4 pb-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
@@ -120,22 +121,6 @@ export function MarkCard({
               </span>
             )}
           </div>
-          {latestComments.length > 0 && (
-            <div className="mt-2 space-y-1 border-l-2 border-gray-200 pl-2 text-xs dark:border-gray-700">
-              {latestComments.map((c, i) => (
-                <p key={i} className="text-gray-600 dark:text-gray-400 line-clamp-1">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">@{c.username}</span>
-                  {' '}
-                  <span className="text-gray-500 dark:text-gray-500">{formatMarkTime(c.created_at)}</span>
-                  {': '}
-                  <span className="line-clamp-1">{c.content}</span>
-                </p>
-              ))}
-              <Link href={`/mark/${mark.id}?tab=comments`} className="text-gray-500 hover:underline dark:text-gray-400">
-                View all comments
-              </Link>
-            </div>
-          )}
         </div>
       </div>
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
@@ -143,13 +128,13 @@ export function MarkCard({
         <span>{opposeVotes} oppose</span>
         <span>{mark.dispute_count ?? 0} disputes</span>
         <Link href={`/mark/${mark.id}?tab=comments`} className="hover:underline">
-          {commentsCount} comment{commentsCount !== 1 ? 's' : ''}
+          Comments: {commentsCount}
         </Link>
         {canVote && !isWithdrawn && (
           <span className="flex items-center gap-2">
             <button
               type="button"
-              onClick={() => handleVote('support')}
+              onClick={() => handleVote('SUPPORT')}
               disabled={pending}
               className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
                 vote === 'SUPPORT' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -159,7 +144,7 @@ export function MarkCard({
             </button>
             <button
               type="button"
-              onClick={() => handleVote('oppose')}
+              onClick={() => handleVote('OPPOSE')}
               disabled={pending}
               className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
                 vote === 'OPPOSE' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
@@ -185,6 +170,7 @@ export function MarkCard({
           </Link>
         )}
       </div>
+      {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
     </article>
   );
 }

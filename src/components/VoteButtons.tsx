@@ -7,9 +7,10 @@ interface VoteButtonsProps {
   markId: string;
   canVote: boolean;
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
+  onVoteUpdate?: (updated: { support_votes?: number; oppose_votes?: number; userVote?: 'SUPPORT' | 'OPPOSE' | null }) => void;
 }
 
-export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtonsProps) {
+export function VoteButtons({ markId, canVote, currentVote = null, onVoteUpdate }: VoteButtonsProps) {
   const router = useRouter();
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [error, setError] = useState<string | null>(null);
@@ -23,11 +24,8 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
     if (!canVote || isPending) return;
     setError(null);
     setIsPending(true);
-
-    const prevVote = vote;
-    const method = prevVote ? 'PATCH' : 'POST';
     const res = await fetch(`/api/marks/${markId}/vote`, {
-      method,
+      method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type: voteType }),
     });
@@ -41,27 +39,16 @@ export function VoteButtons({ markId, canVote, currentVote = null }: VoteButtons
       setIsPending(false);
       return;
     }
-    setVote(voteType);
+    setVote((data.userVote as 'SUPPORT' | 'OPPOSE' | null) ?? null);
+    onVoteUpdate?.(data);
     router.refresh();
     setIsPending(false);
   };
 
   const handleRemove = async () => {
-    if (!canVote || isPending) return;
-    setError(null);
-    setIsPending(true);
-
-    const res = await fetch(`/api/marks/${markId}/vote`, { method: 'DELETE' });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      setError(data.error ?? 'Failed to remove vote');
-      setIsPending(false);
-      return;
+    if (vote) {
+      await handleVote(vote);
     }
-    setVote(null);
-    router.refresh();
-    setIsPending(false);
   };
 
   if (!canVote) {

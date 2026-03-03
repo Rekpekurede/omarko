@@ -34,5 +34,11 @@ export async function POST(
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(comment);
+  const { data: markRow } = await supabase
+    .from('marks')
+    .select('comment_count')
+    .eq('id', markId)
+    .single();
+
+  return NextResponse.json({ ...comment, comment_count: markRow?.comment_count ?? 0 });
 }
