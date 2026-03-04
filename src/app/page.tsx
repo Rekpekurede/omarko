@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
+import { FeedIntroBanner } from '@/components/FeedIntroBanner';
 import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
@@ -80,6 +81,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
 
   return (
     <PageContainer className="space-y-4">
+      <FeedIntroBanner />
       <h1 className="text-2xl font-semibold text-foreground">Latest claims</h1>
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
