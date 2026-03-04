@@ -1,14 +1,14 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 
 interface NotificationRow {
   id: string;
   type: string;
   mark_id: string | null;
   actor_id: string | null;
-  message: string;
+  actor_username?: string | null;
   read_at: string | null;
   created_at: string;
 }
@@ -24,23 +24,41 @@ export function NotificationsList({
   initialNextCursor,
   initialUnreadCount,
 }: NotificationsListProps) {
-  void initialUnreadCount; // reserved for unread badge
   const router = useRouter();
   const [notifications, setNotifications] = useState<NotificationRow[]>(initialNotifications);
   const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
   const [loading, setLoading] = useState(false);
   const [markingAll, setMarkingAll] = useState(false);
 
+  const unreadCount = useMemo(
+    () => notifications.filter((n) => !n.read_at).length,
+    [notifications]
+  );
+
+  const notifyUnreadChanged = () => {
+    window.dispatchEvent(new Event('notifications:changed'));
+  };
+
   const markAsRead = async (id: string) => {
     await fetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
     setNotifications((prev) =>
       prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
     );
+    notifyUnreadChanged();
+  };
+
+  const destinationFor = (n: NotificationRow) => {
+    if (n.mark_id) return `/mark/${n.mark_id}`;
+    if (n.type === 'follow' && n.actor_username) {
+      return `/profile/${encodeURIComponent(n.actor_username)}`;
+    }
+    return null;
   };
 
   const handleClick = (n: NotificationRow) => {
     if (!n.read_at) markAsRead(n.id);
-    if (n.mark_id) router.push(`/mark/${n.mark_id}`);
+    const destination = destinationFor(n);
+    if (destination) router.push(destination);
   };
 
   const markAllRead = async () => {
@@ -51,9 +69,17 @@ export function NotificationsList({
       setNotifications((prev) =>
         prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() }))
       );
+      notifyUnreadChanged();
       router.refresh();
     }
   };
+
+  useEffect(() => {
+    if (initialUnreadCount > 0) {
+      markAllRead();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const loadMore = async () => {
     if (!nextCursor || loading) return;
@@ -67,16 +93,45 @@ export function NotificationsList({
     }
   };
 
-  const hasUnread = notifications.some((n) => !n.read_at);
+  const notificationText = (n: NotificationRow) => {
+    const actor = n.actor_username ? `@${n.actor_username}` : 'Someone';
+    switch (n.type) {
+      case 'vote_support':
+        return `${actor} supported your mark`;
+      case 'vote_oppose':
+        return `${actor} opposed your mark`;
+      case 'comment':
+      case 'COMMENT_CREATED':
+        return `${actor} commented on your mark`;
+      case 'dispute_raised':
+      case 'DISPUTE_CREATED':
+        return `${actor} raised a dispute on your mark`;
+      case 'follow':
+        return `${actor} followed you`;
+      case 'MARK_CHAMPION':
+        return 'Your mark became champion';
+      case 'MARK_SUPPLANTED':
+        return 'Your mark was supplanted';
+      case 'MARK_WITHDRAWN':
+        return 'Your mark was withdrawn';
+      default:
+        return 'You have a new alert';
+    }
+  };
+
+  const hasUnread = unreadCount > 0;
 
   return (
     <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        {unreadCount} unread {unreadCount === 1 ? 'alert' : 'alerts'}
+      </p>
       {hasUnread && (
         <button
           type="button"
           onClick={markAllRead}
           disabled={markingAll}
-          className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50"
+          className="rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
         >
           {markingAll ? 'Marking…' : 'Mark all read'}
         </button>
@@ -87,12 +142,12 @@ export function NotificationsList({
             <button
               type="button"
               onClick={() => handleClick(n)}
-              className={`w-full rounded border border-gray-200 p-3 text-left text-sm transition hover:bg-gray-50 ${
-                n.read_at ? 'bg-white text-gray-600' : 'bg-gray-50 font-medium text-black'
+              className={`w-full rounded-xl border border-border p-3 text-left text-sm transition hover:bg-accent ${
+                n.read_at ? 'bg-card text-muted-foreground' : 'bg-muted font-medium text-foreground'
               }`}
             >
-              <span className="block">{n.message}</span>
-              <span className="mt-1 block text-xs text-gray-500">
+              <span className="block">{notificationText(n)}</span>
+              <span className="mt-1 block text-xs text-muted-foreground">
                 {new Date(n.created_at).toLocaleString()}
               </span>
             </button>
@@ -100,7 +155,7 @@ export function NotificationsList({
         ))}
       </ul>
       {notifications.length === 0 && (
-        <p className="py-8 text-center text-gray-500">No notifications yet.</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">No alerts yet.</p>
       )}
       {nextCursor && (
         <div className="flex justify-center">
@@ -108,7 +163,7 @@ export function NotificationsList({
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="rounded border border-black bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50"
+            className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
           >
             {loading ? 'Loading…' : 'Load more'}
           </button>

@@ -54,11 +54,17 @@ export async function GET(request: Request) {
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
   if (markIds.length > 0) {
-    const countRes = await supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds });
-    if (!countRes.error) {
-      for (const row of countRes.data ?? []) {
-        commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+    const { data: commentRows, error: commentsErr } = await supabase
+      .from('comments')
+      .select('mark_id')
+      .in('mark_id', markIds);
+    if (!commentsErr) {
+      for (const row of commentRows ?? []) {
+        commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
       }
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[feed.GET] comment counts sample', markIds.slice(0, 3).map((id) => ({ markId: id, comments_count: commentsCountMap[id] ?? 0 })));
     }
   }
   const listWithCounts = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));

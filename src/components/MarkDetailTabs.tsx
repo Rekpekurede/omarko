@@ -74,11 +74,17 @@ export function MarkDetailTabs({
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ content: commentContent.trim() }),
     });
+    const payload = await res.json().catch(() => ({}));
     if (!res.ok) {
-      const data = await res.json().catch(() => ({}));
-      setCommentError(data.error ?? 'Failed to post comment');
+      setCommentError(payload.error ?? 'Failed to post comment');
       setCommentSubmitting(false);
       return;
+    }
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('[MarkDetailTabs] comment posted', {
+        markId,
+        comments_count: payload.comments_count,
+      });
     }
     setCommentContent('');
     router.refresh();

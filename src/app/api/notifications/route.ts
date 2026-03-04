@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('notifications')
-    .select('id, type, mark_id, actor_id, message, read_at, created_at')
+    .select('id, type, mark_id, actor_id, read_at, created_at, profiles!notifications_actor_id_fkey(username)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -40,7 +40,15 @@ export async function GET(request: Request) {
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  const list = data ?? [];
+  const list = (data ?? []).map((row) => {
+    const actorProfile = Array.isArray(row.profiles) ? row.profiles[0] : row.profiles;
+    const { profiles, ...rest } = row;
+    void profiles;
+    return {
+      ...rest,
+      actor_username: actorProfile?.username ?? null,
+    };
+  });
   const nextCursor = list.length === limit && list[list.length - 1]
     ? encodeURIComponent(list[list.length - 1].id)
     : null;

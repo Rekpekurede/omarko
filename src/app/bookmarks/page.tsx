@@ -31,7 +31,21 @@ export default async function BookmarksPage() {
       .in('id', markIds)
       .is('withdrawn_at', null);
     const orderMap = new Map(markIds.map((id, i) => [id, i]));
-    marks = (m ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+    const sorted = (m ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+    const sortedIds = sorted.map((row) => row.id as string);
+    const commentsCountMap: Record<string, number> = {};
+    if (sortedIds.length > 0) {
+      const { data: commentRows, error: commentsErr } = await supabase
+        .from('comments')
+        .select('mark_id')
+        .in('mark_id', sortedIds);
+      if (!commentsErr) {
+        for (const row of commentRows ?? []) {
+          commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+        }
+      }
+    }
+    marks = sorted.map((row) => ({ ...row, comments_count: commentsCountMap[row.id] ?? 0 }));
   }
 
   const nextCursor = markIds.length === LIMIT && markIds[markIds.length - 1]

@@ -89,6 +89,7 @@ export function MarkCard({
   };
 
   const commentsCount = mark.comments_count ?? 0;
+  const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
 
   return (
     <article className="w-full rounded-2xl border border-border bg-card p-4 transition hover:bg-accent/40">
@@ -143,7 +144,7 @@ export function MarkCard({
         <StatPill label="support" value={supportVotes} />
         <StatPill label="oppose" value={opposeVotes} />
         <StatPill label="disputes" value={mark.dispute_count ?? 0} />
-        <StatPill label="comments" value={commentsCount} />
+        <StatPill label={commentsLabel} value={commentsCount} />
         <span className="text-xs text-muted-foreground">
           {vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}
         </span>

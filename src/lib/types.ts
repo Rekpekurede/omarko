@@ -28,7 +28,17 @@ export const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discove
 export type Domain = (typeof DOMAINS)[number];
 export type ClaimType = (typeof CLAIM_TYPES)[number];
 
-export type NotificationType = 'DISPUTE_CREATED' | 'MARK_SUPPLANTED' | 'MARK_CHAMPION' | 'MARK_WITHDRAWN' | 'COMMENT_CREATED';
+export type NotificationType =
+  | 'comment'
+  | 'vote_support'
+  | 'vote_oppose'
+  | 'dispute_raised'
+  | 'follow'
+  | 'DISPUTE_CREATED'
+  | 'MARK_SUPPLANTED'
+  | 'MARK_CHAMPION'
+  | 'MARK_WITHDRAWN'
+  | 'COMMENT_CREATED';
 
 export interface Notification {
   id: string;
@@ -36,7 +46,7 @@ export interface Notification {
   type: NotificationType;
   mark_id: string | null;
   actor_id: string | null;
-  message: string;
+  actor_username?: string | null;
   read_at: string | null;
   created_at: string;
 }

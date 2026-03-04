@@ -69,15 +69,6 @@ export async function POST(
       .update({ status: 'DISPUTED', updated_at: new Date().toISOString() })
       .eq('id', markId)
       .in('status', ['ACTIVE', 'DISPUTED']);
-    const { data: actor } = await supabase.from('profiles').select('username').eq('id', user.id).single();
-    const msg = actor?.username ? `@${actor.username} disputed your mark` : 'Someone disputed your mark';
-    await supabase.rpc('create_notification', {
-      p_user_id: markRow.user_id,
-      p_type: 'DISPUTE_CREATED',
-      p_mark_id: markId,
-      p_actor_id: user.id,
-      p_message: msg,
-    });
   }
 
   const { data: mark } = await supabase

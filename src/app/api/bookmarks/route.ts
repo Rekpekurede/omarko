@@ -47,9 +47,23 @@ export async function GET(request: Request) {
 
   const orderMap = new Map(markIds.map((id, i) => [id, i]));
   const sorted = (marks ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+  const sortedIds = sorted.map((m) => m.id);
+  const commentsCountMap: Record<string, number> = {};
+  if (sortedIds.length > 0) {
+    const { data: commentRows, error: commentsErr } = await supabase
+      .from('comments')
+      .select('mark_id')
+      .in('mark_id', sortedIds);
+    if (!commentsErr) {
+      for (const row of commentRows ?? []) {
+        commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+      }
+    }
+  }
+  const sortedWithCounts = sorted.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
   const nextCursor = sorted.length === limit && sorted[sorted.length - 1]
     ? encodeURIComponent(sorted[sorted.length - 1].id)
     : null;
 
-  return NextResponse.json({ marks: sorted, nextCursor });
+  return NextResponse.json({ marks: sortedWithCounts, nextCursor });
 }

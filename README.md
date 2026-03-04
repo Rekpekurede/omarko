@@ -122,3 +122,11 @@ Status and tallies are recomputed in DB via `compute_mark_status(mark_uuid)` aft
 4. **User B with direct link** – User B opens the same mark via direct link. Sees WITHDRAWN badge and “Withdrawn by @userA”. Vote and Dispute are disabled (message: “Voting and disputing disabled”).
 5. **Public profile** – View User A’s profile as public (or as User B). Withdrawn mark does **not** appear in the main Marks list.
 6. **User A “My Withdrawn”** – As User A, go to own profile. Section **My Withdrawn** lists only that withdrawn mark (with small WITHDRAWN badge on the card).
+
+### Notifications checklist
+
+1. **User A posts mark** – Create a mark as User A.
+2. **User B supports/comments/disputes** – As User B, support the mark, comment on it, and raise a dispute. User A should see alerts in `/notifications`.
+3. **User B follows User A** – User A should receive a follow alert.
+4. **No self notification** – As User A, support/comment on your own mark (if allowed). No alert should be created for User A.
+5. **Unread count** – Bell badge should show unread count; opening Alerts marks items read and updates the badge.

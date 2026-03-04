@@ -175,10 +175,13 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const markIds = list.map((m) => m.id);
         const commentsCountMap: Record<string, number> = {};
         if (markIds.length > 0) {
-          const countRes = await supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds });
-          if (!countRes.error) {
-            for (const row of countRes.data ?? []) {
-              commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+          const { data: commentRows, error: commentsErr } = await supabase
+            .from('comments')
+            .select('mark_id')
+            .in('mark_id', markIds);
+          if (!commentsErr) {
+            for (const row of commentRows ?? []) {
+              commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
             }
           }
         }
@@ -231,11 +234,23 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           .is('withdrawn_at', null);
         const orderMap = new Map(supportedMarkIds.map((id, i) => [id, i]));
         const sorted = (sm ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
+        const commentsCountMap: Record<string, number> = {};
+        if (supportedMarkIds.length > 0) {
+          const { data: commentRows, error: commentsErr } = await supabase
+            .from('comments')
+            .select('mark_id')
+            .in('mark_id', supportedMarkIds);
+          if (!commentsErr) {
+            for (const row of commentRows ?? []) {
+              commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+            }
+          }
+        }
         supportedMarks = sorted.map((m) => {
           const p = m.profiles as { username?: string; avatar_url?: string | null } | { username?: string; avatar_url?: string | null }[] | null;
           const u = (p && (Array.isArray(p) ? p[0]?.username : p.username)) ?? profile!.username;
           const av = (p && (Array.isArray(p) ? p[0]?.avatar_url : p.avatar_url)) ?? profile!.avatar_url;
-          return { ...m, profiles: { username: u, avatar_url: av } };
+          return { ...m, profiles: { username: u, avatar_url: av }, comments_count: commentsCountMap[m.id] ?? 0 };
         });
       }
       supportedNextCursor = supportedMarkIds.length === SUPPORTED_LIMIT && supportedMarkIds[supportedMarkIds.length - 1]
@@ -275,7 +290,24 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           .eq('user_id', profile.id)
           .not('withdrawn_at', 'is', null)
           .order('withdrawn_at', { ascending: false });
-        withdrawnMarks = (withdrawn ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const withdrawnIds = (withdrawn ?? []).map((m) => m.id);
+        const commentsCountMap: Record<string, number> = {};
+        if (withdrawnIds.length > 0) {
+          const { data: commentRows, error: commentsErr } = await supabase
+            .from('comments')
+            .select('mark_id')
+            .in('mark_id', withdrawnIds);
+          if (!commentsErr) {
+            for (const row of commentRows ?? []) {
+              commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+            }
+          }
+        }
+        withdrawnMarks = (withdrawn ?? []).map((m) => ({
+          ...m,
+          profiles: { username: profile!.username, avatar_url: profile!.avatar_url },
+          comments_count: commentsCountMap[m.id] ?? 0,
+        }));
       } catch (err) {
         console.error('[ProfilePage] withdrawn marks error', err);
       }
