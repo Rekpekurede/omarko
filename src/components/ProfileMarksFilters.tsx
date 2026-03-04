@@ -40,12 +40,12 @@ export function ProfileMarksFilters({
   };
 
   return (
-    <div className="mb-3 flex flex-wrap items-center gap-2">
+    <div className="mb-3 flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
       <select
         aria-label="Filter by domain"
         value={currentDomain}
         onChange={(e) => setParam('domain', e.target.value)}
-        className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+        className="min-h-[40px] rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
       >
         <option value="all">All domains</option>
         {DOMAINS.map((d) => (
@@ -56,14 +56,14 @@ export function ProfileMarksFilters({
         aria-label="Filter by claim type"
         value={currentClaimType}
         onChange={(e) => setParam('claim_type', e.target.value)}
-        className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+        className="min-h-[40px] rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
       >
         <option value="all">All claim types</option>
         {CLAIM_TYPES.map((c) => (
           <option key={c} value={c}>{c}</option>
         ))}
       </select>
-      <label className="flex cursor-pointer items-center gap-2 text-sm">
+      <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
         <input
           type="checkbox"
           checked={disputedOnly}

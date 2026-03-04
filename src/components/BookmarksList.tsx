@@ -39,7 +39,7 @@ export function BookmarksList({
         ))}
       </ul>
       {marks.length === 0 && (
-        <p className="py-8 text-center text-gray-500">No bookmarks yet.</p>
+        <p className="py-8 text-center text-sm text-muted-foreground">No bookmarks yet.</p>
       )}
       {nextCursor && (
         <div className="mt-4 flex justify-center">
@@ -47,7 +47,7 @@ export function BookmarksList({
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="rounded border border-black bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50"
+            className="min-h-[44px] rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent/70 disabled:opacity-50"
           >
             {loading ? 'Loading…' : 'Load more'}
           </button>

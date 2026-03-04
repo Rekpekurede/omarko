@@ -9,6 +9,7 @@ import { MarkDetailTabs } from '@/components/MarkDetailTabs';
 import { MarkContentWithEdit } from '@/components/MarkContentWithEdit';
 import { BookmarkButton } from '@/components/BookmarkButton';
 import { RelativeTime } from '@/components/RelativeTime';
+import { PageContainer } from '@/components/PageContainer';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -104,17 +105,17 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const currentTab = tab === 'comments' ? 'comments' : tab === 'challenges' ? 'challenges' : tab === 'versions' ? 'versions' : 'overview';
 
   return (
-    <div className="space-y-6">
-      <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <PageContainer className="space-y-6">
+      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
               <Avatar username={displayUsername} avatarUrl={avatarUrl} size="md" />
               <div>
-                <Link href={`/profile/${displayUsername}`} className="font-semibold text-black hover:underline dark:text-white">
+                <Link href={`/profile/${displayUsername}`} className="text-sm font-medium text-foreground hover:underline">
                   @{displayUsername}
                 </Link>
-                <span className="ml-2 text-sm text-gray-500 dark:text-gray-400">
+                <span className="ml-2 text-xs text-muted-foreground">
                   {(mark as { domain?: string }).domain}
                   {(mark as { claim_type?: string }).claim_type && ` · ${(mark as { claim_type: string }).claim_type}`}
                   {' · '}
@@ -125,11 +126,11 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                 </span>
               </div>
               {isWithdrawn && (
-                <span className="text-xs text-gray-500 dark:text-gray-400">Withdrawn</span>
+                <span className="text-xs text-muted-foreground">Withdrawn</span>
               )}
             </div>
             {isWithdrawn && withdrawnByUsername && (
-              <p className="mt-1 text-sm text-gray-600 dark:text-gray-400">Withdrawn by @{withdrawnByUsername}</p>
+              <p className="mt-1 text-sm text-muted-foreground">Withdrawn by @{withdrawnByUsername}</p>
             )}
             <MarkContentWithEdit
               content={content}
@@ -151,8 +152,8 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         </div>
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
           {user && <BookmarkButton markId={mark.id} bookmarked={isBookmarked} />}
-          <span className="text-sm text-gray-500 dark:text-gray-400">Challenges: {mark.dispute_count ?? 0}</span>
-          <span className="text-sm text-gray-500 dark:text-gray-400">Disputes: {mark.disputes_survived ?? 0}</span>
+          <span className="text-xs text-muted-foreground">Challenges: {mark.dispute_count ?? 0}</span>
+          <span className="text-xs text-muted-foreground">Disputes: {mark.disputes_survived ?? 0}</span>
           {!isWithdrawn && user && (
             <VoteButtons
               markId={mark.id}
@@ -195,11 +196,11 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
       />
 
       {mark.owner_response && (
-        <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-          <h2 className="mb-3 text-lg font-semibold dark:text-white">Owner response</h2>
-          <p className="text-sm text-gray-700 dark:text-gray-300">{mark.owner_response}</p>
+        <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+          <h2 className="mb-3 text-lg font-semibold">Owner response</h2>
+          <p className="text-base leading-relaxed text-foreground">{mark.owner_response}</p>
         </div>
       )}
-    </div>
+    </PageContainer>
   );
 }

@@ -35,14 +35,14 @@ export function ProfileStats({
   ];
 
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid grid-cols-2 gap-2 lg:grid-cols-4">
       {stats.map(({ label, value }) => (
         <div
           key={label}
-          className="rounded-lg border border-gray-200 bg-white px-3 py-2 shadow-sm dark:border-gray-700 dark:bg-gray-900"
+          className="rounded-2xl border border-border bg-card p-3"
         >
-          <span className="block text-lg font-semibold text-black dark:text-white">{value}</span>
-          <span className="text-xs text-gray-500 dark:text-gray-400">{label}</span>
+          <span className="block text-lg font-semibold text-foreground">{value}</span>
+          <span className="text-xs text-muted-foreground">{label}</span>
         </div>
       ))}
     </div>

@@ -62,12 +62,12 @@ export default async function RootLayout({
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen bg-white text-black antialiased dark:bg-gray-950 dark:text-gray-100">
+      <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
           <CreateMarkModalProvider>
             <Header brandFontClass={sora.className} />
             <CreateMarkModal />
-            <main className="mx-auto max-w-4xl px-4 pb-24 pt-6 sm:pb-6">{children}</main>
+            <main className="pb-24 pt-4 sm:pb-8 sm:pt-6">{children}</main>
             <MobileBottomNav isSignedIn={isSignedIn} username={username} />
           </CreateMarkModalProvider>
         </ThemeProvider>

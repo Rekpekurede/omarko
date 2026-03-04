@@ -4,18 +4,28 @@
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: #111827;
+  --card: #ffffff;
+  --border: #e5e7eb;
+  --muted: #f3f4f6;
+  --muted-foreground: #6b7280;
+  --accent: #f3f4f6;
 }
 
 .dark {
-  --background: #0a0a0a;
-  --foreground: #ededed;
+  --background: #09090b;
+  --foreground: #f4f4f5;
+  --card: #111113;
+  --border: #27272a;
+  --muted: #18181b;
+  --muted-foreground: #a1a1aa;
+  --accent: #1f1f23;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-sora), Arial, Helvetica, sans-serif;
 }
 
 @layer utilities {

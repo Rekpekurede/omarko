@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
+import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
@@ -72,10 +73,10 @@ export default async function FeedPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold dark:text-white">Feed</h1>
+    <PageContainer className="space-y-4">
+      <h1 className="text-2xl font-semibold text-foreground">Latest claims</h1>
       {error && (
-        <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error.message}
         </div>
       )}
@@ -96,6 +97,6 @@ export default async function FeedPage({ searchParams }: PageProps) {
         showBookmark={!!user}
         currentUserId={user?.id ?? null}
       />
-    </div>
+    </PageContainer>
   );
 }

@@ -4,6 +4,7 @@ import { MarkCard } from '@/components/MarkCard';
 import { ProfileTabs } from '@/components/ProfileTabs';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileStats } from '@/components/profile/ProfileStats';
+import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
@@ -21,25 +22,29 @@ export const fetchCache = 'force-no-store';
 
 function ProfileNotFound({ username }: { username: string }) {
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-8 text-center">
-      <h1 className="text-xl font-bold">Profile not found</h1>
-      <p className="mt-2 text-gray-600">No profile found for @{username}</p>
-      <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
-        Back to feed
-      </Link>
-    </div>
+    <PageContainer>
+      <div className="rounded-2xl border border-border bg-card p-8 text-center">
+        <h1 className="text-2xl font-semibold">Profile not found</h1>
+        <p className="mt-2 text-sm text-muted-foreground">No profile found for @{username}</p>
+        <Link href="/" className="mt-4 inline-block text-sm text-foreground hover:underline">
+          Back to feed
+        </Link>
+      </div>
+    </PageContainer>
   );
 }
 
 function ProfileError({ message }: { message: string }) {
   return (
-    <div className="rounded-lg border border-red-200 bg-red-50 p-8 text-center">
-      <h1 className="text-xl font-bold text-red-800">Something went wrong</h1>
-      <p className="mt-2 text-red-600">{message}</p>
-      <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
-        Back to feed
-      </Link>
-    </div>
+    <PageContainer>
+      <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
+        <h1 className="text-2xl font-semibold text-red-800">Something went wrong</h1>
+        <p className="mt-2 text-red-600">{message}</p>
+        <Link href="/" className="mt-4 inline-block text-sm text-blue-600 hover:underline">
+          Back to feed
+        </Link>
+      </div>
+    </PageContainer>
   );
 }
 
@@ -277,7 +282,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     }
 
     return (
-      <div className="space-y-6">
+      <PageContainer className="space-y-6">
         <ProfileHeader
           username={profile.username}
           displayName={profile.display_name ?? null}
@@ -291,7 +296,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           followingCount={followingCount}
         />
         <div>
-          <h2 className="mb-3 text-sm font-medium text-gray-500 dark:text-gray-400">Stats</h2>
+          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Stats</h2>
           <ProfileStats
             totalMarks={totalMarks ?? 0}
             champions={champions}
@@ -331,7 +336,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             </ul>
           </div>
         )}
-      </div>
+      </PageContainer>
     );
   } catch (err) {
     console.error('[ProfilePage] unexpected error', err);

@@ -121,7 +121,7 @@ export function VoteButtons({
 
   if (!canVote) {
     return (
-      <span className="text-sm text-gray-500 dark:text-gray-400">
+      <span className="text-sm text-muted-foreground">
         You cannot vote (you may be the author).
       </span>
     );
@@ -129,20 +129,20 @@ export function VoteButtons({
 
   return (
     <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
+      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
         <span>Support: {supportVotes}</span>
         <span>Oppose: {opposeVotes}</span>
         <span>{vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}</span>
       </div>
-      <div className="flex items-center gap-2">
+      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
         <button
           type="button"
           onClick={() => handleVote('SUPPORT')}
           disabled={isPending}
-          className={`min-h-[44px] touch-manipulation rounded border px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
+          className={`min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium disabled:opacity-50 ${
             vote === 'SUPPORT'
-              ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
-              : 'border-black bg-white text-black hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
+              ? 'bg-foreground text-background'
+              : 'border border-border bg-card text-foreground hover:bg-accent/70'
           }`}
         >
           Support
@@ -151,10 +151,10 @@ export function VoteButtons({
           type="button"
           onClick={() => handleVote('OPPOSE')}
           disabled={isPending || isOwnMark}
-          className={`min-h-[44px] touch-manipulation rounded border px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
+          className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-medium disabled:opacity-50 ${
             vote === 'OPPOSE'
-              ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
-              : 'border-black bg-white text-black hover:bg-gray-100 dark:border-gray-500 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700'
+              ? 'border-foreground bg-accent text-foreground'
+              : 'border-border bg-card text-foreground hover:bg-accent/70'
           }`}
         >
           Oppose
@@ -164,7 +164,7 @@ export function VoteButtons({
             type="button"
             onClick={handleRemove}
             disabled={isPending}
-            className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-600 hover:bg-gray-100 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-400 dark:hover:bg-gray-700"
+            className="min-h-[44px] rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
           >
             Remove
           </button>

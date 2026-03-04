@@ -86,26 +86,26 @@ export function MarkDetailTabs({
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-6 shadow-sm dark:border-gray-800 dark:bg-gray-900">
-      <div className="mb-4 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
+    <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+      <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-1">
         <button
           type="button"
           onClick={() => setTab('overview')}
-          className={`border-b-2 px-3 py-2 text-sm font-medium ${tab === 'overview' ? 'border-black text-black dark:border-white dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}
+          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'overview' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
         >
           Overview
         </button>
         <button
           type="button"
           onClick={() => setTab('challenges')}
-          className={`border-b-2 px-3 py-2 text-sm font-medium ${tab === 'challenges' ? 'border-black text-black dark:border-white dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}
+          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'challenges' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
         >
           Challenges ({challengeCount})
         </button>
         <button
           type="button"
           onClick={() => setTab('comments')}
-          className={`border-b-2 px-3 py-2 text-sm font-medium ${tab === 'comments' ? 'border-black text-black dark:border-white dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}
+          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'comments' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
         >
           Comments ({comments.length})
         </button>
@@ -113,7 +113,7 @@ export function MarkDetailTabs({
           <button
             type="button"
             onClick={() => setTab('versions')}
-            className={`border-b-2 px-3 py-2 text-sm font-medium ${tab === 'versions' ? 'border-black text-black dark:border-white dark:text-white' : 'border-transparent text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'}`}
+            className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'versions' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
           >
             History ({versionCount})
           </button>
@@ -121,7 +121,7 @@ export function MarkDetailTabs({
       </div>
 
       {tab === 'overview' && (
-        <div className="space-y-3 text-sm text-gray-600">
+        <div className="space-y-3 text-sm text-muted-foreground">
           <p>This mark has {challengeCount} challenge{challengeCount !== 1 ? 's' : ''} and {comments.length} comment{comments.length !== 1 ? 's' : ''}.</p>
           <p>Use the tabs above to view details.</p>
         </div>
@@ -143,16 +143,16 @@ export function MarkDetailTabs({
               const isResolved = outcome !== 'PENDING';
               const isChallenger = currentUserId === c.challenger_id;
               return (
-                <li key={c.id} className="border-l-2 border-gray-200 pl-3 text-sm">
+                <li key={c.id} className="rounded-xl border border-border bg-muted/50 p-3 text-sm">
                   <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-gray-800">@{challengerName}</span>
+                    <span className="font-medium text-foreground">@{challengerName}</span>
                     {c.is_evidence_backed ? (
-                      <span className="rounded bg-green-100 px-1.5 py-0.5 text-xs font-medium text-green-800">Evidence-backed</span>
+                      <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Evidence-backed</span>
                     ) : (
-                      <span className="rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-600">No evidence yet</span>
+                      <span className="rounded-full border border-border bg-card px-2 py-0.5 text-xs text-muted-foreground">No evidence yet</span>
                     )}
                     {isResolved && (
-                      <span className={`rounded px-1.5 py-0.5 text-xs font-medium ${
+                      <span className={`rounded-full px-2 py-0.5 text-xs font-medium ${
                         outcome === 'WON' ? 'bg-green-200 text-green-900' :
                         outcome === 'LOST' ? 'bg-red-200 text-red-900' :
                         outcome === 'CONCEDED' ? 'bg-amber-200 text-amber-900' :
@@ -163,12 +163,12 @@ export function MarkDetailTabs({
                     )}
                   </div>
                   {c.claimed_original_date && (
-                    <p className="mt-1 text-gray-600">Claimed original date: {c.claimed_original_date}</p>
+                    <p className="mt-1 text-muted-foreground">Claimed original date: {c.claimed_original_date}</p>
                   )}
-                  <p className="mt-1 text-gray-800">{c.evidence_text}</p>
+                  <p className="mt-1 text-foreground">{c.evidence_text}</p>
                   {c.evidence_url && (
                     <p className="mt-1">
-                      <a href={c.evidence_url} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline">
+                      <a href={c.evidence_url} target="_blank" rel="noopener noreferrer" className="text-sm text-foreground hover:underline">
                         Evidence link
                       </a>
                     </p>
@@ -176,13 +176,13 @@ export function MarkDetailTabs({
                   {isChallenger && outcome === 'PENDING' && (
                     <ChallengeEditEvidence challengeId={c.id} currentEvidenceUrl={c.evidence_url} currentClaimedDate={c.claimed_original_date} />
                   )}
-                  <p className="mt-1 text-gray-400">{new Date(c.created_at).toLocaleString()}</p>
+                  <p className="mt-1 text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</p>
                 </li>
               );
             })}
           </ul>
           {challenges.length === 0 && (
-            <p className="text-sm text-gray-500">No challenges yet.</p>
+            <p className="text-sm text-muted-foreground">No challenges yet.</p>
           )}
         </div>
       )}
@@ -196,13 +196,13 @@ export function MarkDetailTabs({
                 onChange={(e) => setCommentContent(e.target.value)}
                 rows={2}
                 placeholder="Add a comment..."
-                className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
               />
               {commentError && <p className="text-sm text-red-600">{commentError}</p>}
               <button
                 type="submit"
                 disabled={!commentContent.trim() || commentSubmitting}
-                className="rounded border border-black bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+                className="min-h-[40px] rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
               >
                 {commentSubmitting ? 'Posting…' : 'Post comment'}
               </button>
@@ -212,16 +212,16 @@ export function MarkDetailTabs({
             {comments.map((c) => {
               const authorName = getUsername(c.profiles);
               return (
-                <li key={c.id} className="border-l-2 border-gray-100 pl-2 text-sm">
-                  <span className="font-medium text-gray-700">@{authorName}</span>
-                  <span className="text-gray-400"> · {new Date(c.created_at).toLocaleString()}</span>
-                  <p className="mt-0.5 text-gray-800">{c.content}</p>
+                <li key={c.id} className="rounded-xl border border-border bg-muted/50 p-3 text-sm">
+                  <span className="font-medium text-foreground">@{authorName}</span>
+                  <span className="text-xs text-muted-foreground"> · {new Date(c.created_at).toLocaleString()}</span>
+                  <p className="mt-0.5 text-foreground">{c.content}</p>
                 </li>
               );
             })}
           </ul>
           {comments.length === 0 && (
-            <p className="text-sm text-gray-500">No comments yet.</p>
+            <p className="text-sm text-muted-foreground">No comments yet.</p>
           )}
         </div>
       )}

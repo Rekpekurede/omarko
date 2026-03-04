@@ -62,17 +62,17 @@ export function ProfileTabs({
   };
 
   return (
-    <div className="rounded-lg border border-gray-200 bg-white p-4 dark:border-gray-800 dark:bg-gray-900">
-      <div className="mb-4 flex flex-wrap gap-2 border-b border-gray-200 dark:border-gray-700">
+    <div className="rounded-2xl border border-border bg-card p-4">
+      <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-1">
         {(['marks', 'challenges', 'comments', 'supported'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`border-b-2 px-3 py-2 text-sm font-medium capitalize transition-colors ${
+            className={`rounded-xl px-3 py-2 text-sm font-medium capitalize transition ${
               currentTab === t
-                ? 'border-black text-black dark:border-white dark:text-white'
-                : 'border-transparent text-gray-500 hover:text-black dark:text-gray-400 dark:hover:text-white'
+                ? 'bg-foreground text-background'
+                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
             }`}
           >
             {t}
@@ -98,36 +98,40 @@ export function ProfileTabs({
         <ProfileSupportedList username={username} initialMarks={supportedMarks} initialNextCursor={supportedNextCursor} currentUserId={currentUserId} />
       )}
       {currentTab === 'challenges' && (
-        <ul className="space-y-3">
-          {challenges.map((c) => (
-            <li key={c.id} className="rounded border border-gray-200 p-3 text-sm dark:border-gray-700 dark:bg-gray-800/50">
-              <a href={`/mark/${c.mark_id}`} className="font-medium text-black hover:underline dark:text-white">
-                View mark
-              </a>
-              <p className="mt-1 text-gray-600 line-clamp-2 dark:text-gray-400">{c.evidence_text}</p>
-              <p className="mt-1 text-gray-500 dark:text-gray-400">{c.outcome ?? 'PENDING'} · {new Date(c.created_at).toLocaleString()}</p>
-            </li>
-          ))}
+        <>
+          <ul className="space-y-3">
+            {challenges.map((c) => (
+              <li key={c.id} className="rounded-xl border border-border bg-muted/60 p-3 text-sm">
+                <a href={`/mark/${c.mark_id}`} className="font-medium text-foreground hover:underline">
+                  View mark
+                </a>
+                <p className="mt-1 line-clamp-2 text-muted-foreground">{c.evidence_text}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{c.outcome ?? 'PENDING'} · {new Date(c.created_at).toLocaleString()}</p>
+              </li>
+            ))}
+          </ul>
           {challenges.length === 0 && (
-            <p className="py-8 text-center text-gray-500 dark:text-gray-400">No challenges yet.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">No challenges yet.</p>
           )}
-        </ul>
+        </>
       )}
       {currentTab === 'comments' && (
-        <ul className="space-y-3">
-          {comments.map((c) => (
-            <li key={c.id} className="rounded border border-gray-200 p-3 text-sm dark:border-gray-700 dark:bg-gray-800/50">
-              <a href={`/mark/${c.mark_id}`} className="font-medium text-black hover:underline dark:text-white">
-                View mark
-              </a>
-              <p className="mt-1 text-gray-600 dark:text-gray-400">{c.content}</p>
-              <p className="mt-1 text-gray-500 dark:text-gray-400">{new Date(c.created_at).toLocaleString()}</p>
-            </li>
-          ))}
+        <>
+          <ul className="space-y-3">
+            {comments.map((c) => (
+              <li key={c.id} className="rounded-xl border border-border bg-muted/60 p-3 text-sm">
+                <a href={`/mark/${c.mark_id}`} className="font-medium text-foreground hover:underline">
+                  View mark
+                </a>
+                <p className="mt-1 text-foreground">{c.content}</p>
+                <p className="mt-1 text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString()}</p>
+              </li>
+            ))}
+          </ul>
           {comments.length === 0 && (
-            <p className="py-8 text-center text-gray-500 dark:text-gray-400">No comments yet.</p>
+            <p className="py-8 text-center text-sm text-muted-foreground">No comments yet.</p>
           )}
-        </ul>
+        </>
       )}
     </div>
   );

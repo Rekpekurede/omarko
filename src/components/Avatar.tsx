@@ -28,7 +28,7 @@ export function Avatar({ username, avatarUrl, size = 'sm', className = '' }: Ava
 
   return (
     <span
-      className={`flex shrink-0 items-center justify-center rounded-full bg-gray-200 text-sm font-medium text-gray-700 ${sizeClasses[size]} ${className}`}
+      className={`flex shrink-0 items-center justify-center rounded-full bg-muted text-sm font-medium text-foreground ${sizeClasses[size]} ${className}`}
     >
       {fallback}
     </span>

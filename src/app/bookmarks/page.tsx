@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation';
 import { createClient } from '@/lib/supabase/server';
 import { BookmarksList } from '@/components/BookmarksList';
+import { PageContainer } from '@/components/PageContainer';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
 export const revalidate = 0;
@@ -38,12 +39,12 @@ export default async function BookmarksPage() {
     : null;
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold">Bookmarks</h1>
+    <PageContainer className="space-y-4">
+      <h1 className="text-2xl font-semibold">Bookmarks</h1>
       <BookmarksList
         initialMarks={marks as unknown as import('@/lib/types').Mark[]}
         initialNextCursor={nextCursor}
       />
-    </div>
+    </PageContainer>
   );
 }

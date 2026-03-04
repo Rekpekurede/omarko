@@ -47,13 +47,12 @@ export function ProfileHeader({
   }, [displayName, bio, location, website, avatarUrl, username]);
 
   return (
-    <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
-      <div className="absolute inset-0 bg-gradient-to-r from-emerald-500/5 via-transparent to-violet-500/5 dark:from-emerald-500/10 dark:to-violet-500/10" />
-      <div className="relative px-6 pb-6 pt-8 sm:pt-10">
-        <div className="flex flex-col items-start gap-6 sm:flex-row sm:items-end">
+    <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+      <div className="relative">
+        <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-end">
           <div className="flex flex-col items-center sm:items-start">
             {isOwner ? (
-              <div className="ring-4 ring-white dark:ring-gray-950 ring-offset-2 dark:ring-offset-gray-950 rounded-full">
+              <div className="rounded-full ring-2 ring-border ring-offset-2 ring-offset-background">
                 <AvatarUpload
                   username={username}
                   avatarUrl={localAvatarUrl}
@@ -63,26 +62,26 @@ export function ProfileHeader({
                 />
               </div>
             ) : (
-              <div className="ring-4 ring-white dark:ring-gray-950 ring-offset-2 dark:ring-offset-gray-950 rounded-full">
+              <div className="rounded-full ring-2 ring-border ring-offset-2 ring-offset-background">
                 <Avatar username={username} avatarUrl={localAvatarUrl} size="xl" />
               </div>
             )}
           </div>
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white sm:text-3xl">
+            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               @{username}
             </h1>
             {localDisplayName && (
-              <p className="mt-0.5 text-gray-600 dark:text-gray-400">{localDisplayName}</p>
+              <p className="mt-0.5 text-sm text-muted-foreground">{localDisplayName}</p>
             )}
             {localBio && !editing && (
-              <p className="mt-1 max-w-lg text-gray-600 dark:text-gray-400">{localBio}</p>
+              <p className="mt-2 max-w-lg text-base leading-relaxed text-foreground">{localBio}</p>
             )}
             {(localLocation || localWebsite) && !editing && (
-              <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500 sm:justify-start dark:text-gray-400">
+              <div className="mt-2 flex flex-wrap items-center justify-center gap-2 text-sm text-muted-foreground sm:justify-start">
                 {localLocation && <span>{localLocation}</span>}
                 {localWebsite && (
-                  <a href={localWebsite.startsWith('http') ? localWebsite : `https://${localWebsite}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                  <a href={localWebsite.startsWith('http') ? localWebsite : `https://${localWebsite}`} target="_blank" rel="noopener noreferrer" className="hover:text-foreground hover:underline">
                     {localWebsite.replace(/^https?:\/\//, '')}
                   </a>
                 )}
@@ -103,18 +102,18 @@ export function ProfileHeader({
             {!editing && (
               <>
                 <div className="mt-3 flex flex-wrap items-center justify-center gap-4 sm:justify-start">
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{followersCount}</span> followers
+                  <span className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{followersCount}</span> followers
                   </span>
-                  <span className="text-sm text-gray-500 dark:text-gray-400">
-                    <span className="font-medium text-gray-700 dark:text-gray-300">{followingCount}</span> following
+                  <span className="text-sm text-muted-foreground">
+                    <span className="font-medium text-foreground">{followingCount}</span> following
                   </span>
                 </div>
                 {isOwner && (
                   <button
                     type="button"
                     onClick={() => setEditing(true)}
-                    className="mt-4 rounded border border-gray-300 bg-white px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    className="mt-4 min-h-[40px] rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground transition hover:bg-accent/70"
                   >
                     Edit profile
                   </button>

@@ -9,7 +9,7 @@ export function CreateMarkButton() {
     <button
       type="button"
       onClick={openCreateModal}
-      className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white"
+      className="inline-flex h-9 items-center rounded-xl bg-foreground px-3 text-sm font-medium text-background transition hover:opacity-90"
     >
       Create
     </button>

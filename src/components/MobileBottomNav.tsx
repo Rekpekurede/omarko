@@ -24,10 +24,10 @@ function isActive(pathname: string, href: string) {
 }
 
 function NavItem({ href, label, active, onClick, icon }: NavItemProps) {
-  const classes = `flex min-w-[3.9rem] flex-col items-center justify-center gap-1 rounded-xl px-2 py-1.5 transition ${
+  const classes = `flex min-w-[3.9rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1.5 transition ${
     active
-      ? 'bg-gray-900 text-white shadow-sm dark:bg-white dark:text-black'
-      : 'text-gray-500 hover:text-gray-800 dark:text-gray-400 dark:hover:text-gray-200'
+      ? 'bg-foreground text-background shadow-sm'
+      : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
   }`;
 
   const content = (
@@ -61,22 +61,77 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 sm:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between rounded-2xl border border-gray-200/90 bg-white/90 px-2 py-2 shadow-[0_10px_30px_-18px_rgba(0,0,0,0.45)] backdrop-blur-md dark:border-gray-800/90 dark:bg-gray-950/90">
-          <NavItem href="/" label="Feed" active={isActive(pathname, '/')} icon="◉" />
-          <NavItem href="/search" label="Search" active={isActive(pathname, '/search')} icon="⌕" />
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-1 rounded-2xl border border-border/90 bg-card/95 px-2 py-2 shadow-[0_14px_28px_-20px_rgba(0,0,0,0.55)] backdrop-blur-md">
+          <NavItem
+            href="/"
+            label="Home"
+            active={isActive(pathname, '/')}
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M3 10.5 12 3l9 7.5" />
+                <path d="M5 9.5V21h14V9.5" />
+              </svg>
+            }
+          />
+          <NavItem
+            href="/search"
+            label="Search"
+            active={isActive(pathname, '/search')}
+            icon={
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="7" />
+                <path d="m20 20-3.8-3.8" />
+              </svg>
+            }
+          />
           {isSignedIn ? (
             <>
-              <NavItem label="Create" active={false} onClick={openCreateModal} icon="+" />
-              <NavItem href="/notifications" label="Alerts" active={isActive(pathname, '/notifications')} icon="◌" />
+              <NavItem
+                label="Create"
+                active={false}
+                onClick={openCreateModal}
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M12 5v14" />
+                    <path d="M5 12h14" />
+                  </svg>
+                }
+              />
+              <NavItem
+                href="/notifications"
+                label="Alerts"
+                active={isActive(pathname, '/notifications')}
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
+                    <path d="M10 20a2 2 0 0 0 4 0" />
+                  </svg>
+                }
+              />
               <NavItem
                 href={username ? `/profile/${encodeURIComponent(username)}` : '/'}
                 label="Profile"
                 active={isActive(pathname, '/profile')}
-                icon="◍"
+                icon={
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                    <circle cx="12" cy="8" r="4" />
+                    <path d="M4 21a8 8 0 0 1 16 0" />
+                  </svg>
+                }
               />
             </>
           ) : (
-            <NavItem href="/auth" label="Sign in" active={isActive(pathname, '/auth')} icon="→" />
+            <NavItem
+              href="/auth"
+              label="Sign in"
+              active={isActive(pathname, '/auth')}
+              icon={
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <path d="M5 12h12" />
+                  <path d="m13 6 6 6-6 6" />
+                </svg>
+              }
+            />
           )}
         </div>
       </nav>
