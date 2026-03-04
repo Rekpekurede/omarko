@@ -276,16 +276,6 @@ export function MarkCard({
               </div>
             </button>
           )}
-          <div className="flex flex-wrap items-center gap-2">
-            {mark.domain && (
-              <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-                {mark.domain}
-              </span>
-            )}
-            <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-              {claimTypeName}
-            </span>
-          </div>
         </div>
       </div>
       <div className="mt-3 border-t border-border pt-3">
