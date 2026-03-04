@@ -140,6 +140,10 @@ export function MarkCard({
   const commentsCount = mark.comments_count ?? 0;
   const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
   const claimTypeName = getClaimTypeName(mark);
+  const firstMedia = mark.media?.[0] ?? null;
+  const mediaKind = firstMedia?.kind ?? (mark.image_url ? 'image' : null);
+  const mediaUrl = firstMedia?.signed_url ?? mark.image_url ?? null;
+  const mediaPoster = firstMedia?.poster_signed_url ?? null;
 
   return (
     <article className="w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/20">
@@ -170,20 +174,45 @@ export function MarkCard({
           {mark.content && (
             <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
           )}
-          {mark.image_url && (
+          {mediaKind === 'image' && mediaUrl && (
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
               className="block w-full text-left"
-              aria-label="Open image preview"
+              aria-label="Open media preview"
             >
               <div className="relative h-[280px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
-                  src={mark.image_url}
+                  src={mediaUrl}
                   alt=""
                   className="h-full w-full object-contain"
                 />
+              </div>
+            </button>
+          )}
+          {mediaKind === 'audio' && mediaUrl && (
+            <div className="rounded-xl border border-border bg-muted/40 p-3">
+              <audio controls preload="metadata" className="w-full">
+                <source src={mediaUrl} />
+              </audio>
+            </div>
+          )}
+          {mediaKind === 'video' && mediaUrl && (
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="block w-full text-left"
+              aria-label="Open video preview"
+            >
+              <div className="relative h-[280px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
+                {mediaPoster ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img src={mediaPoster} alt="" className="h-full w-full object-cover" />
+                ) : (
+                  <div className="flex h-full w-full items-center justify-center text-4xl text-muted-foreground">▶</div>
+                )}
+                <div className="absolute inset-0 flex items-center justify-center text-4xl text-white/90">▶</div>
               </div>
             </button>
           )}
@@ -316,7 +345,7 @@ export function MarkCard({
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
-      {lightboxOpen && mark.image_url && (
+      {lightboxOpen && mediaUrl && (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fade-in"
           onMouseDown={(e) => {
@@ -332,8 +361,14 @@ export function MarkCard({
             >
               ×
             </button>
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mark.image_url} alt="" className="max-h-[85vh] w-full rounded-lg object-contain" />
+            {mediaKind === 'video' ? (
+              <video controls autoPlay preload="metadata" poster={mediaPoster ?? undefined} className="max-h-[85vh] w-full rounded-lg">
+                <source src={mediaUrl} />
+              </video>
+            ) : (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img src={mediaUrl} alt="" className="max-h-[85vh] w-full rounded-lg object-contain" />
+            )}
           </div>
         </div>
       )}

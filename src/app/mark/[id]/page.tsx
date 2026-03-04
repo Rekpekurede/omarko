@@ -10,6 +10,7 @@ import { MarkContentWithEdit } from '@/components/MarkContentWithEdit';
 import { BookmarkButton } from '@/components/BookmarkButton';
 import { RelativeTime } from '@/components/RelativeTime';
 import { PageContainer } from '@/components/PageContainer';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -90,6 +91,8 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const content = (mark as { content?: string }).content ?? '';
   const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
   const claimTypeName = mark.claim_type ?? 'Unclassified';
+  const mediaByMarkId = await getSignedMediaForMarkIds(supabase, [id]);
+  const media = mediaByMarkId[id] ?? [];
 
   const { data: versions } = await supabase
     .from('mark_versions')
@@ -142,6 +145,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             <MarkContentWithEdit
               content={content}
               imageUrl={imageUrl}
+              media={media}
               markId={mark.id}
               canEdit={isOwner && !hasChallenges && !isWithdrawn}
             />

@@ -98,10 +98,14 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
+    if (!file) return;
     setImageFile(file);
-    const url = URL.createObjectURL(file);
-    setImagePreview(url);
+    if (file.type.startsWith('image/')) {
+      const url = URL.createObjectURL(file);
+      setImagePreview(url);
+    } else {
+      setImagePreview(null);
+    }
   };
 
   const clearImage = () => {
@@ -122,7 +126,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     const content = (formData.get('content') as string)?.trim() ?? '';
 
     if (!content && !imageFile) {
-      setError('Add text or an image');
+      setError('Add text or an attachment');
       setIsSubmitting(false);
       return;
     }
@@ -132,45 +136,12 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       return;
     }
 
-    let imageUrl: string | null = null;
-    let imagePath: string | null = null;
-    if (imageFile) {
-      try {
-        const uploadForm = new FormData();
-        uploadForm.append('file', imageFile);
-        const uploadRes = await fetch('/api/marks/upload-image', {
-          method: 'POST',
-          body: uploadForm,
-        });
-        const uploadData = await uploadRes.json().catch(() => ({}));
-        if (!uploadRes.ok) {
-          if (!content) {
-            setError(uploadData.error ?? 'Image upload failed');
-            setIsSubmitting(false);
-            return;
-          }
-          setUploadNotice(uploadData.error ?? 'Image upload failed. Posting text-only.');
-        } else {
-          imageUrl = uploadData.image_url ?? null;
-          imagePath = uploadData.image_path ?? null;
-        }
-      } catch {
-        if (!content) {
-          setError('Image upload failed');
-          setIsSubmitting(false);
-          return;
-        }
-        setUploadNotice('Image upload failed. Posting text-only.');
-      }
-    }
-
     const body = {
       content: content || '',
-      image_url: imageUrl,
-      image_path: imagePath,
       domain,
       claim_type_id: selectedClaimType.id,
       claim_type: selectedClaimType.name,
+      has_attachment: !!imageFile,
     };
 
     const res = await fetch('/api/marks', {
@@ -184,6 +155,19 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       setError(data.error ?? 'Failed to create mark');
       setIsSubmitting(false);
       return;
+    }
+    if (imageFile && data.id) {
+      const uploadForm = new FormData();
+      uploadForm.append('file', imageFile);
+      uploadForm.append('mark_id', data.id);
+      const uploadRes = await fetch('/api/marks/upload-image', {
+        method: 'POST',
+        body: uploadForm,
+      });
+      if (!uploadRes.ok) {
+        const uploadData = await uploadRes.json().catch(() => ({}));
+        setUploadNotice(uploadData.error ?? 'Attachment upload failed after posting.');
+      }
     }
     if (saveAsDefault && selectedClaimType) {
       await fetch('/api/profile/defaults', {
@@ -216,13 +200,13 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
         />
       </div>
       <div>
-        <label className="block text-sm font-medium text-black dark:text-white">Image (optional)</label>
+        <label className="block text-sm font-medium text-black dark:text-white">Attachment (optional)</label>
         <input
           ref={inputRef}
           type="file"
-          accept="image/*"
+          accept="image/*,audio/*,video/*"
           onChange={handleImageChange}
-          aria-label="Upload image"
+          aria-label="Upload attachment"
           className="mt-1 hidden"
         />
         <div className="mt-2 flex items-center gap-3">
@@ -231,7 +215,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
             onClick={() => inputRef.current?.click()}
             className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
           >
-            Add image
+            Add attachment
           </button>
           {imagePreview && (
             <div className="relative">
@@ -246,6 +230,12 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
               >
                 ×
               </button>
+            </div>
+          )}
+          {imageFile && !imagePreview && (
+            <div className="rounded border border-gray-200 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700">
+              <p className="font-medium text-foreground">{imageFile.name}</p>
+              <p>{imageFile.type.startsWith('audio/') ? 'Audio' : imageFile.type.startsWith('video/') ? 'Video' : 'Attachment'}</p>
             </div>
           )}
         </div>

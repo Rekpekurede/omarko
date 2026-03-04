@@ -6,12 +6,20 @@ import { EditMarkForm } from './EditMarkForm';
 interface MarkContentWithEditProps {
   content: string;
   imageUrl?: string | null;
+  media?: Array<{
+    id: string;
+    kind: 'image' | 'audio' | 'video';
+    signed_url?: string | null;
+    poster_signed_url?: string | null;
+  }>;
   markId: string;
   canEdit: boolean;
 }
 
-export function MarkContentWithEdit({ content, imageUrl, markId, canEdit }: MarkContentWithEditProps) {
+export function MarkContentWithEdit({ content, imageUrl, media = [], markId, canEdit }: MarkContentWithEditProps) {
   const [editing, setEditing] = useState(false);
+  const firstMedia = media[0] ?? null;
+  const effectiveImageUrl = firstMedia?.kind === 'image' ? firstMedia.signed_url : imageUrl;
 
   if (editing && canEdit) {
     return (
@@ -27,10 +35,24 @@ export function MarkContentWithEdit({ content, imageUrl, markId, canEdit }: Mark
 
   return (
     <div>
-      {imageUrl && (
+      {effectiveImageUrl && (
         <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt="" className="max-h-[80vh] w-full object-contain" />
+          <img src={effectiveImageUrl} alt="" className="max-h-[80vh] w-full object-contain" />
+        </div>
+      )}
+      {firstMedia?.kind === 'audio' && firstMedia.signed_url && (
+        <div className="mt-3 rounded-xl border border-border bg-muted/40 p-3">
+          <audio controls className="w-full" preload="metadata">
+            <source src={firstMedia.signed_url} />
+          </audio>
+        </div>
+      )}
+      {firstMedia?.kind === 'video' && firstMedia.signed_url && (
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted/40 p-2">
+          <video controls preload="metadata" poster={firstMedia.poster_signed_url ?? undefined} className="max-h-[80vh] w-full rounded-lg">
+            <source src={firstMedia.signed_url} />
+          </video>
         </div>
       )}
       {content && <p className="mt-3 text-base leading-relaxed text-foreground">{content}</p>}

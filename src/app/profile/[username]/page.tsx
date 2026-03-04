@@ -8,6 +8,7 @@ import { PostingDefaultsSection } from '@/components/profile/PostingDefaultsSect
 import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 const PROFILE_MARKS_LIMIT = 20;
 const SUPPORTED_LIMIT = 20;
@@ -192,7 +193,12 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             }
           }
         }
-        marksWithProfile = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
+        const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
+        marksWithProfile = list.map((m) => ({
+          ...m,
+          comments_count: commentsCountMap[m.id] ?? 0,
+          media: mediaByMarkId[m.id] ?? [],
+        }));
         marksNextCursor = marksWithProfile.length === PROFILE_MARKS_LIMIT && marksWithProfile[marksWithProfile.length - 1]
           ? marksWithProfile[marksWithProfile.length - 1].id
           : null;
@@ -253,11 +259,17 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             }
           }
         }
+        const mediaByMarkId = await getSignedMediaForMarkIds(supabase, supportedMarkIds);
         supportedMarks = sorted.map((m) => {
           const p = m.profiles as { username?: string; avatar_url?: string | null } | { username?: string; avatar_url?: string | null }[] | null;
           const u = (p && (Array.isArray(p) ? p[0]?.username : p.username)) ?? profile!.username;
           const av = (p && (Array.isArray(p) ? p[0]?.avatar_url : p.avatar_url)) ?? profile!.avatar_url;
-          return { ...m, profiles: { username: u, avatar_url: av }, comments_count: commentsCountMap[m.id] ?? 0 };
+          return {
+            ...m,
+            profiles: { username: u, avatar_url: av },
+            comments_count: commentsCountMap[m.id] ?? 0,
+            media: mediaByMarkId[m.id] ?? [],
+          };
         });
       }
       supportedNextCursor = supportedMarkIds.length === SUPPORTED_LIMIT && supportedMarkIds[supportedMarkIds.length - 1]
@@ -310,10 +322,12 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             }
           }
         }
+        const mediaByMarkId = await getSignedMediaForMarkIds(supabase, withdrawnIds);
         withdrawnMarks = (withdrawn ?? []).map((m) => ({
           ...m,
           profiles: { username: profile!.username, avatar_url: profile!.avatar_url },
           comments_count: commentsCountMap[m.id] ?? 0,
+          media: mediaByMarkId[m.id] ?? [],
         }));
       } catch (err) {
         console.error('[ProfilePage] withdrawn marks error', err);

@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -76,7 +77,12 @@ export async function GET(request: Request) {
       console.log('[feed.GET] comment counts sample', markIds.slice(0, 3).map((id) => ({ markId: id, comments_count: commentsCountMap[id] ?? 0 })));
     }
   }
-  const listWithCounts = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
+  const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
+  const listWithCounts = list.map((m) => ({
+    ...m,
+    comments_count: commentsCountMap[m.id] ?? 0,
+    media: mediaByMarkId[m.id] ?? [],
+  }));
 
   const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];

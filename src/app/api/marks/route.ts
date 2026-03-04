@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; category?: string; domain?: string; claim_type?: string; claim_type_id?: string };
+  let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; has_attachment?: boolean; category?: string; domain?: string; claim_type?: string; claim_type_id?: string };
   try {
     body = await request.json();
   } catch {
@@ -19,13 +19,14 @@ export async function POST(request: Request) {
   const content = (body.content ?? '').trim();
   const imageUrl = body.image_url?.trim() || body.media_url?.trim() || null;
   const imagePath = body.image_path?.trim() || null;
+  const hasAttachment = !!body.has_attachment;
   const domain = body.domain?.trim();
   const claimTypeId = body.claim_type_id?.trim();
   const claimTypeName = body.claim_type?.trim();
 
-  if (!content && !imageUrl) {
+  if (!content && !imageUrl && !hasAttachment) {
     return NextResponse.json(
-      { error: 'At least one of content or image is required' },
+      { error: 'At least one of content or attachment is required' },
       { status: 400 }
     );
   }

@@ -1,6 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export async function GET(
   request: Request,
@@ -74,9 +75,14 @@ export async function GET(
     profiles: { username: (m.profiles as { username?: string })?.username ?? profile.username },
     comments_count: commentsCountMap[m.id] ?? 0,
   }));
-  const nextCursor = withProfile.length === limit && withProfile[withProfile.length - 1]
-    ? encodeURIComponent(withProfile[withProfile.length - 1].id)
+  const mediaByMarkId = await getSignedMediaForMarkIds(supabase, sortedIds);
+  const withProfileAndMedia = withProfile.map((m) => ({
+    ...m,
+    media: mediaByMarkId[m.id] ?? [],
+  }));
+  const nextCursor = withProfileAndMedia.length === limit && withProfileAndMedia[withProfileAndMedia.length - 1]
+    ? encodeURIComponent(withProfileAndMedia[withProfileAndMedia.length - 1].id)
     : null;
 
-  return NextResponse.json({ marks: withProfile, nextCursor });
+  return NextResponse.json({ marks: withProfileAndMedia, nextCursor });
 }

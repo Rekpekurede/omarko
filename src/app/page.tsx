@@ -5,6 +5,7 @@ import { FeedIntroBanner } from '@/components/FeedIntroBanner';
 import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export const revalidate = 0;
 
@@ -70,7 +71,12 @@ export default async function FeedPage({ searchParams }: PageProps) {
       console.log('[FeedPage] comment counts sample', markIds.slice(0, 3).map((id) => ({ markId: id, comments_count: commentsCountMap[id] ?? 0 })));
     }
   }
-  const listWithCounts = list.map((m) => ({ ...m, comments_count: commentsCountMap[m.id] ?? 0 }));
+  const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
+  const listWithCounts = list.map((m) => ({
+    ...m,
+    comments_count: commentsCountMap[m.id] ?? 0,
+    media: mediaByMarkId[m.id] ?? [],
+  }));
 
   const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];

@@ -3,6 +3,7 @@ import { createClient } from '@/lib/supabase/server';
 import { BookmarksList } from '@/components/BookmarksList';
 import { PageContainer } from '@/components/PageContainer';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export const revalidate = 0;
 
@@ -45,7 +46,12 @@ export default async function BookmarksPage() {
         }
       }
     }
-    marks = sorted.map((row) => ({ ...row, comments_count: commentsCountMap[row.id] ?? 0 }));
+    const mediaByMarkId = await getSignedMediaForMarkIds(supabase, sortedIds);
+    marks = sorted.map((row) => ({
+      ...row,
+      comments_count: commentsCountMap[row.id] ?? 0,
+      media: mediaByMarkId[row.id] ?? [],
+    }));
   }
 
   const nextCursor = markIds.length === LIMIT && markIds[markIds.length - 1]

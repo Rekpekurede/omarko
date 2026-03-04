@@ -17,8 +17,9 @@ export function CreateMarkModal() {
   const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
   const [imageDescription, setImageDescription] = useState('');
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
+  const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState<string | null>(null);
+  const [attachmentMeta, setAttachmentMeta] = useState<{ kind: 'image' | 'audio' | 'video'; durationMs?: number; width?: number; height?: number } | null>(null);
   const [domainTouched, setDomainTouched] = useState(false);
   const [claimTypeTouched, setClaimTypeTouched] = useState(false);
   const [saveAsDefault, setSaveAsDefault] = useState(false);
@@ -75,9 +76,10 @@ export function CreateMarkModal() {
     setDomainTouched(false);
     setClaimTypeTouched(false);
     setSaveAsDefault(false);
-    setImageFile(null);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview(null);
+    setAttachmentFile(null);
+    if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+    setAttachmentPreviewUrl(null);
+    setAttachmentMeta(null);
     setError(null);
     setUploadNotice(null);
     setAiSuggestion(null);
@@ -91,18 +93,51 @@ export function CreateMarkModal() {
     closeCreateModal();
   };
 
-  const onImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const onAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (!file || !file.type.startsWith('image/')) return;
-    setImageFile(file);
-    if (imagePreview) URL.revokeObjectURL(imagePreview);
-    setImagePreview(URL.createObjectURL(file));
+    if (!file) return;
+    const kind = file.type.startsWith('image/')
+      ? 'image'
+      : file.type.startsWith('audio/')
+        ? 'audio'
+        : file.type.startsWith('video/')
+          ? 'video'
+          : null;
+    if (!kind) {
+      setError('Only image/audio/video attachments are allowed.');
+      return;
+    }
+    setAttachmentFile(file);
+    if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+    const objectUrl = URL.createObjectURL(file);
+    setAttachmentPreviewUrl(objectUrl);
+    setAttachmentMeta({ kind });
+
+    if (kind === 'image') {
+      const img = new Image();
+      img.onload = () => setAttachmentMeta({ kind, width: img.naturalWidth, height: img.naturalHeight });
+      img.src = objectUrl;
+    }
+    if (kind === 'audio' || kind === 'video') {
+      const media = document.createElement(kind);
+      media.preload = 'metadata';
+      media.onloadedmetadata = () => {
+        const durationMs = Number.isFinite(media.duration) ? Math.round(media.duration * 1000) : undefined;
+        if (kind === 'video') {
+          const videoEl = media as HTMLVideoElement;
+          setAttachmentMeta({ kind, durationMs, width: videoEl.videoWidth, height: videoEl.videoHeight });
+        } else {
+          setAttachmentMeta({ kind, durationMs });
+        }
+      };
+      media.src = objectUrl;
+    }
   };
 
   useEffect(() => {
     if (!isOpen) return;
     const text = content.trim();
-    const imageCaption = imageFile?.name ?? '';
+    const imageCaption = attachmentFile?.name ?? '';
     const description = imageDescription.trim();
     if (!text && !imageCaption && !description) {
       setAiSuggestion(null);
@@ -127,7 +162,7 @@ export function CreateMarkModal() {
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [isOpen, content, imageDescription, imageFile]);
+  }, [isOpen, content, imageDescription, attachmentFile]);
 
   const applyAiSuggestion = async () => {
     if (!aiSuggestion) return;
@@ -154,8 +189,8 @@ export function CreateMarkModal() {
     setError(null);
     setUploadNotice(null);
     const trimmed = content.trim();
-    if (!trimmed && !imageFile) {
-      setError('Add text or an image.');
+    if (!trimmed && !attachmentFile) {
+      setError('Add text or an attachment.');
       return;
     }
     if (!selectedClaimType) {
@@ -164,31 +199,6 @@ export function CreateMarkModal() {
     }
 
     setSubmitting(true);
-    let imageUrl: string | null = null;
-    let imagePath: string | null = null;
-
-    if (imageFile) {
-      const uploadForm = new FormData();
-      uploadForm.append('file', imageFile);
-      const uploadRes = await fetch('/api/marks/upload-image', {
-        method: 'POST',
-        body: uploadForm,
-      });
-      const uploadData = await uploadRes.json().catch(() => ({}));
-      if (!uploadRes.ok) {
-        if (!trimmed) {
-          setError(uploadData.error ?? 'Image upload failed');
-          setSubmitting(false);
-          return;
-        }
-        // Allow text-only fallback when an image was optional.
-        setUploadNotice(uploadData.error ?? 'Image upload failed. Posting text-only.');
-      } else {
-        imageUrl = uploadData.image_url ?? null;
-        imagePath = uploadData.image_path ?? null;
-      }
-    }
-
     const res = await fetch('/api/marks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -198,8 +208,7 @@ export function CreateMarkModal() {
         claim_type_id: selectedClaimType?.id,
         claim_type: selectedClaimType?.name,
         category: 'General',
-        media_url: imageUrl,
-        image_path: imagePath,
+        has_attachment: !!attachmentFile,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -207,6 +216,23 @@ export function CreateMarkModal() {
       setError(data.error ?? 'Failed to post');
       setSubmitting(false);
       return;
+    }
+    const markId = data.id as string | undefined;
+    if (attachmentFile && markId) {
+      const uploadForm = new FormData();
+      uploadForm.append('file', attachmentFile);
+      uploadForm.append('mark_id', markId);
+      if (attachmentMeta?.durationMs) uploadForm.append('duration_ms', String(attachmentMeta.durationMs));
+      if (attachmentMeta?.width) uploadForm.append('width', String(attachmentMeta.width));
+      if (attachmentMeta?.height) uploadForm.append('height', String(attachmentMeta.height));
+      const uploadRes = await fetch('/api/marks/upload-image', {
+        method: 'POST',
+        body: uploadForm,
+      });
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) {
+        setUploadNotice(uploadData.error ?? 'Attachment upload failed after posting.');
+      }
     }
 
     if (saveAsDefault && selectedClaimType) {
@@ -347,13 +373,13 @@ export function CreateMarkModal() {
               </div>
 
               <div>
-                <label className="block text-sm font-medium text-black dark:text-white">Image (optional)</label>
+                <label className="block text-sm font-medium text-black dark:text-white">Attachment (optional)</label>
                 <input
                   ref={inputRef}
                   type="file"
-                  accept="image/*"
-                  onChange={onImageChange}
-                  aria-label="Upload image"
+                  accept="image/*,audio/*,video/*"
+                  onChange={onAttachmentChange}
+                  aria-label="Upload attachment"
                   className="mt-1 hidden"
                 />
                 <div className="mt-2 flex items-center gap-3">
@@ -362,20 +388,35 @@ export function CreateMarkModal() {
                     onClick={() => inputRef.current?.click()}
                     className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
                   >
-                    Add image
+                    Add attachment
                   </button>
-                  {imagePreview && (
+                  {attachmentPreviewUrl && attachmentMeta && (
                     <div className="relative">
-                      <div className="h-20 w-20 overflow-hidden rounded border border-gray-200 dark:border-gray-700">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img src={imagePreview} alt="Preview" className="h-full w-full object-cover" />
-                      </div>
+                      {attachmentMeta.kind === 'image' && (
+                        <div className="h-20 w-20 overflow-hidden rounded border border-gray-200 dark:border-gray-700">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img src={attachmentPreviewUrl} alt="Preview" className="h-full w-full object-cover" />
+                        </div>
+                      )}
+                      {attachmentMeta.kind === 'audio' && (
+                        <div className="rounded border border-gray-200 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700">
+                          <p className="font-medium text-foreground">{attachmentFile?.name}</p>
+                          {attachmentMeta.durationMs ? <p>{Math.round(attachmentMeta.durationMs / 1000)}s</p> : <p>Audio</p>}
+                        </div>
+                      )}
+                      {attachmentMeta.kind === 'video' && (
+                        <div className="rounded border border-gray-200 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700">
+                          <p className="font-medium text-foreground">{attachmentFile?.name}</p>
+                          <p>{attachmentMeta.durationMs ? `${Math.round(attachmentMeta.durationMs / 1000)}s` : 'Video'} · Preview</p>
+                        </div>
+                      )}
                       <button
                         type="button"
                         onClick={() => {
-                          setImageFile(null);
-                          if (imagePreview) URL.revokeObjectURL(imagePreview);
-                          setImagePreview(null);
+                          setAttachmentFile(null);
+                          if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+                          setAttachmentPreviewUrl(null);
+                          setAttachmentMeta(null);
                           if (inputRef.current) inputRef.current.value = '';
                         }}
                         className="absolute -right-1 -top-1 rounded-full bg-gray-800 px-1.5 py-0.5 text-xs text-white hover:bg-gray-700"
@@ -401,7 +442,7 @@ export function CreateMarkModal() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !imageFile)}
+                  disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
                   className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
                 >
                   {submitting ? 'Posting…' : 'Post'}

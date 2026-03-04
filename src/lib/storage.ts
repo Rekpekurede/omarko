@@ -13,6 +13,11 @@ export function markImagePath(userId: string, filename: string): string {
   return `${userId}/${filename}`;
 }
 
+/** Mark media path: {user_id}/{mark_id}/{uuid}.{ext} */
+export function markMediaPath(userId: string, markId: string, filename: string): string {
+  return `${userId}/${markId}/${filename}`;
+}
+
 /** Public URL for storage object */
 export function storagePublicUrl(bucket: string, path: string): string {
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';

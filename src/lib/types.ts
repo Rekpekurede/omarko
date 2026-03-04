@@ -115,6 +115,19 @@ export interface Mark {
   updated_at: string;
   profiles?: MarkProfile | null;
   comments_count?: number;
+  media?: Array<{
+    id: string;
+    kind: 'image' | 'audio' | 'video';
+    mime_type: string;
+    path: string;
+    size_bytes: number;
+    duration_ms?: number | null;
+    width?: number | null;
+    height?: number | null;
+    poster_path?: string | null;
+    signed_url?: string | null;
+    poster_signed_url?: string | null;
+  }>;
 }
 
 export type ChallengeOutcome = 'PENDING' | 'WON' | 'LOST' | 'CONCEDED' | 'WITHDRAWN';
