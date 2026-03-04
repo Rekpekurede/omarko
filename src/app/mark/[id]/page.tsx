@@ -64,7 +64,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   let currentVote: 'SUPPORT' | 'OPPOSE' | null = null;
   let canChallenge = !!user && user.id !== mark.user_id;
-  const canVote = !!user && user.id !== mark.user_id;
+  const canVote = !!user;
   if (user) {
     const { data: vote } = await supabase
       .from('votes')
@@ -157,6 +157,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             <VoteButtons
               markId={mark.id}
               canVote={canVote}
+              isOwnMark={isOwner}
               currentVote={currentVote}
               initialSupportVotes={mark.support_votes ?? 0}
               initialOpposeVotes={mark.oppose_votes ?? 0}

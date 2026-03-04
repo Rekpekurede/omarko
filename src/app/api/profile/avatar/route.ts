@@ -25,11 +25,29 @@ export async function POST(request: Request) {
   }
 
   const publicUrl = avatarPublicUrl(path);
-  const { error: updateError } = await supabase
+  const { data: existingProfile } = await supabase
     .from('profiles')
-    .update({ avatar_url: publicUrl, updated_at: new Date().toISOString() })
-    .eq('id', user.id);
+    .select('username')
+    .eq('id', user.id)
+    .maybeSingle();
 
+  const username =
+    existingProfile?.username ??
+    ((user.user_metadata as { username?: string } | undefined)?.username ?? `user_${user.id.slice(0, 8)}`);
+
+  const { data: upserted, error: updateError } = await supabase
+    .from('profiles')
+    .upsert({ id: user.id, username, avatar_url: publicUrl, updated_at: new Date().toISOString() }, { onConflict: 'id' })
+    .select('id, username, avatar_url')
+    .single();
+
+  console.log('[ProfileAvatar] upsert response', {
+    userId: user.id,
+    avatarPath: path,
+    avatarUrl: publicUrl,
+    data: upserted,
+    error: updateError,
+  });
   if (updateError) {
     return NextResponse.json({ error: updateError.message }, { status: 500 });
   }

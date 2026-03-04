@@ -15,6 +15,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
   const [acceptsDisputes, setAcceptsDisputes] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -36,6 +37,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     e.preventDefault();
     if (!acceptsDisputes) return;
     setError(null);
+    setUploadNotice(null);
     setIsSubmitting(true);
 
     const form = e.currentTarget;
@@ -51,6 +53,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     }
 
     let imageUrl: string | null = null;
+    let imagePath: string | null = null;
     if (imageFile) {
       try {
         const uploadForm = new FormData();
@@ -61,21 +64,30 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
         });
         const uploadData = await uploadRes.json().catch(() => ({}));
         if (!uploadRes.ok) {
-          setError(uploadData.error ?? 'Image upload failed');
+          if (!content) {
+            setError(uploadData.error ?? 'Image upload failed');
+            setIsSubmitting(false);
+            return;
+          }
+          setUploadNotice(uploadData.error ?? 'Image upload failed. Posting text-only.');
+        } else {
+          imageUrl = uploadData.image_url ?? null;
+          imagePath = uploadData.image_path ?? null;
+        }
+      } catch {
+        if (!content) {
+          setError('Image upload failed');
           setIsSubmitting(false);
           return;
         }
-        imageUrl = uploadData.image_url ?? null;
-      } catch {
-        setError('Image upload failed');
-        setIsSubmitting(false);
-        return;
+        setUploadNotice('Image upload failed. Posting text-only.');
       }
     }
 
     const body = {
       content: content || '',
       image_url: imageUrl,
+      image_path: imagePath,
       domain,
       claim_type: claimType,
     };
@@ -117,6 +129,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
           type="file"
           accept="image/*"
           onChange={handleImageChange}
+          aria-label="Upload image"
           className="mt-1 hidden"
         />
         <div className="mt-2 flex items-center gap-3">
@@ -190,6 +203,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
         Lose a dispute → your Mark gets supplanted.
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
       <button
         type="submit"
         disabled={isSubmitting || !acceptsDisputes}

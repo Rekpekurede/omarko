@@ -16,6 +16,8 @@ interface PageProps {
 }
 
 export const revalidate = 0;
+export const dynamic = 'force-dynamic';
+export const fetchCache = 'force-no-store';
 
 function ProfileNotFound({ username }: { username: string }) {
   return (
@@ -54,6 +56,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     // Profile lookup: RPC first (bypasses RLS), fallback to direct query with ilike
     let profileRows: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
     let profileError: unknown = null;
+    let profileSource: 'rpc' | 'direct' | 'none' = 'none';
 
     try {
       const rpcRes = await supabase.rpc('get_profile_by_username', { p_username: uname });
@@ -69,6 +72,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     }
 
     profile = profileRows?.[0] ?? null;
+    if (profile) profileSource = 'rpc';
 
     // Fallback: direct profiles query (case-insensitive via ilike)
     if (!profile) {
@@ -79,6 +83,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           .ilike('username', uname)
           .limit(1);
         profile = directRows?.[0] ?? null;
+        if (profile) profileSource = 'direct';
       } catch (directErr) {
         console.error('[ProfilePage] profile direct fallback error', directErr);
       }
@@ -87,6 +92,12 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     if (!profile) {
       return <ProfileNotFound username={uname} />;
     }
+    console.log('[ProfilePage] resolved profile', {
+      username: profile.username,
+      source: profileSource,
+      hasBio: !!profile.bio,
+      hasAvatarUrl: !!profile.avatar_url,
+    });
 
     const isOwner = !!user && user.id === profile.id;
     const currentTab = (tab === 'challenges' || tab === 'comments' || tab === 'supported') ? tab : 'marks';

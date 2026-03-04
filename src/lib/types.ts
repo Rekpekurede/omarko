@@ -53,6 +53,7 @@ export interface Mark {
   title?: string | null;
   content: string;
   image_url?: string | null;
+  image_path?: string | null;
   category: string;
   domain: string;
   claim_type: string;

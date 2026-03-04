@@ -9,9 +9,10 @@ interface AvatarUploadProps {
   avatarUrl?: string | null;
   compact?: boolean;
   size?: 'lg' | 'xl';
+  onUploaded?: (avatarUrl: string) => void;
 }
 
-export function AvatarUpload({ username, avatarUrl, compact = false, size = 'lg' }: AvatarUploadProps) {
+export function AvatarUpload({ username, avatarUrl, compact = false, size = 'lg', onUploaded }: AvatarUploadProps) {
   const router = useRouter();
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +37,7 @@ export function AvatarUpload({ username, avatarUrl, compact = false, size = 'lg'
     setUploading(false);
     if (res.ok && data.avatar_url) {
       setCurrentUrl(data.avatar_url);
+      onUploaded?.(data.avatar_url);
       router.refresh();
     } else {
       setError(data.error ?? 'Upload failed');
@@ -51,6 +53,7 @@ export function AvatarUpload({ username, avatarUrl, compact = false, size = 'lg'
           type="file"
           accept="image/png,image/jpeg,image/webp"
           onChange={handleUpload}
+          aria-label="Upload avatar"
           className="hidden"
         />
         <button

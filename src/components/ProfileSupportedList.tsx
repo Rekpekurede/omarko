@@ -40,7 +40,8 @@ export function ProfileSupportedList({
           <li key={mark.id}>
             <MarkCard
               mark={mark}
-              canVote={!!currentUserId && currentUserId !== mark.user_id}
+              currentUserId={currentUserId}
+              canVote={!!currentUserId}
               showDisputeButton={true}
             />
           </li>

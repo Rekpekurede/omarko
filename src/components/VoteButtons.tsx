@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 interface VoteButtonsProps {
   markId: string;
   canVote: boolean;
+  isOwnMark?: boolean;
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
   initialSupportVotes?: number;
   initialOpposeVotes?: number;
@@ -40,6 +41,7 @@ function applyVoteTransition(
 export function VoteButtons({
   markId,
   canVote,
+  isOwnMark = false,
   currentVote = null,
   initialSupportVotes = 0,
   initialOpposeVotes = 0,
@@ -51,6 +53,7 @@ export function VoteButtons({
   const [opposeVotes, setOpposeVotes] = useState(initialOpposeVotes);
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
+  const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
     setVote(currentVote);
@@ -60,6 +63,11 @@ export function VoteButtons({
 
   const handleVote = async (voteType: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || isPending) return;
+    if (isOwnMark && voteType === 'OPPOSE') {
+      setToast('You cannot oppose your own mark.');
+      setTimeout(() => setToast(null), 2200);
+      return;
+    }
     setError(null);
     setIsPending(true);
 
@@ -86,7 +94,13 @@ export function VoteButtons({
       setOpposeVotes(prev.opposeVotes);
       if (res.status === 401) setError('You must sign in to vote.');
       else if (res.status === 409) setError('You have already voted on this mark.');
-      else if (res.status === 400) setError(data.error ?? 'Invalid request.');
+      else if (res.status === 400) {
+        setError(data.error ?? 'Invalid request.');
+        if (typeof data.error === 'string' && data.error.toLowerCase().includes('cannot oppose your own')) {
+          setToast(data.error);
+          setTimeout(() => setToast(null), 2200);
+        }
+      }
       else setError(data.error ?? 'Failed to vote');
       setIsPending(false);
       return;
@@ -118,6 +132,7 @@ export function VoteButtons({
       <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-sm text-gray-500 dark:text-gray-400">
         <span>Support: {supportVotes}</span>
         <span>Oppose: {opposeVotes}</span>
+        <span>{vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}</span>
       </div>
       <div className="flex items-center gap-2">
         <button
@@ -135,7 +150,7 @@ export function VoteButtons({
         <button
           type="button"
           onClick={() => handleVote('OPPOSE')}
-          disabled={isPending}
+          disabled={isPending || isOwnMark}
           className={`min-h-[44px] touch-manipulation rounded border px-3 py-1.5 text-sm font-medium disabled:opacity-50 ${
             vote === 'OPPOSE'
               ? 'border-black bg-black text-white dark:border-white dark:bg-white dark:text-black'
@@ -156,6 +171,7 @@ export function VoteButtons({
         )}
       </div>
       {error && <p className="text-sm text-red-600">{error}</p>}
+      {toast && <p className="text-sm text-amber-600 dark:text-amber-400">{toast}</p>}
     </div>
   );
 }

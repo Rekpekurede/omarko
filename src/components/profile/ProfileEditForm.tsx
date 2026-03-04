@@ -13,9 +13,10 @@ interface ProfileEditFormProps {
     website: string | null;
   };
   onCancel: () => void;
+  onSaved?: (next: { display_name: string | null; bio: string | null; location: string | null; website: string | null }) => void;
 }
 
-export function ProfileEditForm({ initial, onCancel }: ProfileEditFormProps) {
+export function ProfileEditForm({ initial, onCancel, onSaved }: ProfileEditFormProps) {
   const router = useRouter();
   const [displayName, setDisplayName] = useState(initial.display_name ?? '');
   const [bio, setBio] = useState(initial.bio ?? '');
@@ -48,6 +49,12 @@ export function ProfileEditForm({ initial, onCancel }: ProfileEditFormProps) {
       setError(data.error ?? 'Failed to save');
       return;
     }
+    onSaved?.({
+      display_name: displayName.trim() || null,
+      bio: bio.trim() || null,
+      location: location.trim() || null,
+      website: website.trim() || null,
+    });
     setSuccess(true);
     router.refresh();
     setTimeout(() => {

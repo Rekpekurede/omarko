@@ -67,8 +67,9 @@ export function FeedList({
               mark={mark}
               bookmarked={allBookmarkIds.includes(mark.id)}
               showBookmark={showBookmark}
+              currentUserId={currentUserId}
               currentVote={voteMapState[mark.id] ?? null}
-              canVote={!!currentUserId && currentUserId !== mark.user_id}
+              canVote={!!currentUserId}
               onVoteUpdate={(updated) => {
                 if (updated.support_votes !== undefined || updated.oppose_votes !== undefined) {
                   setMarks((prev) =>

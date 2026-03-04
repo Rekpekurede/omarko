@@ -20,6 +20,7 @@ export function CreateMarkModal() {
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
 
   useEffect(() => {
@@ -45,6 +46,7 @@ export function CreateMarkModal() {
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
     setError(null);
+    setUploadNotice(null);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -66,6 +68,7 @@ export function CreateMarkModal() {
     if (submitting) return;
 
     setError(null);
+    setUploadNotice(null);
     const trimmed = content.trim();
     if (!trimmed && !imageFile) {
       setError('Add text or an image.');
@@ -74,6 +77,7 @@ export function CreateMarkModal() {
 
     setSubmitting(true);
     let imageUrl: string | null = null;
+    let imagePath: string | null = null;
 
     if (imageFile) {
       const uploadForm = new FormData();
@@ -84,11 +88,17 @@ export function CreateMarkModal() {
       });
       const uploadData = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok) {
-        setError(uploadData.error ?? 'Image upload failed');
-        setSubmitting(false);
-        return;
+        if (!trimmed) {
+          setError(uploadData.error ?? 'Image upload failed');
+          setSubmitting(false);
+          return;
+        }
+        // Allow text-only fallback when an image was optional.
+        setUploadNotice(uploadData.error ?? 'Image upload failed. Posting text-only.');
+      } else {
+        imageUrl = uploadData.image_url ?? null;
+        imagePath = uploadData.image_path ?? null;
       }
-      imageUrl = uploadData.image_url ?? null;
     }
 
     const res = await fetch('/api/marks', {
@@ -100,6 +110,7 @@ export function CreateMarkModal() {
         claim_type: claimType,
         category: category.trim() || 'General',
         media_url: imageUrl,
+        image_path: imagePath,
       }),
     });
     const data = await res.json().catch(() => ({}));
@@ -239,6 +250,7 @@ export function CreateMarkModal() {
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}
+              {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
 
               <div className="flex justify-end">
                 <button

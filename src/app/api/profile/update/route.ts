@@ -47,14 +47,38 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'No fields to update' }, { status: 400 });
   }
 
-  const { error } = await supabase
+  const { data: existingProfile } = await supabase
     .from('profiles')
-    .update(updates)
-    .eq('id', user.id);
+    .select('username')
+    .eq('id', user.id)
+    .maybeSingle();
 
+  const username =
+    existingProfile?.username ??
+    ((user.user_metadata as { username?: string } | undefined)?.username ?? `user_${user.id.slice(0, 8)}`);
+
+  const payload = {
+    id: user.id,
+    username,
+    ...updates,
+    updated_at: new Date().toISOString(),
+  };
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert(payload, { onConflict: 'id' })
+    .select('id, username, bio, avatar_url')
+    .single();
+
+  console.log('[ProfileUpdate] upsert response', {
+    userId: user.id,
+    payloadKeys: Object.keys(payload),
+    data,
+    error,
+  });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json({ success: true });
+  return NextResponse.json({ success: true, profile: data });
 }

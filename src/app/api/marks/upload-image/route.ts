@@ -32,13 +32,16 @@ export async function POST(request: Request) {
   if (error) {
     if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
       return NextResponse.json(
-        { error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads.` },
+        {
+          error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
+          code: 'BUCKET_NOT_FOUND',
+        },
         { status: 500 }
       );
     }
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    return NextResponse.json({ error: `Image upload failed: ${error.message}` }, { status: 500 });
   }
 
   const publicUrl = markImagePublicUrl(path);
-  return NextResponse.json({ image_url: publicUrl });
+  return NextResponse.json({ image_path: path, image_url: publicUrl });
 }

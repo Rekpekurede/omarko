@@ -32,6 +32,11 @@ export function ProfileHeader({
   followingCount,
 }: ProfileHeaderProps) {
   const [editing, setEditing] = useState(false);
+  const [localDisplayName, setLocalDisplayName] = useState<string | null>(displayName);
+  const [localBio, setLocalBio] = useState<string | null>(bio);
+  const [localLocation, setLocalLocation] = useState<string | null>(location);
+  const [localWebsite, setLocalWebsite] = useState<string | null>(website);
+  const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(avatarUrl);
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
@@ -41,11 +46,17 @@ export function ProfileHeader({
           <div className="flex flex-col items-center sm:items-start">
             {isOwner ? (
               <div className="ring-4 ring-white dark:ring-gray-950 ring-offset-2 dark:ring-offset-gray-950 rounded-full">
-                <AvatarUpload username={username} avatarUrl={avatarUrl} compact size="xl" />
+                <AvatarUpload
+                  username={username}
+                  avatarUrl={localAvatarUrl}
+                  compact
+                  size="xl"
+                  onUploaded={(nextUrl) => setLocalAvatarUrl(nextUrl)}
+                />
               </div>
             ) : (
               <div className="ring-4 ring-white dark:ring-gray-950 ring-offset-2 dark:ring-offset-gray-950 rounded-full">
-                <Avatar username={username} avatarUrl={avatarUrl} size="xl" />
+                <Avatar username={username} avatarUrl={localAvatarUrl} size="xl" />
               </div>
             )}
           </div>
@@ -53,25 +64,31 @@ export function ProfileHeader({
             <h1 className="text-2xl font-bold tracking-tight text-black dark:text-white sm:text-3xl">
               @{username}
             </h1>
-            {displayName && (
-              <p className="mt-0.5 text-gray-600 dark:text-gray-400">{displayName}</p>
+            {localDisplayName && (
+              <p className="mt-0.5 text-gray-600 dark:text-gray-400">{localDisplayName}</p>
             )}
-            {bio && !editing && (
-              <p className="mt-1 max-w-lg text-gray-600 dark:text-gray-400">{bio}</p>
+            {localBio && !editing && (
+              <p className="mt-1 max-w-lg text-gray-600 dark:text-gray-400">{localBio}</p>
             )}
-            {(location || website) && !editing && (
+            {(localLocation || localWebsite) && !editing && (
               <div className="mt-1 flex flex-wrap items-center justify-center gap-2 text-sm text-gray-500 sm:justify-start dark:text-gray-400">
-                {location && <span>{location}</span>}
-                {website && (
-                  <a href={website.startsWith('http') ? website : `https://${website}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
-                    {website.replace(/^https?:\/\//, '')}
+                {localLocation && <span>{localLocation}</span>}
+                {localWebsite && (
+                  <a href={localWebsite.startsWith('http') ? localWebsite : `https://${localWebsite}`} target="_blank" rel="noopener noreferrer" className="hover:underline">
+                    {localWebsite.replace(/^https?:\/\//, '')}
                   </a>
                 )}
               </div>
             )}
             {editing && (
               <ProfileEditForm
-                initial={{ display_name: displayName, bio, location, website }}
+                initial={{ display_name: localDisplayName, bio: localBio, location: localLocation, website: localWebsite }}
+                onSaved={(next) => {
+                  setLocalDisplayName(next.display_name);
+                  setLocalBio(next.bio);
+                  setLocalLocation(next.location);
+                  setLocalWebsite(next.website);
+                }}
                 onCancel={() => setEditing(false)}
               />
             )}

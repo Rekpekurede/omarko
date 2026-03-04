@@ -38,6 +38,25 @@ export async function POST(
     return NextResponse.json({ error: err instanceof Error ? err.message : 'Invalid vote type' }, { status: 400 });
   }
 
+  const { data: markRow, error: markLookupErr } = await supabase
+    .from('marks')
+    .select('user_id')
+    .eq('id', markId)
+    .single();
+  if (markLookupErr) {
+    console.error('[vote.POST] mark lookup failed', {
+      markId,
+      code: markLookupErr.code,
+      message: markLookupErr.message,
+      details: markLookupErr.details,
+    });
+    return NextResponse.json({ error: markLookupErr.message }, { status: 500 });
+  }
+  const isOwnMark = markRow.user_id === user.id;
+  if (isOwnMark && voteType === 'OPPOSE') {
+    return NextResponse.json({ error: 'You cannot oppose your own mark.' }, { status: 400 });
+  }
+
   // 1. Check for existing vote
   const { data: existing, error: existingErr } = await supabase
     .from('votes')

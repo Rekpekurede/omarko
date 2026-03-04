@@ -13,6 +13,7 @@ interface MarkCardProps {
   showDisputeButton?: boolean;
   bookmarked?: boolean;
   showBookmark?: boolean;
+  currentUserId?: string | null;
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
   canVote?: boolean;
   onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
@@ -30,6 +31,7 @@ export function MarkCard({
   showDisputeButton = true,
   bookmarked = false,
   showBookmark = false,
+  currentUserId = null,
   currentVote = null,
   canVote = false,
   onVoteUpdate,
@@ -45,9 +47,16 @@ export function MarkCard({
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [toast, setToast] = useState<string | null>(null);
+  const isOwnMark = !!currentUserId && currentUserId === mark.user_id;
 
   const handleVote = async (nextVote: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || pending) return;
+    if (isOwnMark && nextVote === 'OPPOSE') {
+      setToast('You cannot oppose your own mark.');
+      setTimeout(() => setToast(null), 2200);
+      return;
+    }
     setError(null);
     setPending(true);
 
@@ -60,6 +69,10 @@ export function MarkCard({
 
     if (!res.ok) {
       setError(data.error ?? 'Vote failed');
+      if (res.status === 400 && typeof data.error === 'string' && data.error.toLowerCase().includes('cannot oppose your own')) {
+        setToast(data.error);
+        setTimeout(() => setToast(null), 2200);
+      }
       setPending(false);
       return;
     }
@@ -126,6 +139,9 @@ export function MarkCard({
       <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
         <span>{supportVotes} support</span>
         <span>{opposeVotes} oppose</span>
+        <span>
+          {vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}
+        </span>
         <span>{mark.dispute_count ?? 0} disputes</span>
         <Link href={`/mark/${mark.id}?tab=comments`} className="hover:underline">
           Comments: {commentsCount}
@@ -145,7 +161,7 @@ export function MarkCard({
             <button
               type="button"
               onClick={() => handleVote('OPPOSE')}
-              disabled={pending}
+              disabled={pending || isOwnMark}
               className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
                 vote === 'OPPOSE' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
               }`}
@@ -171,6 +187,7 @@ export function MarkCard({
         )}
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
+      {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
     </article>
   );
 }
