@@ -4,7 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DOMAINS } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
-import { ClaimTypePicker } from './ClaimTypePicker';
+import { ClaimTypePickerSheet } from './ClaimTypePickerSheet';
 
 const TOAST_MS = 1800;
 
@@ -22,7 +22,7 @@ export function CreateMarkModal() {
   const [domainTouched, setDomainTouched] = useState(false);
   const [claimTypeTouched, setClaimTypeTouched] = useState(false);
   const [saveAsDefault, setSaveAsDefault] = useState(false);
-  const [claimPickerOpenToken, setClaimPickerOpenToken] = useState(0);
+  const [isClaimTypePickerOpen, setIsClaimTypePickerOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
   const [aiSuggestion, setAiSuggestion] = useState<{ claimType: string; domain: string } | null>(null);
   const [aiSuggestionDismissed, setAiSuggestionDismissed] = useState(false);
@@ -82,6 +82,7 @@ export function CreateMarkModal() {
     setUploadNotice(null);
     setAiSuggestion(null);
     setAiSuggestionDismissed(false);
+    setIsClaimTypePickerOpen(false);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -241,7 +242,7 @@ export function CreateMarkModal() {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="w-full max-h-[80vh] overflow-y-auto rounded-t-2xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900 sm:max-w-2xl sm:rounded-xl">
+          <div className="relative w-full max-h-[80vh] overflow-y-auto rounded-t-2xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900 sm:max-w-2xl sm:rounded-xl">
             <div className="mb-3 flex items-center justify-between">
               <h2 className="text-lg font-semibold text-black dark:text-white">Create mark</h2>
               <button
@@ -257,6 +258,19 @@ export function CreateMarkModal() {
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-black dark:text-white">Claim type</label>
+                <button
+                  type="button"
+                  onClick={() => setIsClaimTypePickerOpen(true)}
+                  className="mt-1 flex min-h-[42px] w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                >
+                  <span className={selectedClaimType ? 'text-foreground' : 'text-muted-foreground'}>
+                    {selectedClaimType?.name ?? 'Select claim type'}
+                  </span>
+                  <span className="text-xs text-muted-foreground">Change</span>
+                </button>
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Pick the label that best matches what you&apos;re claiming.
+                </p>
                 {aiLoading && (
                   <p className="mt-1 text-xs text-muted-foreground">Analyzing content...</p>
                 )}
@@ -276,7 +290,7 @@ export function CreateMarkModal() {
                       <button
                         type="button"
                         onClick={() => {
-                          setClaimPickerOpenToken((x) => x + 1);
+                          setIsClaimTypePickerOpen(true);
                           setClaimTypeTouched(true);
                           setDomainTouched(true);
                           setAiSuggestionDismissed(true);
@@ -288,17 +302,6 @@ export function CreateMarkModal() {
                     </div>
                   </div>
                 )}
-                <div className="mt-1">
-                  <ClaimTypePicker
-                    selected={selectedClaimType}
-                    onSelect={(next) => {
-                      setSelectedClaimType(next);
-                      setClaimTypeTouched(true);
-                    }}
-                    contentHint={content}
-                    forceOpenToken={claimPickerOpenToken}
-                  />
-                </div>
               </div>
 
               <div>
@@ -391,20 +394,25 @@ export function CreateMarkModal() {
                 />
                 Save as my default
               </label>
-              <p className="text-sm text-amber-700 dark:text-amber-400">
-                You are claiming responsibility for this. Make sure the claim type you selected is accurate.
-              </p>
 
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={submitting || !selectedClaimType}
+                  disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !imageFile)}
                   className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
                 >
-                  {submitting ? 'Posting…' : selectedClaimType ? 'Post' : 'Select a claim type'}
+                  {submitting ? 'Posting…' : 'Post'}
                 </button>
               </div>
             </form>
+            <ClaimTypePickerSheet
+              isOpen={isClaimTypePickerOpen}
+              onClose={() => setIsClaimTypePickerOpen(false)}
+              onSelect={(next) => {
+                setSelectedClaimType(next);
+                setClaimTypeTouched(true);
+              }}
+            />
           </div>
         </div>
       )}
