@@ -2,8 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CLAIM_TYPES, CLAIM_TYPE_HELP, DOMAINS } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
+import { ClaimTypePicker } from './ClaimTypePicker';
 
 const TOAST_MS = 1800;
 
@@ -14,7 +15,7 @@ export function CreateMarkModal() {
 
   const [content, setContent] = useState('');
   const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
-  const [claimType, setClaimType] = useState<(typeof CLAIM_TYPES)[number]>(CLAIM_TYPES[0]);
+  const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -39,7 +40,7 @@ export function CreateMarkModal() {
   const resetForm = () => {
     setContent('');
     setDomain(DOMAINS[0]);
-    setClaimType(CLAIM_TYPES[0]);
+    setSelectedClaimType(null);
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
@@ -70,6 +71,10 @@ export function CreateMarkModal() {
     const trimmed = content.trim();
     if (!trimmed && !imageFile) {
       setError('Add text or an image.');
+      return;
+    }
+    if (!selectedClaimType) {
+      setError('Select a claim type');
       return;
     }
 
@@ -105,7 +110,8 @@ export function CreateMarkModal() {
       body: JSON.stringify({
         content: trimmed || null,
         domain,
-        claim_type: claimType,
+        claim_type_id: selectedClaimType?.id,
+        claim_type: selectedClaimType?.name,
         category: 'General',
         media_url: imageUrl,
         image_path: imagePath,
@@ -155,20 +161,13 @@ export function CreateMarkModal() {
 
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
-                <label htmlFor="composer-claim-type" className="block text-sm font-medium text-black dark:text-white">Claim type</label>
-                <select
-                  id="composer-claim-type"
-                  value={claimType}
-                  onChange={(e) => setClaimType(e.target.value as (typeof CLAIM_TYPES)[number])}
-                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                >
-                  {CLAIM_TYPES.map((c) => (
-                    <option key={c} value={c}>{c}</option>
-                  ))}
-                </select>
-                <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800/60">
-                  <p className="text-gray-700 dark:text-gray-200">{CLAIM_TYPE_HELP[claimType].description}</p>
-                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Example: &quot;{CLAIM_TYPE_HELP[claimType].example}&quot;</p>
+                <label className="block text-sm font-medium text-black dark:text-white">Claim type</label>
+                <div className="mt-1">
+                  <ClaimTypePicker
+                    selected={selectedClaimType}
+                    onSelect={setSelectedClaimType}
+                    contentHint={content}
+                  />
                 </div>
               </div>
 
@@ -248,10 +247,10 @@ export function CreateMarkModal() {
               <div className="flex justify-end">
                 <button
                   type="submit"
-                  disabled={submitting}
+                  disabled={submitting || !selectedClaimType}
                   className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
                 >
-                  {submitting ? 'Posting…' : 'Post'}
+                  {submitting ? 'Posting…' : selectedClaimType ? 'Post' : 'Select a claim type'}
                 </button>
               </div>
             </form>

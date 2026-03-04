@@ -27,6 +27,12 @@ function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?
   return p ? { username: p.username, avatar_url: (p as { avatar_url?: string | null }).avatar_url } : null;
 }
 
+function getClaimTypeName(mark: Mark): string {
+  const relation = mark.claim_types;
+  const fromRelation = Array.isArray(relation) ? relation[0]?.name : relation?.name;
+  return fromRelation || mark.claim_type || 'Unclassified';
+}
+
 export function MarkCard({
   mark,
   showChallengeButton = true,
@@ -104,6 +110,7 @@ export function MarkCard({
 
   const commentsCount = mark.comments_count ?? 0;
   const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
+  const claimTypeName = getClaimTypeName(mark);
 
   return (
     <article className="w-full rounded-xl border border-border bg-card p-5 transition duration-200 hover:bg-accent/40 sm:hover:-translate-y-0.5 sm:hover:shadow-md">
@@ -126,9 +133,9 @@ export function MarkCard({
           </div>
           <div className="rounded-md border border-border bg-muted/50 px-2.5 py-2">
             <p className="text-sm font-medium text-foreground">
-              @{username} - {mark.claim_type} · {mark.domain}
+              @{username} - {claimTypeName} · {mark.domain}
             </p>
-            <p className="text-xs text-muted-foreground">marking this as theirs</p>
+            <p className="text-xs text-muted-foreground">@{username} is claiming responsibility for this {claimTypeName}.</p>
           </div>
           {mark.content && (
             <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
@@ -156,11 +163,9 @@ export function MarkCard({
                 {mark.domain}
               </span>
             )}
-            {mark.claim_type && (
-              <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
-                {mark.claim_type}
-              </span>
-            )}
+            <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
+              {claimTypeName}
+            </span>
           </div>
         </div>
       </div>

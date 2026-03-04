@@ -98,6 +98,8 @@ export interface Mark {
   category: string;
   domain: string;
   claim_type: string;
+  claim_type_id?: string | null;
+  claim_types?: { name: string } | { name: string }[] | null;
   status: MarkStatus;
   endorsements_count?: number;
   support_votes?: number;

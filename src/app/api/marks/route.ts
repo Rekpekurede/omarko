@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { CLAIM_TYPES, DOMAINS } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -9,7 +9,7 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; category?: string; domain?: string; claim_type?: string };
+  let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; category?: string; domain?: string; claim_type?: string; claim_type_id?: string };
   try {
     body = await request.json();
   } catch {
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
   const imageUrl = body.image_url?.trim() || body.media_url?.trim() || null;
   const imagePath = body.image_path?.trim() || null;
   const domain = body.domain?.trim();
-  const claimType = body.claim_type?.trim();
+  const claimTypeId = body.claim_type_id?.trim();
+  const claimTypeName = body.claim_type?.trim();
 
   if (!content && !imageUrl) {
     return NextResponse.json(
@@ -34,11 +35,29 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (!claimType || !(CLAIM_TYPES as readonly string[]).includes(claimType)) {
-    return NextResponse.json(
-      { error: 'Valid claim_type is required' },
-      { status: 400 }
-    );
+  if (!claimTypeId && !claimTypeName) {
+    return NextResponse.json({ error: 'claim_type_id is required' }, { status: 400 });
+  }
+
+  let claimTypeRow: { id: string; name: string } | null = null;
+  if (claimTypeId) {
+    const { data } = await supabase
+      .from('claim_types')
+      .select('id, name')
+      .eq('id', claimTypeId)
+      .maybeSingle();
+    claimTypeRow = data;
+  } else if (claimTypeName) {
+    const { data } = await supabase
+      .from('claim_types')
+      .select('id, name')
+      .ilike('name', claimTypeName)
+      .maybeSingle();
+    claimTypeRow = data;
+  }
+
+  if (!claimTypeRow) {
+    return NextResponse.json({ error: 'Valid claim type is required' }, { status: 400 });
   }
   const category = body.category?.trim() || 'General';
 
@@ -48,7 +67,8 @@ export async function POST(request: Request) {
     content: content || '',
     category,
     domain,
-    claim_type: claimType,
+    claim_type: claimTypeRow.name,
+    claim_type_id: claimTypeRow.id,
     image_url: imageUrl,
     image_path: imagePath,
   };
@@ -68,7 +88,7 @@ export async function POST(request: Request) {
         content: content || '',
         category,
         domain,
-        claim_type: claimType,
+        claim_type: claimTypeRow.name,
         image_url: imageUrl,
       })
       .select('id')

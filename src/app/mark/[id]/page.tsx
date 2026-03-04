@@ -26,7 +26,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, content, image_url, category, domain, claim_type, claim_type_id, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url), claim_types(name)')
     .eq('id', id)
     .single();
 
@@ -89,6 +89,8 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const avatarUrl = profileObj?.avatar_url ?? null;
   const content = (mark as { content?: string }).content ?? '';
   const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
+  const markClaimTypes = (mark as { claim_types?: { name?: string } | { name?: string }[] | null }).claim_types;
+  const claimTypeName = (Array.isArray(markClaimTypes) ? markClaimTypes[0]?.name : markClaimTypes?.name) ?? mark.claim_type ?? 'Unclassified';
 
   const { data: versions } = await supabase
     .from('mark_versions')
@@ -134,7 +136,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             )}
             <div className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2">
               <p className="text-sm font-medium text-foreground">
-                @{displayUsername} - {(mark as { claim_type?: string }).claim_type} · {(mark as { domain?: string }).domain}
+                @{displayUsername} - {claimTypeName} · {(mark as { domain?: string }).domain}
               </p>
               <p className="text-xs text-muted-foreground">marking this as theirs</p>
             </div>
