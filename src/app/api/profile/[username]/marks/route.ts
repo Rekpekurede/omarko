@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
 export async function GET(
@@ -34,8 +34,17 @@ export async function GET(
   if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
     query = query.eq('domain', domain);
   }
-  if (claimType && claimType !== 'all' && CLAIM_TYPES.includes(claimType as (typeof CLAIM_TYPES)[number])) {
-    query = query.eq('claim_type', claimType);
+  if (claimType && claimType !== 'all') {
+    let claimTypeName = claimType;
+    if (/^[0-9a-f-]{36}$/i.test(claimType)) {
+      const { data: claimTypeRow } = await supabase
+        .from('claim_types')
+        .select('name')
+        .eq('id', claimType)
+        .maybeSingle();
+      claimTypeName = claimTypeRow?.name ?? claimType;
+    }
+    query = query.eq('claim_type', claimTypeName);
   }
   if (challengedOnly) {
     query = query.gt('dispute_count', 0);

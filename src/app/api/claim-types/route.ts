@@ -28,21 +28,39 @@ export async function GET(request: Request) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  const { data: recentMarks } = await supabase
+  const resultList = results ?? [];
+  const usage = new Map<string, number>();
+  const nameToId = new Map(resultList.map((r) => [r.name.toLowerCase(), r.id]));
+
+  const recentById = await supabase
     .from('marks')
     .select('claim_type_id')
     .not('claim_type_id', 'is', null)
     .order('created_at', { ascending: false })
     .limit(5000);
 
-  const usage = new Map<string, number>();
-  for (const row of recentMarks ?? []) {
-    const id = row.claim_type_id as string | null;
-    if (!id) continue;
-    usage.set(id, (usage.get(id) ?? 0) + 1);
+  if (!recentById.error) {
+    for (const row of recentById.data ?? []) {
+      const id = row.claim_type_id as string | null;
+      if (!id) continue;
+      usage.set(id, (usage.get(id) ?? 0) + 1);
+    }
+  } else {
+    const recentByName = await supabase
+      .from('marks')
+      .select('claim_type')
+      .not('claim_type', 'is', null)
+      .order('created_at', { ascending: false })
+      .limit(5000);
+    for (const row of recentByName.data ?? []) {
+      const name = (row.claim_type as string | null)?.trim().toLowerCase();
+      if (!name) continue;
+      const id = nameToId.get(name);
+      if (!id) continue;
+      usage.set(id, (usage.get(id) ?? 0) + 1);
+    }
   }
 
-  const resultList = results ?? [];
   const mostUsedIds = Array.from(usage.entries())
     .sort((a, b) => b[1] - a[1])
     .slice(0, 8)

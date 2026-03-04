@@ -1,17 +1,19 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 
 interface FeedFiltersProps {
   currentDomain?: string;
   currentClaimType?: string;
+  claimTypeOptions?: Array<{ id: string; name: string }>;
   challengedOnly?: boolean;
 }
 
 export function FeedFilters({
   currentDomain = 'all',
   currentClaimType = 'all',
+  claimTypeOptions = [],
   challengedOnly = false,
 }: FeedFiltersProps) {
   const router = useRouter();
@@ -56,8 +58,8 @@ export function FeedFilters({
           className="min-h-[40px] rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
         >
           <option value="all">All claim types</option>
-          {CLAIM_TYPES.map((c) => (
-            <option key={c} value={c}>{c}</option>
+          {claimTypeOptions.map((c) => (
+            <option key={c.id} value={c.id}>{c.name}</option>
           ))}
         </select>
         <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">

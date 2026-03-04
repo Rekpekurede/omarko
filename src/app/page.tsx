@@ -3,7 +3,7 @@ import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
 import { FeedIntroBanner } from '@/components/FeedIntroBanner';
 import { PageContainer } from '@/components/PageContainer';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
 export const revalidate = 0;
@@ -21,6 +21,12 @@ export default async function FeedPage({ searchParams }: PageProps) {
   const challengedOnly = params.disputed_only === 'true';
 
   const supabase = await createClient();
+  const { data: claimTypeOptions } = await supabase
+    .from('claim_types')
+    .select('id, name')
+    .order('name', { ascending: true });
+  const claimTypeIdToName = new Map((claimTypeOptions ?? []).map((x) => [x.id, x.name]));
+
   let query = supabase
     .from('marks')
     .select(MARK_WITH_OWNER_USERNAME_SELECT)
@@ -31,8 +37,9 @@ export default async function FeedPage({ searchParams }: PageProps) {
   if (domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
     query = query.eq('domain', domain);
   }
-  if (claimType !== 'all' && CLAIM_TYPES.includes(claimType as (typeof CLAIM_TYPES)[number])) {
-    query = query.eq('claim_type', claimType);
+  if (claimType !== 'all') {
+    const claimTypeName = claimTypeIdToName.get(claimType) ?? claimType;
+    query = query.eq('claim_type', claimTypeName);
   }
   if (challengedOnly) {
     query = query.gt('dispute_count', 0);
@@ -91,6 +98,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
       <FeedFilters
         currentDomain={domain}
         currentClaimType={claimType}
+        claimTypeOptions={claimTypeOptions ?? []}
         challengedOnly={challengedOnly}
       />
       <FeedList

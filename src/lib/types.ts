@@ -12,6 +12,8 @@ export interface Profile {
   username: string;
   bio: string | null;
   avatar_url?: string | null;
+  default_domain?: string | null;
+  default_claim_type?: string | null;
   disputes_raised?: number;
   disputes_won?: number;
   disputes_lost?: number;

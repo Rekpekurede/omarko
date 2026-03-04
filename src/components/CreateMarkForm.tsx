@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { DOMAINS } from '@/lib/types';
 import { ClaimTypePicker } from './ClaimTypePicker';
@@ -13,12 +13,37 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
+  const [domainTouched, setDomainTouched] = useState(false);
+  const [claimTypeTouched, setClaimTypeTouched] = useState(false);
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
   const [contentDraft, setContentDraft] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    fetch('/api/profile/defaults')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (!domainTouched && data.defaultDomain && (DOMAINS as readonly string[]).includes(data.defaultDomain)) {
+          setDomain(data.defaultDomain as (typeof DOMAINS)[number]);
+        }
+        if (!claimTypeTouched && data.defaultClaimTypeOption) {
+          setSelectedClaimType(data.defaultClaimTypeOption);
+        }
+      })
+      .catch(() => {
+        // optional
+      });
+    return () => {
+      active = false;
+    };
+  }, [domainTouched, claimTypeTouched]);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -44,7 +69,6 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     const form = e.currentTarget;
     const formData = new FormData(form);
     const content = (formData.get('content') as string)?.trim() ?? '';
-    const domain = formData.get('domain') as string;
 
     if (!content && !imageFile) {
       setError('Add text or an image');
@@ -110,6 +134,16 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       setIsSubmitting(false);
       return;
     }
+    if (saveAsDefault && selectedClaimType) {
+      await fetch('/api/profile/defaults', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          defaultDomain: domain,
+          defaultClaimType: selectedClaimType.name,
+        }),
+      });
+    }
     router.push(`/mark/${data.id}`);
     router.refresh();
   };
@@ -173,6 +207,11 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
           id="domain"
           name="domain"
           required
+          value={domain}
+          onChange={(e) => {
+            setDomain(e.target.value as (typeof DOMAINS)[number]);
+            setDomainTouched(true);
+          }}
           className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           {DOMAINS.map((d) => (
@@ -185,11 +224,22 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
         <div className="mt-1">
           <ClaimTypePicker
             selected={selectedClaimType}
-            onSelect={setSelectedClaimType}
+            onSelect={(next) => {
+              setSelectedClaimType(next);
+              setClaimTypeTouched(true);
+            }}
             contentHint={contentDraft}
           />
         </div>
       </div>
+      <label className="flex items-center gap-2 text-xs text-muted-foreground">
+        <input
+          type="checkbox"
+          checked={saveAsDefault}
+          onChange={(e) => setSaveAsDefault(e.target.checked)}
+        />
+        Save as my default
+      </label>
       <p className="text-sm text-amber-700 dark:text-amber-400">
         {`@${username} is claiming responsibility for this. Make sure the claim type you selected is accurate.`}
       </p>

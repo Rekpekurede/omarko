@@ -18,6 +18,9 @@ export function CreateMarkModal() {
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [domainTouched, setDomainTouched] = useState(false);
+  const [claimTypeTouched, setClaimTypeTouched] = useState(false);
+  const [saveAsDefault, setSaveAsDefault] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -37,10 +40,35 @@ export function CreateMarkModal() {
     };
   }, [isOpen, closeCreateModal]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    let active = true;
+    fetch('/api/profile/defaults')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (!active || !data) return;
+        if (!domainTouched && data.defaultDomain && (DOMAINS as readonly string[]).includes(data.defaultDomain)) {
+          setDomain(data.defaultDomain as (typeof DOMAINS)[number]);
+        }
+        if (!claimTypeTouched && data.defaultClaimTypeOption) {
+          setSelectedClaimType(data.defaultClaimTypeOption);
+        }
+      })
+      .catch(() => {
+        // Ignore; defaults are optional.
+      });
+    return () => {
+      active = false;
+    };
+  }, [isOpen, domainTouched, claimTypeTouched]);
+
   const resetForm = () => {
     setContent('');
     setDomain(DOMAINS[0]);
     setSelectedClaimType(null);
+    setDomainTouched(false);
+    setClaimTypeTouched(false);
+    setSaveAsDefault(false);
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
@@ -124,6 +152,17 @@ export function CreateMarkModal() {
       return;
     }
 
+    if (saveAsDefault && selectedClaimType) {
+      await fetch('/api/profile/defaults', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          defaultDomain: domain,
+          defaultClaimType: selectedClaimType.name,
+        }),
+      });
+    }
+
     setSubmitting(false);
     closeCreateModal();
     resetForm();
@@ -165,7 +204,10 @@ export function CreateMarkModal() {
                 <div className="mt-1">
                   <ClaimTypePicker
                     selected={selectedClaimType}
-                    onSelect={setSelectedClaimType}
+                    onSelect={(next) => {
+                      setSelectedClaimType(next);
+                      setClaimTypeTouched(true);
+                    }}
                     contentHint={content}
                   />
                 </div>
@@ -176,7 +218,10 @@ export function CreateMarkModal() {
                 <select
                   id="composer-domain"
                   value={domain}
-                  onChange={(e) => setDomain(e.target.value as (typeof DOMAINS)[number])}
+                  onChange={(e) => {
+                    setDomain(e.target.value as (typeof DOMAINS)[number]);
+                    setDomainTouched(true);
+                  }}
                   className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 >
                   {DOMAINS.map((d) => (
@@ -240,6 +285,14 @@ export function CreateMarkModal() {
 
               {error && <p className="text-sm text-red-600">{error}</p>}
               {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
+              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+                <input
+                  type="checkbox"
+                  checked={saveAsDefault}
+                  onChange={(e) => setSaveAsDefault(e.target.checked)}
+                />
+                Save as my default
+              </label>
               <p className="text-sm text-amber-700 dark:text-amber-400">
                 You are claiming responsibility for this. Make sure the claim type you selected is accurate.
               </p>

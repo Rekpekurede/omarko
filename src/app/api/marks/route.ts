@@ -51,7 +51,7 @@ export async function POST(request: Request) {
     const { data } = await supabase
       .from('claim_types')
       .select('id, name')
-      .ilike('name', claimTypeName)
+      .eq('name', claimTypeName)
       .maybeSingle();
     claimTypeRow = data;
   }
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
   }
   const category = body.category?.trim() || 'General';
 
-  const payload = {
+  const payload: Record<string, unknown> = {
     user_id: user.id,
     title: '',
     content: content || '',
@@ -75,26 +75,24 @@ export async function POST(request: Request) {
 
   let data: { id: string } | null = null;
   let error: { message: string } | null = null;
-  const withPath = await supabase.from('marks').insert(payload).select('id').single();
-  data = withPath.data;
-  error = withPath.error as { message: string } | null;
-  // Backward compatibility if image_path column does not exist yet.
+  const insertPayload = { ...payload };
+
+  let attempt = await supabase.from('marks').insert(insertPayload).select('id').single();
+  data = attempt.data;
+  error = attempt.error as { message: string } | null;
+
+  if (error?.message?.includes('claim_type_id')) {
+    delete insertPayload.claim_type_id;
+    attempt = await supabase.from('marks').insert(insertPayload).select('id').single();
+    data = attempt.data;
+    error = attempt.error as { message: string } | null;
+  }
+
   if (error?.message?.includes('image_path')) {
-    const fallback = await supabase
-      .from('marks')
-      .insert({
-        user_id: user.id,
-        title: '',
-        content: content || '',
-        category,
-        domain,
-        claim_type: claimTypeRow.name,
-        image_url: imageUrl,
-      })
-      .select('id')
-      .single();
-    data = fallback.data;
-    error = fallback.error as { message: string } | null;
+    delete insertPayload.image_path;
+    attempt = await supabase.from('marks').insert(insertPayload).select('id').single();
+    data = attempt.data;
+    error = attempt.error as { message: string } | null;
   }
 
   if (error) {

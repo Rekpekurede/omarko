@@ -1,0 +1,105 @@
+import { NextResponse } from 'next/server';
+import { createClient } from '@/lib/supabase/server';
+import { DOMAINS } from '@/lib/types';
+
+type DefaultsPayload = {
+  defaultDomain?: string | null;
+  defaultClaimType?: string | null;
+};
+
+export async function GET() {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: profile } = await supabase
+    .from('profiles')
+    .select('default_domain, default_claim_type')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  let claimTypeOption: { id: string; name: string } | null = null;
+  const defaultClaimType = profile?.default_claim_type ?? null;
+  if (defaultClaimType) {
+    const { data } = await supabase
+      .from('claim_types')
+      .select('id, name')
+      .eq('name', defaultClaimType)
+      .maybeSingle();
+    claimTypeOption = data ?? null;
+  }
+
+  return NextResponse.json({
+    defaultDomain: profile?.default_domain ?? null,
+    defaultClaimType: defaultClaimType,
+    defaultClaimTypeOption: claimTypeOption,
+  });
+}
+
+export async function PATCH(request: Request) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let body: DefaultsPayload;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+  }
+
+  const defaultDomain = body.defaultDomain?.trim() || null;
+  const defaultClaimType = body.defaultClaimType?.trim() || null;
+
+  if (defaultDomain && !(DOMAINS as readonly string[]).includes(defaultDomain)) {
+    return NextResponse.json({ error: 'Invalid default domain' }, { status: 400 });
+  }
+
+  if (defaultClaimType) {
+    const { data: claimType } = await supabase
+      .from('claim_types')
+      .select('id')
+      .eq('name', defaultClaimType)
+      .maybeSingle();
+    if (!claimType) {
+      return NextResponse.json({ error: 'Invalid default claim type' }, { status: 400 });
+    }
+  }
+
+  const { data: existingProfile } = await supabase
+    .from('profiles')
+    .select('username')
+    .eq('id', user.id)
+    .maybeSingle();
+
+  const username =
+    existingProfile?.username ??
+    ((user.user_metadata as { username?: string } | undefined)?.username ?? `user_${user.id.slice(0, 8)}`);
+
+  const { data, error } = await supabase
+    .from('profiles')
+    .upsert(
+      {
+        id: user.id,
+        username,
+        default_domain: defaultDomain,
+        default_claim_type: defaultClaimType,
+      },
+      { onConflict: 'id' }
+    )
+    .select('default_domain, default_claim_type')
+    .single();
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  return NextResponse.json({
+    defaultDomain: data.default_domain ?? null,
+    defaultClaimType: data.default_claim_type ?? null,
+  });
+}

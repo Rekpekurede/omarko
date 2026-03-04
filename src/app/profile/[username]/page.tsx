@@ -4,8 +4,9 @@ import { MarkCard } from '@/components/MarkCard';
 import { ProfileTabs } from '@/components/ProfileTabs';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileStats } from '@/components/profile/ProfileStats';
+import { PostingDefaultsSection } from '@/components/profile/PostingDefaultsSection';
 import { PageContainer } from '@/components/PageContainer';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
 const PROFILE_MARKS_LIMIT = 20;
@@ -52,14 +53,19 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
   const uname = decodeURIComponent((await params).username);
   const { domain, claim_type, disputed_only, tab } = await searchParams;
 
-  let profile: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number } | null = null;
+  let profile: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; default_domain?: string | null; default_claim_type?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number } | null = null;
 
   try {
     const supabase = await createClient();
     const { data: { user } } = await supabase.auth.getUser();
+    const { data: claimTypeOptions } = await supabase
+      .from('claim_types')
+      .select('id, name')
+      .order('name', { ascending: true });
+    const claimTypeIdToName = new Map((claimTypeOptions ?? []).map((x) => [x.id, x.name]));
 
     // Profile lookup: RPC first (bypasses RLS), fallback to direct query with ilike
-    let profileRows: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
+    let profileRows: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; default_domain?: string | null; default_claim_type?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
     let profileError: unknown = null;
     let profileSource: 'rpc' | 'direct' | 'none' = 'none';
 
@@ -84,7 +90,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       try {
         const { data: directRows } = await supabase
           .from('profiles')
-          .select('id, username, display_name, bio, location, website, avatar_url, disputes_raised, disputes_won, disputes_lost, disputes_conceded')
+          .select('id, username, display_name, bio, location, website, avatar_url, default_domain, default_claim_type, disputes_raised, disputes_won, disputes_lost, disputes_conceded')
           .ilike('username', uname)
           .limit(1);
         profile = directRows?.[0] ?? null;
@@ -101,7 +107,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     try {
       const { data: freshProfile } = await supabase
         .from('profiles')
-        .select('username, bio, avatar_url, display_name, location, website')
+        .select('username, bio, avatar_url, display_name, location, website, default_domain, default_claim_type')
         .eq('id', profile.id)
         .maybeSingle();
       if (freshProfile) {
@@ -160,8 +166,9 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
         marksQuery = marksQuery.eq('domain', domain);
       }
-      if (claim_type && claim_type !== 'all' && CLAIM_TYPES.includes(claim_type as (typeof CLAIM_TYPES)[number])) {
-        marksQuery = marksQuery.eq('claim_type', claim_type);
+      if (claim_type && claim_type !== 'all') {
+        const claimTypeName = claimTypeIdToName.get(claim_type) ?? claim_type;
+        marksQuery = marksQuery.eq('claim_type', claimTypeName);
       }
       if (disputed_only === 'true') {
         marksQuery = marksQuery.gt('dispute_count', 0);
@@ -339,6 +346,12 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             disputesConceded={profile.disputes_conceded ?? 0}
           />
         </div>
+        {isOwner && (
+          <PostingDefaultsSection
+            initialDefaultDomain={profile.default_domain ?? null}
+            initialDefaultClaimType={profile.default_claim_type ?? null}
+          />
+        )}
         <div>
           <ProfileTabs
             username={profile.username}
@@ -347,6 +360,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             marksNextCursor={marksNextCursor}
             domain={domain ?? 'all'}
             claimType={claim_type ?? 'all'}
+            claimTypeOptions={claimTypeOptions ?? []}
             challengedOnly={disputed_only === 'true'}
             supportedMarks={supportedMarks as unknown as import('@/lib/types').Mark[]}
             supportedNextCursor={supportedNextCursor}
