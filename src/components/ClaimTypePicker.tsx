@@ -14,6 +14,16 @@ interface ClaimTypePickerProps {
   contentHint?: string;
 }
 
+const CURATED_SUGGESTED_NAMES = [
+  'Creation',
+  'Discovery',
+  'Statement',
+  'Opinion',
+  'Stance',
+  'Method',
+  'Teaching',
+];
+
 function getHeuristicSuggestion(text: string): string | null {
   const lower = text.toLowerCase();
   if (/\b(will|going to|by 20\d{2})\b/.test(lower)) return 'Prediction';
@@ -28,7 +38,6 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
   const [allClaimTypes, setAllClaimTypes] = useState<ClaimTypeOption[]>([]);
-  const [mostUsed, setMostUsed] = useState<ClaimTypeOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [suggestionSent, setSuggestionSent] = useState<string | null>(null);
   const [showAll, setShowAll] = useState(false);
@@ -42,17 +51,20 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
   }, [allClaimTypes, q]);
 
   const suggestedSection = useMemo(() => {
-    const uniq = new Map<string, ClaimTypeOption>();
-    for (const item of [...mostUsed, ...allClaimTypes]) {
-      if (!uniq.has(item.id)) uniq.set(item.id, item);
-      if (uniq.size >= 15) break;
-    }
-    return Array.from(uniq.values());
-  }, [mostUsed, allClaimTypes]);
+    const byLowerName = new Map(filteredAll.map((item) => [item.name.toLowerCase(), item]));
+    return CURATED_SUGGESTED_NAMES
+      .map((name) => byLowerName.get(name.toLowerCase()))
+      .filter((item): item is ClaimTypeOption => !!item);
+  }, [filteredAll]);
+
+  const allWithoutSuggested = useMemo(() => {
+    const suggestedIds = new Set(suggestedSection.map((item) => item.id));
+    return filteredAll.filter((item) => !suggestedIds.has(item.id));
+  }, [filteredAll, suggestedSection]);
 
   const suggestedOption = useMemo(
-    () => [...mostUsed, ...allClaimTypes].find((x) => x.name.toLowerCase() === (suggestedName ?? '').toLowerCase()) ?? null,
-    [mostUsed, allClaimTypes, suggestedName]
+    () => allClaimTypes.find((x) => x.name.toLowerCase() === (suggestedName ?? '').toLowerCase()) ?? null,
+    [allClaimTypes, suggestedName]
   );
 
   const loadClaimTypes = () => {
@@ -64,7 +76,6 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
       .then((data) => {
         if (!data.error) {
           setAllClaimTypes(data.results ?? []);
-          setMostUsed(data.mostUsed ?? []);
           setWarning(data.warning ?? null);
         } else {
           setError('Could not load claim types right now. Please try again.');
@@ -81,6 +92,10 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
 
+  useEffect(() => {
+    setShowAll(false);
+  }, [q]);
+
   const renderClaimTypeButton = (item: ClaimTypeOption) => (
     <button
       key={item.id}
@@ -96,9 +111,9 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
     </button>
   );
 
-  const visibleAllList = showAll ? filteredAll : filteredAll.slice(0, 12);
+  const visibleAllList = showAll ? allWithoutSuggested : allWithoutSuggested.slice(0, 12);
 
-  const noMatches = !loading && !error && filteredAll.length === 0 && q.trim().length > 0;
+  const noMatches = !loading && !error && suggestedSection.length === 0 && allWithoutSuggested.length === 0 && q.trim().length > 0;
 
   const submitSuggestion = async () => {
     const name = q.trim();
@@ -195,7 +210,21 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
             {!loading && !error && suggestedSection.length > 0 && (
               <div className="mt-3">
                 <p className="mb-1 text-xs font-medium text-muted-foreground">Suggested claim types</p>
-                <ul className="space-y-1">{suggestedSection.slice(0, 12).map((item) => <li key={item.id}>{renderClaimTypeButton(item)}</li>)}</ul>
+                <div className="flex flex-wrap gap-2">
+                  {suggestedSection.map((item) => (
+                    <button
+                      key={item.id}
+                      type="button"
+                      onClick={() => {
+                        onSelect(item);
+                        setOpen(false);
+                      }}
+                      className="rounded-full border border-border bg-muted px-3 py-1 text-xs text-foreground hover:bg-accent"
+                    >
+                      {item.name}
+                    </button>
+                  ))}
+                </div>
               </div>
             )}
 
@@ -207,7 +236,7 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
                     <li key={item.id}>{renderClaimTypeButton(item)}</li>
                   ))}
                 </ul>
-                {!showAll && filteredAll.length > 12 && (
+                {!showAll && allWithoutSuggested.length > 12 && (
                   <button
                     type="button"
                     onClick={() => setShowAll(true)}
