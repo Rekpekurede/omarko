@@ -5,6 +5,8 @@ import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
+import { MobileBottomNav } from "@/components/MobileBottomNav";
+import { createClient } from "@/lib/supabase/server";
 
 const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
 
@@ -37,11 +39,24 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  let username: string | null = null;
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .maybeSingle();
+    username = profile?.username ?? null;
+  }
+  const isSignedIn = !!user;
+
   return (
     <html lang="en" className={sora.variable} suppressHydrationWarning>
       <head>
@@ -52,7 +67,8 @@ export default function RootLayout({
           <CreateMarkModalProvider>
             <Header brandFontClass={sora.className} />
             <CreateMarkModal />
-            <main className="mx-auto max-w-4xl px-4 py-6">{children}</main>
+            <main className="mx-auto max-w-4xl px-4 pb-24 pt-6 sm:pb-6">{children}</main>
+            <MobileBottomNav isSignedIn={isSignedIn} username={username} />
           </CreateMarkModalProvider>
         </ThemeProvider>
       </body>

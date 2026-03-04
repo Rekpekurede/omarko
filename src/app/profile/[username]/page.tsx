@@ -92,6 +92,19 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     if (!profile) {
       return <ProfileNotFound username={uname} />;
     }
+    // Hydrate core fields from direct table read to avoid stale RPC/schema cache values.
+    try {
+      const { data: freshProfile } = await supabase
+        .from('profiles')
+        .select('username, bio, avatar_url, display_name, location, website')
+        .eq('id', profile.id)
+        .maybeSingle();
+      if (freshProfile) {
+        profile = { ...profile, ...freshProfile };
+      }
+    } catch (freshErr) {
+      console.error('[ProfilePage] profile hydrate error', freshErr);
+    }
     console.log('[ProfilePage] resolved profile', {
       username: profile.username,
       source: profileSource,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Avatar } from '@/components/Avatar';
 import { AvatarUpload } from '@/components/AvatarUpload';
 import { FollowButton } from '@/components/FollowButton';
@@ -37,6 +37,14 @@ export function ProfileHeader({
   const [localLocation, setLocalLocation] = useState<string | null>(location);
   const [localWebsite, setLocalWebsite] = useState<string | null>(website);
   const [localAvatarUrl, setLocalAvatarUrl] = useState<string | null>(avatarUrl);
+
+  useEffect(() => {
+    setLocalDisplayName(displayName);
+    setLocalBio(bio);
+    setLocalLocation(location);
+    setLocalWebsite(website);
+    setLocalAvatarUrl(avatarUrl);
+  }, [displayName, bio, location, website, avatarUrl, username]);
 
   return (
     <div className="relative overflow-hidden rounded-xl border border-gray-200 bg-gradient-to-br from-gray-50 via-white to-gray-100 shadow-sm dark:border-gray-800 dark:from-gray-900 dark:via-gray-950 dark:to-gray-900">
