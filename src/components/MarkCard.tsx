@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation';
 import { MarkStatusLabel } from './MarkStatusLabel';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
+import { Media } from './Media';
 import type { Mark } from '@/lib/types';
 import { DOMAINS } from '@/lib/types';
 
@@ -346,21 +347,14 @@ export function MarkCard({
             <p className="text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
           )}
           {mediaKind === 'image' && mediaUrl && (
-            <button
-              type="button"
+            <Media
+              src={mediaUrl}
+              alt=""
+              width={firstMedia?.width ?? undefined}
+              height={firstMedia?.height ?? undefined}
+              interactive
               onClick={() => setLightboxOpen(true)}
-              className="block w-full text-left"
-              aria-label="Open media preview"
-            >
-              <div className="relative h-[280px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={mediaUrl}
-                  alt=""
-                  className="h-full w-full object-contain"
-                />
-              </div>
-            </button>
+            />
           )}
           {mediaKind === 'audio' && mediaUrl && (
             <div className="rounded-xl border border-border bg-muted/40 p-3">
