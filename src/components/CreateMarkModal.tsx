@@ -328,9 +328,12 @@ export function CreateMarkModal() {
                   rows={5}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="State your claim..."
+                  placeholder="What&apos;s yours?"
                   className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 />
+                <p className="mt-1 text-xs text-muted-foreground">
+                  Example: &quot;Silent Hustle&quot; - a phrase you coined
+                </p>
               </div>
               <div>
                 <label htmlFor="composer-image-description" className="block text-sm font-medium text-black dark:text-white">Image description (optional)</label>
