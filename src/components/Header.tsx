@@ -26,7 +26,7 @@ export async function Header({ brandFontClass }: HeaderProps) {
           <Link href="/" className={`text-xl font-semibold tracking-tight text-black dark:text-white ${brandFontClass ?? ""}`}>
             OMarko
           </Link>
-          <nav className="flex items-center gap-4">
+          <nav className="hidden items-center gap-4 sm:flex">
           <Link href="/" className="text-sm text-gray-600 hover:text-black dark:text-gray-400 dark:hover:text-white">
             Feed
           </Link>
