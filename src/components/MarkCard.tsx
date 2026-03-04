@@ -287,7 +287,6 @@ export function MarkCard({
   };
 
   const commentsCount = mark.comments_count ?? 0;
-  const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
   const claimTypeName = displayClaimType;
   const firstMedia = mark.media?.[0] ?? null;
   const mediaKind = firstMedia?.kind ?? (mark.image_url ? 'image' : null);
