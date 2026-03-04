@@ -16,7 +16,7 @@ export default async function NotificationsPage() {
 
   const { data: list } = await supabase
     .from('notifications')
-    .select('id, type, mark_id, actor_id, read_at, created_at, profiles!notifications_actor_id_fkey(username)')
+    .select('id, type, mark_id, actor_id, read_at, created_at, profiles!notifications_actor_id_fkey(username, avatar_url)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false })
     .limit(LIMIT);
@@ -28,6 +28,7 @@ export default async function NotificationsPage() {
     return {
       ...rest,
       actor_username: actorProfile?.username ?? null,
+      actor_avatar_url: actorProfile?.avatar_url ?? null,
     };
   });
   const nextCursor = notifications.length === LIMIT && notifications[notifications.length - 1]

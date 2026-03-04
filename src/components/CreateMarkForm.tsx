@@ -2,7 +2,7 @@
 
 import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES, CLAIM_TYPE_HELP } from '@/lib/types';
 
 interface CreateMarkFormProps {
   username: string;
@@ -12,7 +12,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [acceptsChallenges, setAcceptsChallenges] = useState(false);
+  const [claimType, setClaimType] = useState<(typeof CLAIM_TYPES)[number]>(CLAIM_TYPES[0]);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -35,7 +35,6 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!acceptsChallenges) return;
     setError(null);
     setUploadNotice(null);
     setIsSubmitting(true);
@@ -44,7 +43,6 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     const formData = new FormData(form);
     const content = (formData.get('content') as string)?.trim() ?? '';
     const domain = formData.get('domain') as string;
-    const claimType = formData.get('claim_type') as string;
 
     if (!content && !imageFile) {
       setError('Add text or an image');
@@ -180,33 +178,27 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
           id="claim_type"
           name="claim_type"
           required
+          value={claimType}
+          onChange={(e) => setClaimType(e.target.value as (typeof CLAIM_TYPES)[number])}
           className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           {CLAIM_TYPES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-      </div>
-      <div className="flex items-start gap-2">
-        <input
-          id="accepts_disputes"
-          type="checkbox"
-          checked={acceptsChallenges}
-          onChange={(e) => setAcceptsChallenges(e.target.checked)}
-          className="mt-1 rounded border-gray-300"
-        />
-        <label htmlFor="accepts_disputes" className="text-sm text-black dark:text-gray-300">
-          {username ? `@${username} is marking this as theirs — and accepts challenges.` : 'You are marking this as yours — and accept challenges.'}
-        </label>
+        <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800/60">
+          <p className="text-gray-700 dark:text-gray-200">{CLAIM_TYPE_HELP[claimType].description}</p>
+          <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Example: &quot;{CLAIM_TYPE_HELP[claimType].example}&quot;</p>
+        </div>
       </div>
       <p className="text-sm text-amber-700 dark:text-amber-400">
-        Lose a challenge → your Mark gets supplanted.
+        {`@${username} is claiming responsibility for this. Make sure the claim type you selected is accurate.`}
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
       <button
         type="submit"
-        disabled={isSubmitting || !acceptsChallenges}
+        disabled={isSubmitting}
         className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
       >
         {isSubmitting ? 'Submitting…' : 'Submit Claim'}

@@ -23,10 +23,41 @@ export interface Profile {
 /** Supabase may return profiles as object or array for relation */
 export type MarkProfile = Pick<Profile, 'username' | 'avatar_url'> | Pick<Profile, 'username' | 'avatar_url'>[];
 
-export const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'General'] as const;
-export const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'] as const;
+export const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'Food', 'Philosophy', 'General'] as const;
+export const CLAIM_TYPES = ['Creation', 'Discovery', 'Prediction', 'Plan', 'Teaching', 'Conviction', 'Strategy'] as const;
 export type Domain = (typeof DOMAINS)[number];
 export type ClaimType = (typeof CLAIM_TYPES)[number];
+
+export const CLAIM_TYPE_HELP: Record<ClaimType, { description: string; example: string }> = {
+  Creation: {
+    description: 'Use when you are claiming you created or produced something original.',
+    example: 'I wrote this poem.',
+  },
+  Discovery: {
+    description: 'Use when you are claiming you were the first to realise or uncover something.',
+    example: 'Air fryers produce healthier fried chicken.',
+  },
+  Prediction: {
+    description: 'Use when you are claiming a future outcome before it happens.',
+    example: 'This startup will become profitable within a year.',
+  },
+  Plan: {
+    description: 'Use when you are proposing a course of action or idea.',
+    example: 'This city should replace buses with electric trams.',
+  },
+  Teaching: {
+    description: 'Use when you are explaining knowledge or guiding others.',
+    example: 'Prayer should be private rather than performative.',
+  },
+  Conviction: {
+    description: 'Use when you are expressing a deeply held belief.',
+    example: 'Forgiveness is more powerful than revenge.',
+  },
+  Strategy: {
+    description: 'Use when you are claiming an intentional approach for achieving a goal.',
+    example: 'We should focus on local partnerships before paid ads.',
+  },
+};
 
 export type NotificationType =
   | 'comment'

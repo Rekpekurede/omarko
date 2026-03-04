@@ -106,7 +106,7 @@ export function MarkCard({
   const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
 
   return (
-    <article className="w-full rounded-xl border border-border bg-card p-5 transition hover:bg-accent/40">
+    <article className="w-full rounded-xl border border-border bg-card p-5 transition duration-200 hover:bg-accent/40 sm:hover:-translate-y-0.5 sm:hover:shadow-md">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1 space-y-4">
           <div className="flex items-center gap-2.5">
@@ -123,6 +123,12 @@ export function MarkCard({
                 Withdrawn
               </span>
             )}
+          </div>
+          <div className="rounded-md border border-border bg-muted/50 px-2.5 py-2">
+            <p className="text-sm font-medium text-foreground">
+              @{username} - {mark.claim_type} · {mark.domain}
+            </p>
+            <p className="text-xs text-muted-foreground">marking this as theirs</p>
           </div>
           {mark.content && (
             <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
@@ -174,7 +180,7 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('SUPPORT')}
               disabled={pending}
-              className={`min-h-[40px] rounded-lg px-2.5 py-2 text-xs font-medium transition disabled:opacity-50 ${
+              className={`min-h-[40px] rounded-lg px-2.5 py-2 text-xs font-medium transition duration-150 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 ${
                 vote === 'SUPPORT'
                   ? 'bg-foreground text-background'
                   : 'border border-border bg-card text-foreground hover:bg-accent'
@@ -186,7 +192,7 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('OPPOSE')}
               disabled={pending || isOwnMark}
-              className={`min-h-[40px] rounded-lg border px-2.5 py-2 text-xs font-medium transition disabled:opacity-50 ${
+              className={`min-h-[40px] rounded-lg border px-2.5 py-2 text-xs font-medium transition duration-150 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 ${
                 vote === 'OPPOSE'
                   ? 'border-foreground bg-accent text-foreground'
                   : 'border-border bg-card text-foreground hover:bg-accent'
@@ -204,14 +210,14 @@ export function MarkCard({
         )}
         <Link
           href={`/mark/${mark.id}?tab=comments`}
-          className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
+          className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground transition duration-150 hover:-translate-y-px hover:bg-accent active:translate-y-0"
         >
           💬 Reply
         </Link>
         {showChallengeButton && !isWithdrawn && (
           <Link
             href={`/mark/${mark.id}`}
-            className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-muted px-2.5 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
+            className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-muted px-2.5 py-2 text-xs font-medium text-foreground transition duration-150 hover:-translate-y-px hover:bg-accent active:translate-y-0"
           >
             ⚔ Challenge
           </Link>
@@ -227,12 +233,12 @@ export function MarkCard({
       {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
       {lightboxOpen && mark.image_url && (
         <div
-          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fade-in"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) setLightboxOpen(false);
           }}
         >
-          <div className="relative w-full max-w-3xl rounded-xl border border-white/20 bg-black p-2">
+          <div className="relative w-full max-w-3xl rounded-xl border border-white/20 bg-black p-2 animate-scale-in">
             <button
               type="button"
               onClick={() => setLightboxOpen(false)}

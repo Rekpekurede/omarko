@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { CLAIM_TYPES, DOMAINS } from '@/lib/types';
 
 export async function POST(request: Request) {
   const supabase = await createClient();
@@ -7,9 +8,6 @@ export async function POST(request: Request) {
   if (!user) {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
-
-  const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'General'];
-  const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'];
 
   let body: { content?: string | null; image_url?: string | null; media_url?: string | null; image_path?: string | null; category?: string; domain?: string; claim_type?: string };
   try {
@@ -30,13 +28,13 @@ export async function POST(request: Request) {
       { status: 400 }
     );
   }
-  if (!domain || !DOMAINS.includes(domain)) {
+  if (!domain || !(DOMAINS as readonly string[]).includes(domain)) {
     return NextResponse.json(
       { error: 'Valid domain is required' },
       { status: 400 }
     );
   }
-  if (!claimType || !CLAIM_TYPES.includes(claimType)) {
+  if (!claimType || !(CLAIM_TYPES as readonly string[]).includes(claimType)) {
     return NextResponse.json(
       { error: 'Valid claim_type is required' },
       { status: 400 }

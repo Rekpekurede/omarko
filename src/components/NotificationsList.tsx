@@ -2,6 +2,8 @@
 
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useState } from 'react';
+import { Avatar } from './Avatar';
+import { RelativeTime } from './RelativeTime';
 
 interface NotificationRow {
   id: string;
@@ -9,6 +11,7 @@ interface NotificationRow {
   mark_id: string | null;
   actor_id: string | null;
   actor_username?: string | null;
+  actor_avatar_url?: string | null;
   read_at: string | null;
   created_at: string;
 }
@@ -102,10 +105,10 @@ export function NotificationsList({
         return `${actor} opposed your mark`;
       case 'comment':
       case 'COMMENT_CREATED':
-        return `${actor} commented on your mark`;
+        return `${actor} replied to your post`;
       case 'dispute_raised':
       case 'DISPUTE_CREATED':
-        return `${actor} challenged your mark`;
+        return `${actor} challenged your claim`;
       case 'follow':
         return `${actor} followed you`;
       case 'MARK_CHAMPION':
@@ -142,13 +145,20 @@ export function NotificationsList({
             <button
               type="button"
               onClick={() => handleClick(n)}
-              className={`w-full rounded-xl border border-border p-3 text-left text-sm transition hover:bg-accent ${
-                n.read_at ? 'bg-card text-muted-foreground' : 'bg-muted font-medium text-foreground'
+              className={`w-full rounded-xl border border-border p-3 text-left transition hover:bg-accent ${
+                n.read_at ? 'bg-card text-muted-foreground' : 'bg-muted/80 text-foreground'
               }`}
             >
-              <span className="block">{notificationText(n)}</span>
-              <span className="mt-1 block text-xs text-muted-foreground">
-                {new Date(n.created_at).toLocaleString()}
+              <span className="flex items-center gap-3">
+                <Avatar username={n.actor_username ?? 'user'} avatarUrl={n.actor_avatar_url ?? null} size="sm" />
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-sm ${n.read_at ? 'font-normal' : 'font-medium'}`}>
+                    {notificationText(n)}
+                  </span>
+                  <span className="mt-0.5 inline-flex items-center text-xs text-muted-foreground">
+                    <RelativeTime dateString={n.created_at} />
+                  </span>
+                </span>
               </span>
             </button>
           </li>

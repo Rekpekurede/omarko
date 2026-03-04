@@ -14,7 +14,7 @@ export async function GET(request: Request) {
 
   let query = supabase
     .from('notifications')
-    .select('id, type, mark_id, actor_id, read_at, created_at, profiles!notifications_actor_id_fkey(username)')
+    .select('id, type, mark_id, actor_id, read_at, created_at, profiles!notifications_actor_id_fkey(username, avatar_url)')
     .eq('user_id', user.id)
     .order('created_at', { ascending: false });
 
@@ -47,6 +47,7 @@ export async function GET(request: Request) {
     return {
       ...rest,
       actor_username: actorProfile?.username ?? null,
+      actor_avatar_url: actorProfile?.avatar_url ?? null,
     };
   });
   const nextCursor = list.length === limit && list[list.length - 1]

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { CLAIM_TYPES, DOMAINS } from '@/lib/types';
+import { CLAIM_TYPES, CLAIM_TYPE_HELP, DOMAINS } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
 
 const TOAST_MS = 1800;
@@ -166,6 +166,10 @@ export function CreateMarkModal() {
                     <option key={c} value={c}>{c}</option>
                   ))}
                 </select>
+                <div className="mt-2 rounded-lg border border-gray-200 bg-gray-50 px-3 py-2 text-sm dark:border-gray-700 dark:bg-gray-800/60">
+                  <p className="text-gray-700 dark:text-gray-200">{CLAIM_TYPE_HELP[claimType].description}</p>
+                  <p className="mt-1 text-xs text-gray-500 dark:text-gray-400">Example: &quot;{CLAIM_TYPE_HELP[claimType].example}&quot;</p>
+                </div>
               </div>
 
               <div>
@@ -237,6 +241,9 @@ export function CreateMarkModal() {
 
               {error && <p className="text-sm text-red-600">{error}</p>}
               {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
+              <p className="text-sm text-amber-700 dark:text-amber-400">
+                You are claiming responsibility for this. Make sure the claim type you selected is accurate.
+              </p>
 
               <div className="flex justify-end">
                 <button

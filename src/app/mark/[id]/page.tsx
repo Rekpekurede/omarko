@@ -132,6 +132,12 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             {isWithdrawn && withdrawnByUsername && (
               <p className="mt-1 text-sm text-muted-foreground">Withdrawn by @{withdrawnByUsername}</p>
             )}
+            <div className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2">
+              <p className="text-sm font-medium text-foreground">
+                @{displayUsername} - {(mark as { claim_type?: string }).claim_type} · {(mark as { domain?: string }).domain}
+              </p>
+              <p className="text-xs text-muted-foreground">marking this as theirs</p>
+            </div>
             <MarkContentWithEdit
               content={content}
               imageUrl={imageUrl}
