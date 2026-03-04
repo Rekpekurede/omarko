@@ -3,7 +3,7 @@
 @tailwind utilities;
 
 :root {
-  --background: #ffffff;
+  --background: #f6f7f9;
   --foreground: #111827;
   --card: #ffffff;
   --border: #e5e7eb;
@@ -13,13 +13,13 @@
 }
 
 .dark {
-  --background: #09090b;
-  --foreground: #f4f4f5;
-  --card: #111113;
-  --border: #27272a;
-  --muted: #18181b;
-  --muted-foreground: #a1a1aa;
-  --accent: #1f1f23;
+  --background: #0b0f19;
+  --foreground: #f9fafb;
+  --card: #111827;
+  --border: #1f2937;
+  --muted: #111827;
+  --muted-foreground: #9ca3af;
+  --accent: #1f2937;
 }
 
 body {

@@ -10,7 +10,6 @@ type ClaimTypeRow = {
 const FALLBACK_CLAIM_TYPES: ClaimTypeRow[] = [
   { id: 'creation', name: 'Creation', description: 'Use when you created or produced something original.' },
   { id: 'discovery', name: 'Discovery', description: 'Use when you are claiming you found or uncovered something first.' },
-  { id: 'statement', name: 'Statement', description: 'Use for a direct claim about a fact, identity, or ownership.' },
   { id: 'prediction', name: 'Prediction', description: 'Use when making a time-bound future claim.' },
   { id: 'stance', name: 'Stance', description: 'Use when taking a clear position on an issue.' },
   { id: 'opinion', name: 'Opinion', description: 'Use for a personal viewpoint or judgment.' },
@@ -44,7 +43,7 @@ export async function GET(request: Request) {
     });
   }
 
-  const resultList = (results ?? []) as ClaimTypeRow[];
+  const resultList = ((results ?? []) as ClaimTypeRow[]).filter((x) => x.name.toLowerCase() !== 'statement');
   const filtered = q
     ? resultList.filter((x) => x.name.toLowerCase().includes(q))
     : resultList;

@@ -38,6 +38,9 @@ export async function POST(request: Request) {
   if (!claimTypeId && !claimTypeName) {
     return NextResponse.json({ error: 'claim_type_id is required' }, { status: 400 });
   }
+  if (claimTypeName?.toLowerCase() === 'statement') {
+    return NextResponse.json({ error: 'Statement is not a supported claim type' }, { status: 400 });
+  }
 
   let claimTypeRow: { id: string; name: string } | null = null;
   const hasUuidClaimTypeId = !!claimTypeId && /^[0-9a-f-]{36}$/i.test(claimTypeId);
@@ -65,6 +68,9 @@ export async function POST(request: Request) {
 
   if (!claimTypeRow) {
     return NextResponse.json({ error: 'Valid claim type is required' }, { status: 400 });
+  }
+  if (claimTypeRow.name.toLowerCase() === 'statement') {
+    return NextResponse.json({ error: 'Statement is not a supported claim type' }, { status: 400 });
   }
   const category = body.category?.trim() || 'General';
 

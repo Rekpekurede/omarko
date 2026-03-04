@@ -62,6 +62,10 @@ export async function PATCH(request: Request) {
     return NextResponse.json({ error: 'Invalid default domain' }, { status: 400 });
   }
 
+  if (defaultClaimType?.toLowerCase() === 'statement') {
+    return NextResponse.json({ error: 'Statement is not a supported claim type' }, { status: 400 });
+  }
+
   if (defaultClaimType) {
     const { data: claimType, error: claimTypeErr } = await supabase
       .from('claim_types')

@@ -16,11 +16,16 @@ export function CreateMarkModal() {
   const [content, setContent] = useState('');
   const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
+  const [imageDescription, setImageDescription] = useState('');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [domainTouched, setDomainTouched] = useState(false);
   const [claimTypeTouched, setClaimTypeTouched] = useState(false);
   const [saveAsDefault, setSaveAsDefault] = useState(false);
+  const [claimPickerOpenToken, setClaimPickerOpenToken] = useState(0);
+  const [aiLoading, setAiLoading] = useState(false);
+  const [aiSuggestion, setAiSuggestion] = useState<{ claimType: string; domain: string } | null>(null);
+  const [aiSuggestionDismissed, setAiSuggestionDismissed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -64,6 +69,7 @@ export function CreateMarkModal() {
 
   const resetForm = () => {
     setContent('');
+    setImageDescription('');
     setDomain(DOMAINS[0]);
     setSelectedClaimType(null);
     setDomainTouched(false);
@@ -74,6 +80,8 @@ export function CreateMarkModal() {
     setImagePreview(null);
     setError(null);
     setUploadNotice(null);
+    setAiSuggestion(null);
+    setAiSuggestionDismissed(false);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -88,6 +96,54 @@ export function CreateMarkModal() {
     setImageFile(file);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(URL.createObjectURL(file));
+  };
+
+  useEffect(() => {
+    if (!isOpen) return;
+    const text = content.trim();
+    const imageCaption = imageFile?.name ?? '';
+    const description = imageDescription.trim();
+    if (!text && !imageCaption && !description) {
+      setAiSuggestion(null);
+      return;
+    }
+    const timer = window.setTimeout(async () => {
+      setAiLoading(true);
+      const res = await fetch('/api/classify-claim', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          text,
+          imageCaption,
+          imageDescription: description,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (res.ok && data.claimType && data.domain) {
+        setAiSuggestion({ claimType: data.claimType, domain: data.domain });
+      }
+      setAiLoading(false);
+    }, 450);
+
+    return () => window.clearTimeout(timer);
+  }, [isOpen, content, imageDescription, imageFile]);
+
+  const applyAiSuggestion = async () => {
+    if (!aiSuggestion) return;
+    if ((DOMAINS as readonly string[]).includes(aiSuggestion.domain)) {
+      setDomain(aiSuggestion.domain as (typeof DOMAINS)[number]);
+      setDomainTouched(true);
+    }
+    const res = await fetch('/api/claim-types');
+    const data = await res.json().catch(() => ({}));
+    const match = (data.results ?? []).find(
+      (item: { id: string; name: string }) => item.name.toLowerCase() === aiSuggestion.claimType.toLowerCase()
+    );
+    if (match) {
+      setSelectedClaimType(match);
+      setClaimTypeTouched(true);
+    }
+    setAiSuggestionDismissed(true);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
@@ -201,6 +257,37 @@ export function CreateMarkModal() {
             <form onSubmit={onSubmit} className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-black dark:text-white">Claim type</label>
+                {aiLoading && (
+                  <p className="mt-1 text-xs text-muted-foreground">Analyzing content...</p>
+                )}
+                {!aiLoading && aiSuggestion && !aiSuggestionDismissed && (
+                  <div className="mt-2 rounded-lg border border-border bg-muted/50 p-3 text-sm">
+                    <p className="font-medium text-foreground">AI suggestion</p>
+                    <p className="mt-1 text-muted-foreground">Claim type: <span className="text-foreground">{aiSuggestion.claimType}</span></p>
+                    <p className="text-muted-foreground">Domain: <span className="text-foreground">{aiSuggestion.domain}</span></p>
+                    <div className="mt-2 flex items-center gap-2">
+                      <button
+                        type="button"
+                        onClick={applyAiSuggestion}
+                        className="rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground hover:bg-accent"
+                      >
+                        Accept
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setClaimPickerOpenToken((x) => x + 1);
+                          setClaimTypeTouched(true);
+                          setDomainTouched(true);
+                          setAiSuggestionDismissed(true);
+                        }}
+                        className="rounded-md border border-transparent px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+                      >
+                        Change
+                      </button>
+                    </div>
+                  </div>
+                )}
                 <div className="mt-1">
                   <ClaimTypePicker
                     selected={selectedClaimType}
@@ -209,6 +296,7 @@ export function CreateMarkModal() {
                       setClaimTypeTouched(true);
                     }}
                     contentHint={content}
+                    forceOpenToken={claimPickerOpenToken}
                   />
                 </div>
               </div>
@@ -238,6 +326,16 @@ export function CreateMarkModal() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="State your claim..."
+                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                />
+              </div>
+              <div>
+                <label htmlFor="composer-image-description" className="block text-sm font-medium text-black dark:text-white">Image description (optional)</label>
+                <input
+                  id="composer-image-description"
+                  value={imageDescription}
+                  onChange={(e) => setImageDescription(e.target.value)}
+                  placeholder="Optional caption or context"
                   className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
                 />
               </div>

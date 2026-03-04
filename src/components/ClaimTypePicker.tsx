@@ -12,16 +12,18 @@ interface ClaimTypePickerProps {
   selected: ClaimTypeOption | null;
   onSelect: (value: ClaimTypeOption) => void;
   contentHint?: string;
+  forceOpenToken?: number;
 }
 
 const CURATED_SUGGESTED_NAMES = [
   'Creation',
   'Discovery',
-  'Statement',
-  'Opinion',
-  'Stance',
   'Method',
+  'Prediction',
+  'Theory',
   'Teaching',
+  'Stance',
+  'Opinion',
 ];
 
 function getHeuristicSuggestion(text: string): string | null {
@@ -33,7 +35,7 @@ function getHeuristicSuggestion(text: string): string | null {
   return null;
 }
 
-export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimTypePickerProps) {
+export function ClaimTypePicker({ selected, onSelect, contentHint = '', forceOpenToken = 0 }: ClaimTypePickerProps) {
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
@@ -91,6 +93,12 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
     loadClaimTypes();
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [open]);
+
+  useEffect(() => {
+    if (!forceOpenToken) return;
+    setOpen(true);
+    setSuggestionSent(null);
+  }, [forceOpenToken]);
 
   useEffect(() => {
     setShowAll(false);

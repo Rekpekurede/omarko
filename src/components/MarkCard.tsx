@@ -142,7 +142,7 @@ export function MarkCard({
   const claimTypeName = getClaimTypeName(mark);
 
   return (
-    <article className="w-full rounded-2xl border border-white/10 bg-neutral-900/80 p-5 shadow-lg shadow-black/30 backdrop-blur transition-all hover:border-white/20 hover:shadow-xl">
+    <article className="w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/20">
       <div className="flex gap-3">
         <div className="shrink-0 pt-0.5">
           <Avatar username={username} avatarUrl={avatarUrl} size="md" className="h-10 w-10 rounded-full" />
@@ -163,10 +163,9 @@ export function MarkCard({
             )}
           </div>
           <div className="rounded-md border border-border bg-muted/50 px-2.5 py-2">
-            <p className="text-sm font-medium text-foreground">
-              @{username} - {claimTypeName} · {mark.domain}
+            <p className="text-xs font-medium text-foreground">
+              Claim: {claimTypeName} · {mark.domain}
             </p>
-            <p className="text-xs text-muted-foreground">@{username} is claiming responsibility for this {claimTypeName}.</p>
           </div>
           {mark.content && (
             <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
@@ -200,7 +199,7 @@ export function MarkCard({
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-4 border-t border-white/10 pt-3 text-sm text-neutral-400">
+      <div className="mt-3 flex items-center gap-4 border-t border-border pt-3 text-sm text-muted-foreground">
         <span className="inline-flex items-center gap-1">👍 {supportVotes}</span>
         <span className="inline-flex items-center gap-1">👎 {opposeVotes}</span>
         <span className="inline-flex items-center gap-1">⚔ {mark.dispute_count ?? 0}</span>
@@ -231,8 +230,8 @@ export function MarkCard({
                 disabled={pending}
                 className={`inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm transition duration-150 disabled:opacity-50 ${
                   vote === 'SUPPORT'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-white'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 👍 Support
@@ -257,8 +256,8 @@ export function MarkCard({
                 disabled={pending || isOwnMark}
                 className={`inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm transition duration-150 disabled:opacity-50 ${
                   vote === 'OPPOSE'
-                    ? 'text-white'
-                    : 'text-neutral-400 hover:text-white'
+                    ? 'text-foreground'
+                    : 'text-muted-foreground hover:text-foreground'
                 }`}
               >
                 👎 Oppose
@@ -268,28 +267,10 @@ export function MarkCard({
         )}
         {!canVote && (
           <>
-            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500">👍 Support</span>
-            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500">👎 Oppose</span>
+            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground">👍 Support</span>
+            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground">👎 Oppose</span>
           </>
         )}
-        <div className="relative">
-          {activeTooltip === 'comment' && (
-            <button
-              type="button"
-              onClick={() => setActiveTooltip(null)}
-              className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
-            >
-              {tooltipText.comment}
-            </button>
-          )}
-          <Link
-            href={`/mark/${mark.id}?tab=comments`}
-            onClick={() => maybeShowFirstTimeTooltip('comment')}
-            className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-400 transition duration-150 hover:text-white"
-          >
-            💬 Reply
-          </Link>
-        </div>
         {showChallengeButton && !isWithdrawn && (
           <div className="relative">
             {activeTooltip === 'challenge' && (
@@ -304,18 +285,34 @@ export function MarkCard({
             <Link
               href={`/mark/${mark.id}`}
               onClick={() => maybeShowFirstTimeTooltip('challenge')}
-              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-400 transition duration-150 hover:text-white"
+              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-muted-foreground transition duration-150 hover:text-foreground"
             >
               ⚔ Challenge
             </Link>
           </div>
         )}
       </ActionButtonGroup>
-      <div className="mt-2 flex flex-wrap items-center gap-2">
-        <Link href={`/mark/${mark.id}?tab=comments`} className="text-xs text-muted-foreground hover:underline">
-          View all {commentsLabel}
-        </Link>
+      <div className="mt-2 flex flex-wrap items-center gap-3 border-t border-border pt-2 text-sm text-muted-foreground">
+        <div className="relative">
+          {activeTooltip === 'comment' && (
+            <button
+              type="button"
+              onClick={() => setActiveTooltip(null)}
+              className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
+            >
+              {tooltipText.comment}
+            </button>
+          )}
+          <Link
+            href={`/mark/${mark.id}?tab=comments`}
+            onClick={() => maybeShowFirstTimeTooltip('comment')}
+            className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 hover:text-foreground"
+          >
+            💬 Reply
+          </Link>
+        </div>
         {showBookmark && <BookmarkButton markId={mark.id} bookmarked={bookmarked} />}
+        <span className="ml-auto text-xs text-muted-foreground">View all {commentsLabel}</span>
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
