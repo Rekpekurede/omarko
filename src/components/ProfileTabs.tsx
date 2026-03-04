@@ -30,7 +30,7 @@ interface ProfileTabsProps {
   marksNextCursor: string | null;
   domain: string;
   claimType: string;
-  disputedOnly: boolean;
+  challengedOnly: boolean;
   supportedMarks: Mark[];
   supportedNextCursor: string | null;
   challenges: ChallengeRow[];
@@ -45,7 +45,7 @@ export function ProfileTabs({
   marksNextCursor,
   domain,
   claimType,
-  disputedOnly,
+  challengedOnly,
   supportedMarks,
   supportedNextCursor,
   challenges,
@@ -82,14 +82,14 @@ export function ProfileTabs({
 
       {currentTab === 'marks' && (
         <>
-          <ProfileMarksFilters username={username} currentDomain={domain} currentClaimType={claimType} disputedOnly={disputedOnly} />
+          <ProfileMarksFilters username={username} currentDomain={domain} currentClaimType={claimType} challengedOnly={challengedOnly} />
           <ProfileMarksList
             username={username}
             initialMarks={marks}
             initialNextCursor={marksNextCursor}
             domain={domain}
             claimType={claimType}
-            disputedOnly={disputedOnly}
+            challengedOnly={challengedOnly}
             currentUserId={currentUserId}
           />
         </>

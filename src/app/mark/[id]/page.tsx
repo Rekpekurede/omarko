@@ -153,7 +153,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
           {user && <BookmarkButton markId={mark.id} bookmarked={isBookmarked} />}
           <span className="text-xs text-muted-foreground">Challenges: {mark.dispute_count ?? 0}</span>
-          <span className="text-xs text-muted-foreground">Disputes: {mark.disputes_survived ?? 0}</span>
+          <span className="text-xs text-muted-foreground">Challenges survived: {mark.disputes_survived ?? 0}</span>
           {!isWithdrawn && user && (
             <VoteButtons
               markId={mark.id}
@@ -165,8 +165,8 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             />
           )}
           {isWithdrawn && (
-            <span className="text-sm text-gray-400" title="Voting and disputing are disabled for withdrawn marks">
-              Voting and disputing disabled
+            <span className="text-sm text-gray-400" title="Voting and challenges are disabled for withdrawn marks">
+              Voting and challenges disabled
             </span>
           )}
         </div>

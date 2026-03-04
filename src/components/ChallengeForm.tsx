@@ -66,7 +66,7 @@ export function ChallengeForm({ markId, canChallenge }: ChallengeFormProps) {
         className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
       />
       <label htmlFor="evidence_url" className="block text-sm font-medium text-gray-600">
-        Evidence URL (optional; evidence-backed challenges count toward DISPUTED)
+        Evidence URL (optional; evidence-backed challenges count toward CHALLENGED)
       </label>
       <input
         id="evidence_url"

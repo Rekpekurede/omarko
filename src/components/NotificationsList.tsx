@@ -105,7 +105,7 @@ export function NotificationsList({
         return `${actor} commented on your mark`;
       case 'dispute_raised':
       case 'DISPUTE_CREATED':
-        return `${actor} raised a dispute on your mark`;
+        return `${actor} challenged your mark`;
       case 'follow':
         return `${actor} followed you`;
       case 'MARK_CHAMPION':

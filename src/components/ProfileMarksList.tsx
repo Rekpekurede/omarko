@@ -10,7 +10,7 @@ interface ProfileMarksListProps {
   initialNextCursor: string | null;
   domain: string;
   claimType: string;
-  disputedOnly: boolean;
+  challengedOnly: boolean;
   currentUserId?: string | null;
 }
 
@@ -20,7 +20,7 @@ export function ProfileMarksList({
   initialNextCursor,
   domain,
   claimType,
-  disputedOnly,
+  challengedOnly,
   currentUserId = null,
 }: ProfileMarksListProps) {
   const [marks, setMarks] = useState<Mark[]>(initialMarks);
@@ -33,7 +33,7 @@ export function ProfileMarksList({
     const params = new URLSearchParams();
     if (domain !== 'all') params.set('domain', domain);
     if (claimType !== 'all') params.set('claim_type', claimType);
-    if (disputedOnly) params.set('disputed_only', 'true');
+    if (challengedOnly) params.set('disputed_only', 'true');
     params.set('cursor', nextCursor);
     params.set('limit', '20');
     const res = await fetch(`/api/profile/${encodeURIComponent(username)}/marks?${params.toString()}`);
@@ -54,7 +54,7 @@ export function ProfileMarksList({
               mark={mark}
               currentUserId={currentUserId}
               canVote={!!currentUserId}
-              showDisputeButton={true}
+              showChallengeButton={true}
             />
           </li>
         ))}

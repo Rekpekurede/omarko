@@ -1,18 +1,17 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
-import { StatPill } from './StatPill';
 import { ActionButtonGroup } from './ActionButtonGroup';
 import type { Mark } from '@/lib/types';
 
 interface MarkCardProps {
   mark: Mark;
-  showDisputeButton?: boolean;
+  showChallengeButton?: boolean;
   bookmarked?: boolean;
   showBookmark?: boolean;
   currentUserId?: string | null;
@@ -30,7 +29,7 @@ function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?
 
 export function MarkCard({
   mark,
-  showDisputeButton = true,
+  showChallengeButton = true,
   bookmarked = false,
   showBookmark = false,
   currentUserId = null,
@@ -50,7 +49,22 @@ export function MarkCard({
   const [pending, setPending] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [lightboxOpen, setLightboxOpen] = useState(false);
   const isOwnMark = !!currentUserId && currentUserId === mark.user_id;
+
+  useEffect(() => {
+    if (!lightboxOpen) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') setLightboxOpen(false);
+    };
+    document.addEventListener('keydown', onKey);
+    const prev = document.body.style.overflow;
+    document.body.style.overflow = 'hidden';
+    return () => {
+      document.removeEventListener('keydown', onKey);
+      document.body.style.overflow = prev;
+    };
+  }, [lightboxOpen]);
 
   const handleVote = async (nextVote: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || pending) return;
@@ -92,11 +106,11 @@ export function MarkCard({
   const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
 
   return (
-    <article className="w-full rounded-2xl border border-border bg-card p-4 transition hover:bg-accent/40">
+    <article className="w-full rounded-xl border border-border bg-card p-5 transition hover:bg-accent/40">
       <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1 space-y-3">
-          <div className="flex items-start gap-2">
-            <Avatar username={username} avatarUrl={avatarUrl} size="sm" />
+        <div className="min-w-0 flex-1 space-y-4">
+          <div className="flex items-center gap-2.5">
+            <Avatar username={username} avatarUrl={avatarUrl} size="md" />
             <Link href={`/profile/${encodeURIComponent(username)}`} className="text-sm font-medium text-foreground hover:underline">
               @{username}
             </Link>
@@ -114,38 +128,42 @@ export function MarkCard({
             <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
           )}
           {mark.image_url && (
-            <Link href={`/mark/${mark.id}`} className="block">
-              <div className="relative h-[320px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(true)}
+              className="block w-full text-left"
+              aria-label="Open image preview"
+            >
+              <div className="relative h-[280px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={mark.image_url}
                   alt=""
-                  className="h-full w-full object-cover"
+                  className="h-full w-full object-contain"
                 />
               </div>
-              <p className="mt-1 text-xs text-muted-foreground">Tap image to expand</p>
-            </Link>
+            </button>
           )}
           <div className="flex flex-wrap items-center gap-2">
             {mark.domain && (
-              <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
                 {mark.domain}
               </span>
             )}
             {mark.claim_type && (
-              <span className="inline-flex items-center rounded-full border border-border bg-muted px-2 py-1 text-xs text-muted-foreground">
+              <span className="inline-flex items-center rounded-full border border-border bg-background px-2.5 py-1 text-xs text-muted-foreground">
                 {mark.claim_type}
               </span>
             )}
           </div>
         </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-2 border-t border-border pt-3">
-        <StatPill label="support" value={supportVotes} />
-        <StatPill label="oppose" value={opposeVotes} />
-        <StatPill label="disputes" value={mark.dispute_count ?? 0} />
-        <StatPill label={commentsLabel} value={commentsCount} />
-        <span className="text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+        <span className="inline-flex items-center gap-1">👍 {supportVotes}</span>
+        <span className="inline-flex items-center gap-1">👎 {opposeVotes}</span>
+        <span className="inline-flex items-center gap-1">⚔ {mark.dispute_count ?? 0}</span>
+        <span className="inline-flex items-center gap-1">💬 {commentsCount}</span>
+        <span className="ml-auto hidden sm:inline">
           {vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}
         </span>
       </div>
@@ -156,51 +174,78 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('SUPPORT')}
               disabled={pending}
-              className={`min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium transition disabled:opacity-50 ${
+              className={`min-h-[40px] rounded-lg px-2.5 py-2 text-xs font-medium transition disabled:opacity-50 ${
                 vote === 'SUPPORT'
                   ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-accent/70'
+                  : 'border border-border bg-card text-foreground hover:bg-accent'
               }`}
             >
-              Support
+              👍 Support
             </button>
             <button
               type="button"
               onClick={() => handleVote('OPPOSE')}
               disabled={pending || isOwnMark}
-              className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-medium transition disabled:opacity-50 ${
+              className={`min-h-[40px] rounded-lg border px-2.5 py-2 text-xs font-medium transition disabled:opacity-50 ${
                 vote === 'OPPOSE'
                   ? 'border-foreground bg-accent text-foreground'
-                  : 'border-border bg-card text-foreground hover:bg-accent/70'
+                  : 'border-border bg-card text-foreground hover:bg-accent'
               }`}
             >
-              Oppose
+              👎 Oppose
             </button>
+          </>
+        )}
+        {!canVote && (
+          <>
+            <span className="min-h-[40px] rounded-lg border border-transparent px-2.5 py-2 text-xs text-muted-foreground" />
+            <span className="min-h-[40px] rounded-lg border border-transparent px-2.5 py-2 text-xs text-muted-foreground" />
           </>
         )}
         <Link
           href={`/mark/${mark.id}?tab=comments`}
-          className="flex min-h-[44px] items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-sm font-medium text-foreground transition hover:bg-accent/70"
+          className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
         >
-          Reply
+          💬 Reply
         </Link>
-        {showDisputeButton && !isWithdrawn && (
+        {showChallengeButton && !isWithdrawn && (
           <Link
             href={`/mark/${mark.id}`}
-            className="flex min-h-[44px] items-center justify-center rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground transition hover:bg-accent"
+            className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-muted px-2.5 py-2 text-xs font-medium text-foreground transition hover:bg-accent"
           >
-            Dispute
+            ⚔ Challenge
           </Link>
         )}
       </ActionButtonGroup>
       <div className="mt-2 flex flex-wrap items-center gap-2">
         <Link href={`/mark/${mark.id}?tab=comments`} className="text-xs text-muted-foreground hover:underline">
-          View all comments
+          View all {commentsLabel}
         </Link>
         {showBookmark && <BookmarkButton markId={mark.id} bookmarked={bookmarked} />}
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
+      {lightboxOpen && mark.image_url && (
+        <div
+          className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget) setLightboxOpen(false);
+          }}
+        >
+          <div className="relative w-full max-w-3xl rounded-xl border border-white/20 bg-black p-2">
+            <button
+              type="button"
+              onClick={() => setLightboxOpen(false)}
+              className="absolute right-2 top-2 z-10 rounded-full bg-black/60 px-2 py-0.5 text-sm text-white"
+              aria-label="Close image preview"
+            >
+              ×
+            </button>
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={mark.image_url} alt="" className="max-h-[85vh] w-full rounded-lg object-contain" />
+          </div>
+        </div>
+      )}
     </article>
   );
 }

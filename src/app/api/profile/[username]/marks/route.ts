@@ -20,7 +20,7 @@ export async function GET(
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
   const claimType = searchParams.get('claim_type');
-  const disputedOnly = searchParams.get('disputed_only') === 'true';
+  const challengedOnly = searchParams.get('disputed_only') === 'true';
   const cursor = searchParams.get('cursor');
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '20', 10), 1), 100);
 
@@ -37,7 +37,7 @@ export async function GET(
   if (claimType && claimType !== 'all' && CLAIM_TYPES.includes(claimType as (typeof CLAIM_TYPES)[number])) {
     query = query.eq('claim_type', claimType);
   }
-  if (disputedOnly) {
+  if (challengedOnly) {
     query = query.gt('dispute_count', 0);
   }
 

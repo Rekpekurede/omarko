@@ -3,7 +3,7 @@ import type { MarkStatus } from '@/lib/types';
 const statusLabels: Record<MarkStatus, string> = {
   ACTIVE: '',
   CHALLENGED: 'Under challenge',
-  DISPUTED: 'Under dispute',
+  DISPUTED: 'Under challenge',
   CHAMPION: 'Champion',
   SUPPLANTED: 'Supplanted',
 };

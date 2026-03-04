@@ -15,7 +15,6 @@ export function CreateMarkModal() {
   const [content, setContent] = useState('');
   const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
   const [claimType, setClaimType] = useState<(typeof CLAIM_TYPES)[number]>(CLAIM_TYPES[0]);
-  const [category, setCategory] = useState('General');
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
@@ -41,7 +40,6 @@ export function CreateMarkModal() {
     setContent('');
     setDomain(DOMAINS[0]);
     setClaimType(CLAIM_TYPES[0]);
-    setCategory('General');
     setImageFile(null);
     if (imagePreview) URL.revokeObjectURL(imagePreview);
     setImagePreview(null);
@@ -108,7 +106,7 @@ export function CreateMarkModal() {
         content: trimmed || null,
         domain,
         claim_type: claimType,
-        category: category.trim() || 'General',
+        category: 'General',
         media_url: imageUrl,
         image_path: imagePath,
       }),
@@ -182,18 +180,6 @@ export function CreateMarkModal() {
                     <option key={d} value={d}>{d}</option>
                   ))}
                 </select>
-              </div>
-
-              <div>
-                <label htmlFor="composer-category" className="block text-sm font-medium text-black dark:text-white">Category</label>
-                <input
-                  id="composer-category"
-                  type="text"
-                  value={category}
-                  onChange={(e) => setCategory(e.target.value)}
-                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                  placeholder="General"
-                />
               </div>
 
               <div>

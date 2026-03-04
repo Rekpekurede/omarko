@@ -36,13 +36,13 @@ export async function POST(
   if (error) {
     if (error.code === '23505') {
       return NextResponse.json(
-        { error: 'You have already disputed this mark' },
+        { error: 'You have already challenged this mark' },
         { status: 409 }
       );
     }
     if (error.message?.includes('Cannot challenge your own mark')) {
       return NextResponse.json(
-        { error: 'Cannot dispute your own mark' },
+        { error: 'Cannot challenge your own mark' },
         { status: 403 }
       );
     }

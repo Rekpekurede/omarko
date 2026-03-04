@@ -12,7 +12,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [acceptsDisputes, setAcceptsDisputes] = useState(false);
+  const [acceptsChallenges, setAcceptsChallenges] = useState(false);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -35,7 +35,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (!acceptsDisputes) return;
+    if (!acceptsChallenges) return;
     setError(null);
     setUploadNotice(null);
     setIsSubmitting(true);
@@ -191,22 +191,22 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
         <input
           id="accepts_disputes"
           type="checkbox"
-          checked={acceptsDisputes}
-          onChange={(e) => setAcceptsDisputes(e.target.checked)}
+          checked={acceptsChallenges}
+          onChange={(e) => setAcceptsChallenges(e.target.checked)}
           className="mt-1 rounded border-gray-300"
         />
         <label htmlFor="accepts_disputes" className="text-sm text-black dark:text-gray-300">
-          {username ? `@${username} is marking this as theirs — and accepts disputes.` : 'You are marking this as yours — and accept disputes.'}
+          {username ? `@${username} is marking this as theirs — and accepts challenges.` : 'You are marking this as yours — and accept challenges.'}
         </label>
       </div>
       <p className="text-sm text-amber-700 dark:text-amber-400">
-        Lose a dispute → your Mark gets supplanted.
+        Lose a challenge → your Mark gets supplanted.
       </p>
       {error && <p className="text-sm text-red-600">{error}</p>}
       {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
       <button
         type="submit"
-        disabled={isSubmitting || !acceptsDisputes}
+        disabled={isSubmitting || !acceptsChallenges}
         className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
       >
         {isSubmitting ? 'Submitting…' : 'Submit Claim'}

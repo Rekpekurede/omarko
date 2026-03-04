@@ -9,7 +9,7 @@ interface FeedListProps {
   initialNextCursor: string | null;
   domain: string;
   claimType: string;
-  disputedOnly: boolean;
+  challengedOnly: boolean;
   bookmarkIds?: string[];
   voteMap?: Record<string, 'SUPPORT' | 'OPPOSE'>;
   showBookmark?: boolean;
@@ -21,7 +21,7 @@ export function FeedList({
   initialNextCursor,
   domain,
   claimType,
-  disputedOnly,
+  challengedOnly,
   bookmarkIds: bookmarkIdsProp = [],
   voteMap: voteMapProp = {},
   showBookmark = false,
@@ -40,7 +40,7 @@ export function FeedList({
     const params = new URLSearchParams();
     if (domain !== 'all') params.set('domain', domain);
     if (claimType !== 'all') params.set('claim_type', claimType);
-    if (disputedOnly) params.set('disputed_only', 'true');
+    if (challengedOnly) params.set('disputed_only', 'true');
     params.set('cursor', nextCursor);
     params.set('limit', '20');
     const res = await fetch(`/api/feed?${params.toString()}`);

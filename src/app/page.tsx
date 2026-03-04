@@ -17,7 +17,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   const params = await searchParams;
   const domain = params.domain ?? 'all';
   const claimType = params.claim_type ?? 'all';
-  const disputedOnly = params.disputed_only === 'true';
+  const challengedOnly = params.disputed_only === 'true';
 
   const supabase = await createClient();
   let query = supabase
@@ -33,7 +33,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   if (claimType !== 'all' && CLAIM_TYPES.includes(claimType as (typeof CLAIM_TYPES)[number])) {
     query = query.eq('claim_type', claimType);
   }
-  if (disputedOnly) {
+  if (challengedOnly) {
     query = query.gt('dispute_count', 0);
   }
 
@@ -89,15 +89,15 @@ export default async function FeedPage({ searchParams }: PageProps) {
       <FeedFilters
         currentDomain={domain}
         currentClaimType={claimType}
-        disputedOnly={disputedOnly}
+        challengedOnly={challengedOnly}
       />
       <FeedList
-        key={`${domain}-${claimType}-${disputedOnly}`}
+        key={`${domain}-${claimType}-${challengedOnly}`}
         initialMarks={listWithCounts}
         initialNextCursor={nextCursor}
         domain={domain}
         claimType={claimType}
-        disputedOnly={disputedOnly}
+        challengedOnly={challengedOnly}
         bookmarkIds={bookmarkIds}
         voteMap={voteMap}
         showBookmark={!!user}

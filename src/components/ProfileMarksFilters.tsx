@@ -7,14 +7,14 @@ interface ProfileMarksFiltersProps {
   username: string;
   currentDomain?: string;
   currentClaimType?: string;
-  disputedOnly?: boolean;
+  challengedOnly?: boolean;
 }
 
 export function ProfileMarksFilters({
   username,
   currentDomain = 'all',
   currentClaimType = 'all',
-  disputedOnly = false,
+  challengedOnly = false,
 }: ProfileMarksFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,7 +31,7 @@ export function ProfileMarksFilters({
     router.push(`${base}?${next.toString()}`);
   };
 
-  const setDisputedOnly = (v: boolean) => {
+  const setChallengedOnly = (v: boolean) => {
     const next = new URLSearchParams(searchParams.toString());
     if (v) next.set('disputed_only', 'true');
     else next.delete('disputed_only');
@@ -66,11 +66,11 @@ export function ProfileMarksFilters({
       <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
         <input
           type="checkbox"
-          checked={disputedOnly}
-          onChange={(e) => setDisputedOnly(e.target.checked)}
+          checked={challengedOnly}
+          onChange={(e) => setChallengedOnly(e.target.checked)}
           className="rounded border-gray-300"
         />
-        Disputed only
+        Challenged only
       </label>
     </div>
   );

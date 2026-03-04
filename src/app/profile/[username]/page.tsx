@@ -347,7 +347,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             marksNextCursor={marksNextCursor}
             domain={domain ?? 'all'}
             claimType={claim_type ?? 'all'}
-            disputedOnly={disputed_only === 'true'}
+            challengedOnly={disputed_only === 'true'}
             supportedMarks={supportedMarks as unknown as import('@/lib/types').Mark[]}
             supportedNextCursor={supportedNextCursor}
             challenges={challenges}
@@ -362,7 +362,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             <ul className="space-y-4">
               {withdrawnMarks.map((mark) => (
                 <li key={mark.id}>
-                  <MarkCard mark={mark as unknown as import('@/lib/types').Mark} showDisputeButton={false} />
+                  <MarkCard mark={mark as unknown as import('@/lib/types').Mark} showChallengeButton={false} />
                 </li>
               ))}
             </ul>
