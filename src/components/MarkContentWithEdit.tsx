@@ -28,17 +28,17 @@ export function MarkContentWithEdit({ content, imageUrl, markId, canEdit }: Mark
   return (
     <div>
       {imageUrl && (
-        <div className="mt-3 overflow-hidden rounded-lg">
+        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={imageUrl} alt="" className="max-h-96 w-full object-contain" />
+          <img src={imageUrl} alt="" className="max-h-[80vh] w-full object-contain" />
         </div>
       )}
-      {content && <p className="mt-3 text-gray-600 dark:text-gray-300">{content}</p>}
+      {content && <p className="mt-3 text-base leading-relaxed text-foreground">{content}</p>}
       {canEdit && (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-2 text-sm text-gray-500 hover:underline"
+          className="mt-2 text-sm text-muted-foreground hover:underline"
         >
           Edit
         </button>

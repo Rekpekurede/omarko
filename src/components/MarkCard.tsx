@@ -91,7 +91,7 @@ export function MarkCard({
   const commentsCount = mark.comments_count ?? 0;
 
   return (
-    <article className="rounded-2xl border border-border bg-card p-4 transition hover:bg-accent/40">
+    <article className="w-full rounded-2xl border border-border bg-card p-4 transition hover:bg-accent/40">
       <div className="flex items-start gap-2">
         <div className="min-w-0 flex-1 space-y-3">
           <div className="flex items-start gap-2">
@@ -114,7 +114,7 @@ export function MarkCard({
           )}
           {mark.image_url && (
             <Link href={`/mark/${mark.id}`} className="block">
-              <div className="relative aspect-video max-h-72 w-full overflow-hidden rounded-xl bg-muted">
+              <div className="relative h-[320px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={mark.image_url}
@@ -122,6 +122,7 @@ export function MarkCard({
                   className="h-full w-full object-cover"
                 />
               </div>
+              <p className="mt-1 text-xs text-muted-foreground">Tap image to expand</p>
             </Link>
           )}
           <div className="flex flex-wrap items-center gap-2">
