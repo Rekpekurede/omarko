@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { ChallengeForm } from './ChallengeForm';
 import { ChallengeEditEvidence } from './ChallengeEditEvidence';
 import { VersionsTab } from './VersionsTab';
@@ -59,10 +60,18 @@ export function MarkDetailTabs({
 }: MarkDetailTabsProps) {
   void canEdit; // reserved for future edit UI
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [tab, setTab] = useState<'overview' | 'challenges' | 'comments' | 'versions'>(currentTab);
   const [commentContent, setCommentContent] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
+  const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
+
+  useEffect(() => {
+    if (tab !== 'comments') return;
+    if (searchParams.get('focus') !== '1') return;
+    commentInputRef.current?.focus();
+  }, [tab, searchParams]);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -198,6 +207,7 @@ export function MarkDetailTabs({
           {currentUserId && (
             <form onSubmit={handleAddComment} className="space-y-2">
               <textarea
+                ref={commentInputRef}
                 value={commentContent}
                 onChange={(e) => setCommentContent(e.target.value)}
                 rows={2}

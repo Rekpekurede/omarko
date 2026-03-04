@@ -42,6 +42,7 @@ export function ProfileSupportedList({
               mark={mark}
               currentUserId={currentUserId}
               canVote={!!currentUserId}
+              showBookmark={!!currentUserId}
               showChallengeButton={true}
             />
           </li>
