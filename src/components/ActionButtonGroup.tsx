@@ -6,7 +6,7 @@ interface ActionButtonGroupProps {
 
 export function ActionButtonGroup({ children }: ActionButtonGroupProps) {
   return (
-    <div className="mt-3 grid grid-cols-4 gap-2 border-t border-border pt-3">
+    <div className="mt-3 flex flex-wrap items-center gap-4 border-t border-white/10 pt-3 text-sm text-neutral-400">
       {children}
     </div>
   );

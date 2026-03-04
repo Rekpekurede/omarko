@@ -23,12 +23,15 @@ export async function GET() {
   let claimTypeOption: { id: string; name: string } | null = null;
   const defaultClaimType = profile?.default_claim_type ?? null;
   if (defaultClaimType) {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('claim_types')
       .select('id, name')
       .eq('name', defaultClaimType)
       .maybeSingle();
-    claimTypeOption = data ?? null;
+    claimTypeOption = data ?? { id: defaultClaimType, name: defaultClaimType };
+    if (error) {
+      claimTypeOption = { id: defaultClaimType, name: defaultClaimType };
+    }
   }
 
   return NextResponse.json({
@@ -60,12 +63,12 @@ export async function PATCH(request: Request) {
   }
 
   if (defaultClaimType) {
-    const { data: claimType } = await supabase
+    const { data: claimType, error: claimTypeErr } = await supabase
       .from('claim_types')
       .select('id')
       .eq('name', defaultClaimType)
       .maybeSingle();
-    if (!claimType) {
+    if (!claimTypeErr && !claimType) {
       return NextResponse.json({ error: 'Invalid default claim type' }, { status: 400 });
     }
   }

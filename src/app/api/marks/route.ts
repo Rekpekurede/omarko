@@ -40,20 +40,27 @@ export async function POST(request: Request) {
   }
 
   let claimTypeRow: { id: string; name: string } | null = null;
-  if (claimTypeId) {
+  const hasUuidClaimTypeId = !!claimTypeId && /^[0-9a-f-]{36}$/i.test(claimTypeId);
+  if (hasUuidClaimTypeId && claimTypeId) {
     const { data } = await supabase
       .from('claim_types')
       .select('id, name')
       .eq('id', claimTypeId)
       .maybeSingle();
     claimTypeRow = data;
-  } else if (claimTypeName) {
+  }
+  if (!claimTypeRow && claimTypeName) {
     const { data } = await supabase
       .from('claim_types')
       .select('id, name')
       .eq('name', claimTypeName)
       .maybeSingle();
     claimTypeRow = data;
+  }
+
+  if (!claimTypeRow && claimTypeName) {
+    // Graceful fallback when claim_types table/schema is not ready.
+    claimTypeRow = { id: claimTypeId ?? claimTypeName, name: claimTypeName };
   }
 
   if (!claimTypeRow) {

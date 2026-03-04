@@ -6,7 +6,6 @@ type ClaimTypeOption = {
   id: string;
   name: string;
   description?: string | null;
-  family?: string | null;
 };
 
 interface ClaimTypePickerProps {
@@ -28,34 +27,78 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
   const [open, setOpen] = useState(false);
   const [q, setQ] = useState('');
   const [loading, setLoading] = useState(false);
-  const [results, setResults] = useState<ClaimTypeOption[]>([]);
+  const [allClaimTypes, setAllClaimTypes] = useState<ClaimTypeOption[]>([]);
   const [mostUsed, setMostUsed] = useState<ClaimTypeOption[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [suggestionSent, setSuggestionSent] = useState<string | null>(null);
+  const [showAll, setShowAll] = useState(false);
+  const [warning, setWarning] = useState<string | null>(null);
 
   const suggestedName = useMemo(() => getHeuristicSuggestion(contentHint), [contentHint]);
+  const filteredAll = useMemo(() => {
+    const term = q.trim().toLowerCase();
+    if (!term) return allClaimTypes;
+    return allClaimTypes.filter((x) => x.name.toLowerCase().includes(term));
+  }, [allClaimTypes, q]);
+
+  const suggestedSection = useMemo(() => {
+    const uniq = new Map<string, ClaimTypeOption>();
+    for (const item of [...mostUsed, ...allClaimTypes]) {
+      if (!uniq.has(item.id)) uniq.set(item.id, item);
+      if (uniq.size >= 15) break;
+    }
+    return Array.from(uniq.values());
+  }, [mostUsed, allClaimTypes]);
+
   const suggestedOption = useMemo(
-    () => [...mostUsed, ...results].find((x) => x.name.toLowerCase() === (suggestedName ?? '').toLowerCase()) ?? null,
-    [mostUsed, results, suggestedName]
+    () => [...mostUsed, ...allClaimTypes].find((x) => x.name.toLowerCase() === (suggestedName ?? '').toLowerCase()) ?? null,
+    [mostUsed, allClaimTypes, suggestedName]
   );
 
-  useEffect(() => {
-    if (!open) return;
+  const loadClaimTypes = () => {
     setLoading(true);
     setError(null);
-    fetch(`/api/claim-types?q=${encodeURIComponent(q)}`)
+    setWarning(null);
+    fetch('/api/claim-types')
       .then((res) => res.json())
       .then((data) => {
         if (!data.error) {
-          setResults(data.results ?? []);
+          setAllClaimTypes(data.results ?? []);
           setMostUsed(data.mostUsed ?? []);
+          setWarning(data.warning ?? null);
         } else {
-          setError(data.error);
+          setError('Could not load claim types right now. Please try again.');
         }
       })
-      .catch(() => setError('Failed to load claim types'))
+      .catch(() => setError('Could not load claim types right now. Please try again.'))
       .finally(() => setLoading(false));
-  }, [open, q]);
+  };
+
+  useEffect(() => {
+    if (!open) return;
+    if (allClaimTypes.length > 0) return;
+    loadClaimTypes();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [open]);
+
+  const renderClaimTypeButton = (item: ClaimTypeOption) => (
+    <button
+      key={item.id}
+      type="button"
+      onClick={() => {
+        onSelect(item);
+        setOpen(false);
+      }}
+      className="w-full rounded-lg border border-border bg-card px-3 py-2 text-left hover:bg-accent"
+    >
+      <p className="text-sm font-medium text-foreground">{item.name}</p>
+      {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
+    </button>
+  );
+
+  const visibleAllList = showAll ? filteredAll : filteredAll.slice(0, 12);
+
+  const noMatches = !loading && !error && filteredAll.length === 0 && q.trim().length > 0;
 
   const submitSuggestion = async () => {
     const name = q.trim();
@@ -128,49 +171,55 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '' }: ClaimT
               placeholder="Search claim types..."
               className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground"
             />
-            {loading && <p className="mt-2 text-xs text-muted-foreground">Loading...</p>}
-            {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
-
-            {mostUsed.length > 0 && (
-              <div className="mt-3">
-                <p className="mb-1 text-xs font-medium text-muted-foreground">Most used</p>
-                <div className="flex flex-wrap gap-2">
-                  {mostUsed.map((item) => (
-                    <button
-                      key={item.id}
-                      type="button"
-                      onClick={() => {
-                        onSelect(item);
-                        setOpen(false);
-                      }}
-                      className="rounded-full border border-border bg-muted px-2.5 py-1 text-xs text-foreground hover:bg-accent"
-                    >
-                      {item.name}
-                    </button>
-                  ))}
-                </div>
+            {warning && <p className="mt-2 text-xs text-amber-600">{warning}</p>}
+            {loading && (
+              <div className="mt-3 space-y-2">
+                <div className="h-10 animate-pulse rounded-lg bg-muted/60" />
+                <div className="h-10 animate-pulse rounded-lg bg-muted/60" />
+                <div className="h-10 animate-pulse rounded-lg bg-muted/60" />
+              </div>
+            )}
+            {error && (
+              <div className="mt-3 rounded-lg border border-border bg-muted/40 p-3">
+                <p className="text-sm text-foreground">{error}</p>
+                <button
+                  type="button"
+                  onClick={loadClaimTypes}
+                  className="mt-2 rounded-lg border border-border bg-card px-3 py-1.5 text-xs text-foreground hover:bg-accent"
+                >
+                  Retry
+                </button>
               </div>
             )}
 
-            <ul className="mt-3 max-h-64 space-y-1 overflow-y-auto">
-              {results.map((item) => (
-                <li key={item.id}>
+            {!loading && !error && suggestedSection.length > 0 && (
+              <div className="mt-3">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">Suggested claim types</p>
+                <ul className="space-y-1">{suggestedSection.slice(0, 12).map((item) => <li key={item.id}>{renderClaimTypeButton(item)}</li>)}</ul>
+              </div>
+            )}
+
+            {!loading && !error && (
+              <div className="mt-3">
+                <p className="mb-1 text-xs font-medium text-muted-foreground">All claim types</p>
+                <ul className="max-h-64 space-y-1 overflow-y-auto">
+                  {visibleAllList.map((item) => (
+                    <li key={item.id}>{renderClaimTypeButton(item)}</li>
+                  ))}
+                </ul>
+                {!showAll && filteredAll.length > 12 && (
                   <button
                     type="button"
-                    onClick={() => {
-                      onSelect(item);
-                      setOpen(false);
-                    }}
-                    className="w-full rounded-lg border border-border bg-card px-3 py-2 text-left hover:bg-accent"
+                    onClick={() => setShowAll(true)}
+                    className="mt-2 text-xs text-muted-foreground underline-offset-2 hover:underline"
                   >
-                    <p className="text-sm font-medium text-foreground">{item.name}</p>
-                    {item.description && <p className="text-xs text-muted-foreground">{item.description}</p>}
+                    More
                   </button>
-                </li>
-              ))}
-            </ul>
+                )}
+              </div>
+            )}
 
-            {!loading && results.length === 0 && (
+            {noMatches && (
               <div className="mt-3 rounded-lg border border-border bg-muted/40 p-3">
                 <p className="text-sm text-foreground">Can&apos;t find it? Suggest a new claim type.</p>
                 <button

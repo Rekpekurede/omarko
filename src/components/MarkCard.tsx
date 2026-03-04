@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import Link from 'next/link';
 import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
@@ -56,6 +56,8 @@ export function MarkCard({
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState<'support' | 'oppose' | 'challenge' | 'comment' | null>(null);
+  const tooltipTimerRef = useRef<number | null>(null);
   const isOwnMark = !!currentUserId && currentUserId === mark.user_id;
 
   useEffect(() => {
@@ -71,6 +73,33 @@ export function MarkCard({
       document.body.style.overflow = prev;
     };
   }, [lightboxOpen]);
+
+  useEffect(() => {
+    return () => {
+      if (tooltipTimerRef.current) {
+        window.clearTimeout(tooltipTimerRef.current);
+      }
+    };
+  }, []);
+
+  const maybeShowFirstTimeTooltip = (type: 'support' | 'oppose' | 'challenge' | 'comment') => {
+    if (typeof window === 'undefined') return;
+    const key = `omarko.tooltip.seen.${type}`;
+    if (window.localStorage.getItem(key)) return;
+    window.localStorage.setItem(key, '1');
+    setActiveTooltip(type);
+    if (tooltipTimerRef.current) window.clearTimeout(tooltipTimerRef.current);
+    tooltipTimerRef.current = window.setTimeout(() => {
+      setActiveTooltip(null);
+    }, 2800);
+  };
+
+  const tooltipText: Record<'support' | 'oppose' | 'challenge' | 'comment', string> = {
+    support: 'You like this claim or approve of it.',
+    oppose: "You're not a fan of this claim.",
+    challenge: 'You disagree that this person is the source of this claim.',
+    comment: 'Join the discussion about this claim.',
+  };
 
   const handleVote = async (nextVote: 'SUPPORT' | 'OPPOSE') => {
     if (!canVote || pending) return;
@@ -113,11 +142,13 @@ export function MarkCard({
   const claimTypeName = getClaimTypeName(mark);
 
   return (
-    <article className="w-full rounded-xl border border-border bg-card p-5 transition duration-200 hover:bg-accent/40 sm:hover:-translate-y-0.5 sm:hover:shadow-md">
-      <div className="flex items-start gap-2">
-        <div className="min-w-0 flex-1 space-y-4">
+    <article className="w-full rounded-2xl border border-white/10 bg-neutral-900/80 p-5 shadow-lg shadow-black/30 backdrop-blur transition-all hover:border-white/20 hover:shadow-xl">
+      <div className="flex gap-3">
+        <div className="shrink-0 pt-0.5">
+          <Avatar username={username} avatarUrl={avatarUrl} size="md" className="h-10 w-10 rounded-full" />
+        </div>
+        <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2.5">
-            <Avatar username={username} avatarUrl={avatarUrl} size="md" />
             <Link href={`/profile/${encodeURIComponent(username)}`} className="text-sm font-medium text-foreground hover:underline">
               @{username}
             </Link>
@@ -169,63 +200,115 @@ export function MarkCard({
           </div>
         </div>
       </div>
-      <div className="mt-3 flex items-center gap-3 border-t border-border pt-3 text-xs text-muted-foreground">
+      <div className="mt-3 flex items-center gap-4 border-t border-white/10 pt-3 text-sm text-neutral-400">
         <span className="inline-flex items-center gap-1">👍 {supportVotes}</span>
         <span className="inline-flex items-center gap-1">👎 {opposeVotes}</span>
         <span className="inline-flex items-center gap-1">⚔ {mark.dispute_count ?? 0}</span>
         <span className="inline-flex items-center gap-1">💬 {commentsCount}</span>
-        <span className="ml-auto hidden sm:inline">
+        <span className="ml-auto hidden text-xs text-muted-foreground sm:inline">
           {vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}
         </span>
       </div>
       <ActionButtonGroup>
         {canVote && !isWithdrawn && (
           <>
-            <button
-              type="button"
-              onClick={() => handleVote('SUPPORT')}
-              disabled={pending}
-              className={`min-h-[40px] rounded-lg px-2.5 py-2 text-xs font-medium transition duration-150 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 ${
-                vote === 'SUPPORT'
-                  ? 'bg-foreground text-background'
-                  : 'border border-border bg-card text-foreground hover:bg-accent'
-              }`}
-            >
-              👍 Support
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVote('OPPOSE')}
-              disabled={pending || isOwnMark}
-              className={`min-h-[40px] rounded-lg border px-2.5 py-2 text-xs font-medium transition duration-150 hover:-translate-y-px active:translate-y-0 disabled:opacity-50 ${
-                vote === 'OPPOSE'
-                  ? 'border-foreground bg-accent text-foreground'
-                  : 'border-border bg-card text-foreground hover:bg-accent'
-              }`}
-            >
-              👎 Oppose
-            </button>
+            <div className="relative">
+              {activeTooltip === 'support' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTooltip(null)}
+                  className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
+                >
+                  {tooltipText.support}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  maybeShowFirstTimeTooltip('support');
+                  handleVote('SUPPORT');
+                }}
+                disabled={pending}
+                className={`inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm transition duration-150 disabled:opacity-50 ${
+                  vote === 'SUPPORT'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                👍 Support
+              </button>
+            </div>
+            <div className="relative">
+              {activeTooltip === 'oppose' && (
+                <button
+                  type="button"
+                  onClick={() => setActiveTooltip(null)}
+                  className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
+                >
+                  {tooltipText.oppose}
+                </button>
+              )}
+              <button
+                type="button"
+                onClick={() => {
+                  maybeShowFirstTimeTooltip('oppose');
+                  handleVote('OPPOSE');
+                }}
+                disabled={pending || isOwnMark}
+                className={`inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm transition duration-150 disabled:opacity-50 ${
+                  vote === 'OPPOSE'
+                    ? 'text-white'
+                    : 'text-neutral-400 hover:text-white'
+                }`}
+              >
+                👎 Oppose
+              </button>
+            </div>
           </>
         )}
         {!canVote && (
           <>
-            <span className="min-h-[40px] rounded-lg border border-transparent px-2.5 py-2 text-xs text-muted-foreground" />
-            <span className="min-h-[40px] rounded-lg border border-transparent px-2.5 py-2 text-xs text-muted-foreground" />
+            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500">👍 Support</span>
+            <span className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-500">👎 Oppose</span>
           </>
         )}
-        <Link
-          href={`/mark/${mark.id}?tab=comments`}
-          className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-card px-2.5 py-2 text-xs font-medium text-foreground transition duration-150 hover:-translate-y-px hover:bg-accent active:translate-y-0"
-        >
-          💬 Reply
-        </Link>
-        {showChallengeButton && !isWithdrawn && (
+        <div className="relative">
+          {activeTooltip === 'comment' && (
+            <button
+              type="button"
+              onClick={() => setActiveTooltip(null)}
+              className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
+            >
+              {tooltipText.comment}
+            </button>
+          )}
           <Link
-            href={`/mark/${mark.id}`}
-            className="flex min-h-[40px] items-center justify-center rounded-lg border border-border bg-muted px-2.5 py-2 text-xs font-medium text-foreground transition duration-150 hover:-translate-y-px hover:bg-accent active:translate-y-0"
+            href={`/mark/${mark.id}?tab=comments`}
+            onClick={() => maybeShowFirstTimeTooltip('comment')}
+            className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-400 transition duration-150 hover:text-white"
           >
-            ⚔ Challenge
+            💬 Reply
           </Link>
+        </div>
+        {showChallengeButton && !isWithdrawn && (
+          <div className="relative">
+            {activeTooltip === 'challenge' && (
+              <button
+                type="button"
+                onClick={() => setActiveTooltip(null)}
+                className="absolute -top-12 left-1/2 z-10 -translate-x-1/2 rounded-md border border-border bg-background px-2 py-1 text-[11px] text-foreground shadow"
+              >
+                {tooltipText.challenge}
+              </button>
+            )}
+            <Link
+              href={`/mark/${mark.id}`}
+              onClick={() => maybeShowFirstTimeTooltip('challenge')}
+              className="inline-flex min-h-[36px] items-center gap-1 rounded-lg px-2 py-1 text-sm text-neutral-400 transition duration-150 hover:text-white"
+            >
+              ⚔ Challenge
+            </Link>
+          </div>
         )}
       </ActionButtonGroup>
       <div className="mt-2 flex flex-wrap items-center gap-2">
