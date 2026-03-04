@@ -7,6 +7,7 @@ import { MarkStatusLabel } from './MarkStatusLabel';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
 import type { Mark } from '@/lib/types';
+import { DOMAINS } from '@/lib/types';
 
 interface MarkCardProps {
   mark: Mark;
@@ -82,9 +83,19 @@ export function MarkCard({
   const [saved, setSaved] = useState(bookmarked);
   const [error, setError] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [classificationSaving, setClassificationSaving] = useState(false);
+  const [classificationError, setClassificationError] = useState<string | null>(null);
+  const [claimTypeOptions, setClaimTypeOptions] = useState<string[]>([]);
+  const [displayClaimType, setDisplayClaimType] = useState(getClaimTypeName(mark));
+  const [displayDomain, setDisplayDomain] = useState(mark.domain ?? 'General');
+  const [editingClaimType, setEditingClaimType] = useState(getClaimTypeName(mark));
+  const [editingDomain, setEditingDomain] = useState(mark.domain ?? 'General');
   const [lightboxOpen, setLightboxOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<'support' | 'oppose' | 'challenge' | 'comment' | null>(null);
   const tooltipTimerRef = useRef<number | null>(null);
+  const menuRef = useRef<HTMLDivElement | null>(null);
   const isOwnMark = !!currentUserId && currentUserId === mark.user_id;
   const isChallengeActive = mark.status === 'CHALLENGED';
 
@@ -119,6 +130,40 @@ export function MarkCard({
   useEffect(() => {
     setSaved(bookmarked);
   }, [bookmarked]);
+
+  useEffect(() => {
+    setDisplayClaimType(getClaimTypeName(mark));
+    setDisplayDomain(mark.domain ?? 'General');
+  }, [mark]);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const onDocClick = (event: MouseEvent) => {
+      if (!menuRef.current) return;
+      if (!menuRef.current.contains(event.target as Node)) {
+        setMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', onDocClick);
+    return () => document.removeEventListener('mousedown', onDocClick);
+  }, [menuOpen]);
+
+  useEffect(() => {
+    if (!isEditModalOpen) return;
+    const loadClaimTypes = async () => {
+      const res = await fetch('/api/claim-types');
+      const data = await res.json().catch(() => ({}));
+      const fromApi = Array.isArray(data.results)
+        ? data.results.map((row: { name?: string }) => row.name).filter((name: string | undefined): name is string => !!name)
+        : [];
+      const options = fromApi.length > 0 ? fromApi : [displayClaimType];
+      if (!options.includes(displayClaimType)) {
+        options.unshift(displayClaimType);
+      }
+      setClaimTypeOptions(Array.from(new Set(options)));
+    };
+    loadClaimTypes();
+  }, [isEditModalOpen, displayClaimType]);
 
   const maybeShowFirstTimeTooltip = (type: 'support' | 'oppose' | 'challenge' | 'comment') => {
     if (typeof window === 'undefined') return;
@@ -197,9 +242,52 @@ export function MarkCard({
     setBookmarkPending(false);
   };
 
+  const openClassificationModal = () => {
+    setEditingClaimType(displayClaimType);
+    setEditingDomain(displayDomain);
+    setClassificationError(null);
+    setIsEditModalOpen(true);
+    setMenuOpen(false);
+  };
+
+  const saveClassification = async () => {
+    if (!editingClaimType || !editingDomain || classificationSaving) return;
+    setClassificationError(null);
+    setClassificationSaving(true);
+
+    const prevClaimType = displayClaimType;
+    const prevDomain = displayDomain;
+    setDisplayClaimType(editingClaimType);
+    setDisplayDomain(editingDomain);
+
+    const res = await fetch(`/api/marks/${mark.id}`, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        claim_type: editingClaimType,
+        domain: editingDomain,
+      }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      setDisplayClaimType(prevClaimType);
+      setDisplayDomain(prevDomain);
+      setClassificationError(data.error ?? 'Failed to update classification');
+      setClassificationSaving(false);
+      return;
+    }
+
+    setDisplayClaimType((data.claim_type as string | undefined) ?? editingClaimType);
+    setDisplayDomain((data.domain as string | undefined) ?? editingDomain);
+    setClassificationSaving(false);
+    setIsEditModalOpen(false);
+    setToast('Claim classification updated.');
+    window.setTimeout(() => setToast(null), 2200);
+  };
+
   const commentsCount = mark.comments_count ?? 0;
   const commentsLabel = commentsCount === 1 ? 'comment' : 'comments';
-  const claimTypeName = getClaimTypeName(mark);
+  const claimTypeName = displayClaimType;
   const firstMedia = mark.media?.[0] ?? null;
   const mediaKind = firstMedia?.kind ?? (mark.image_url ? 'image' : null);
   const mediaUrl = firstMedia?.signed_url ?? mark.image_url ?? null;
@@ -225,14 +313,37 @@ export function MarkCard({
                 Withdrawn
               </span>
             )}
+            {isOwnMark && (
+              <div className="relative" ref={menuRef}>
+                <button
+                  type="button"
+                  aria-label="Post options"
+                  onClick={() => setMenuOpen((v) => !v)}
+                  className="inline-flex h-8 w-8 items-center justify-center rounded-full text-muted-foreground transition hover:bg-accent/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
+                >
+                  ⋯
+                </button>
+                {menuOpen && (
+                  <div className="absolute right-0 top-9 z-20 min-w-[11rem] rounded-xl border border-border bg-card p-1 shadow-lg">
+                    <button
+                      type="button"
+                      onClick={openClassificationModal}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-foreground transition hover:bg-accent/60"
+                    >
+                      Edit
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
-          <div className="rounded-md border border-border bg-muted/50 px-2.5 py-2">
-            <p className="text-xs font-medium text-foreground">
-              Claim: {claimTypeName} · {mark.domain}
+          <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted/45 px-3 py-1.5">
+            <p className="text-xs font-semibold tracking-wide text-muted-foreground">
+              {claimTypeName} · {displayDomain}
             </p>
           </div>
           {mark.content && (
-            <p className="text-base leading-relaxed text-foreground">{mark.content}</p>
+            <p className="text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
           )}
           {mediaKind === 'image' && mediaUrl && (
             <button
@@ -402,10 +513,79 @@ export function MarkCard({
             <span className="hidden sm:inline">{saved ? 'Saved' : 'Save'}</span>
           </button>
         </div>
-        <p className="mt-2 text-right text-xs text-muted-foreground">View all {commentsLabel}</p>
+        {commentsCount > 0 && (
+          <p className="mt-2 text-right text-xs text-muted-foreground">View all comments</p>
+        )}
       </div>
       {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
       {toast && <p className="mt-2 text-xs text-amber-600 dark:text-amber-400">{toast}</p>}
+      {isEditModalOpen && (
+        <div
+          className="fixed inset-0 z-[85] flex items-center justify-center bg-black/55 p-4"
+          onMouseDown={(e) => {
+            if (e.target === e.currentTarget && !classificationSaving) setIsEditModalOpen(false);
+          }}
+        >
+          <div className="w-full max-w-md rounded-2xl border border-border bg-card p-4 shadow-xl">
+            <h3 className="text-base font-semibold text-foreground">Edit Claim Classification</h3>
+            <div className="mt-4 space-y-3">
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground" htmlFor={`edit-claim-type-${mark.id}`}>
+                  Claim Type
+                </label>
+                <select
+                  id={`edit-claim-type-${mark.id}`}
+                  value={editingClaimType}
+                  onChange={(e) => setEditingClaimType(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                >
+                  {claimTypeOptions.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label className="mb-1 block text-sm font-medium text-foreground" htmlFor={`edit-domain-${mark.id}`}>
+                  Domain
+                </label>
+                <select
+                  id={`edit-domain-${mark.id}`}
+                  value={editingDomain}
+                  onChange={(e) => setEditingDomain(e.target.value)}
+                  className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                >
+                  {DOMAINS.map((option) => (
+                    <option key={option} value={option}>
+                      {option}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+            {classificationError && <p className="mt-3 text-sm text-red-600">{classificationError}</p>}
+            <div className="mt-4 flex items-center justify-end gap-2">
+              <button
+                type="button"
+                onClick={() => setIsEditModalOpen(false)}
+                disabled={classificationSaving}
+                className="rounded-xl border border-border px-3 py-2 text-sm font-medium text-foreground transition hover:bg-accent/60 disabled:opacity-50"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={saveClassification}
+                disabled={classificationSaving || !editingClaimType || !editingDomain}
+                className="rounded-xl bg-foreground px-3 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+              >
+                {classificationSaving ? 'Saving…' : 'Save Changes'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       {lightboxOpen && mediaUrl && (
         <div
           className="fixed inset-0 z-[80] flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm animate-fade-in"

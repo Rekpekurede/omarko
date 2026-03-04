@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { DOMAINS } from '@/lib/types';
 
 export async function PATCH(
   request: Request,
@@ -30,33 +31,62 @@ export async function PATCH(
     .select('id', { count: 'exact', head: true })
     .eq('mark_id', markId);
 
-  if ((count ?? 0) > 0) {
-    return NextResponse.json(
-      { error: 'Mark is locked: cannot edit after a challenge exists' },
-      { status: 403 }
-    );
-  }
-
-  let body: { content?: string };
+  let body: { content?: string; claim_type?: string; domain?: string };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
-  const content = body.content?.trim();
-  if (!content) {
-    return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+  const hasContentUpdate = typeof body.content === 'string';
+  const hasClaimTypeUpdate = typeof body.claim_type === 'string';
+  const hasDomainUpdate = typeof body.domain === 'string';
+
+  if (!hasContentUpdate && !hasClaimTypeUpdate && !hasDomainUpdate) {
+    return NextResponse.json({ error: 'No editable fields provided' }, { status: 400 });
   }
 
-  await supabase.from('mark_versions').insert({
-    mark_id: markId,
-    title: mark.title ?? '',
-    content: mark.content,
-  });
+  const updates: Record<string, string> = {
+    updated_at: new Date().toISOString(),
+  };
+
+  if (hasContentUpdate) {
+    const content = body.content?.trim();
+    if (!content) {
+      return NextResponse.json({ error: 'Content is required' }, { status: 400 });
+    }
+    if ((count ?? 0) > 0) {
+      return NextResponse.json(
+        { error: 'Mark is locked: cannot edit after a challenge exists' },
+        { status: 403 }
+      );
+    }
+    await supabase.from('mark_versions').insert({
+      mark_id: markId,
+      title: mark.title ?? '',
+      content: mark.content,
+    });
+    updates.content = content;
+  }
+
+  if (hasClaimTypeUpdate) {
+    const claimType = body.claim_type?.trim();
+    if (!claimType) {
+      return NextResponse.json({ error: 'Claim type is required' }, { status: 400 });
+    }
+    updates.claim_type = claimType;
+  }
+
+  if (hasDomainUpdate) {
+    const domain = body.domain?.trim();
+    if (!domain || !(DOMAINS as readonly string[]).includes(domain)) {
+      return NextResponse.json({ error: 'Invalid domain' }, { status: 400 });
+    }
+    updates.domain = domain;
+  }
 
   const { data: updated, error } = await supabase
     .from('marks')
-    .update({ content, updated_at: new Date().toISOString() })
+    .update(updates)
     .eq('id', markId)
     .eq('user_id', user.id)
     .select('id, user_id, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at')
