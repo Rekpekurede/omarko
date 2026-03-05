@@ -22,14 +22,15 @@ export async function GET(request: Request) {
     .order('created_at', { ascending: false });
 
   if (following && user) {
-    const { data: soiRows } = await supabase
-      .from('signs_of_influence')
-      .select('mark_id');
-    const markIdsWithSoi = [...new Set((soiRows ?? []).map((r) => r.mark_id))];
-    if (markIdsWithSoi.length === 0) {
+    const { data: followRows } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id);
+    const followingIds = Array.from(new Set((followRows ?? []).map((r) => r.following_id)));
+    if (followingIds.length === 0) {
       query = query.eq('id', '00000000-0000-0000-0000-000000000000');
     } else {
-      query = query.eq('user_id', user.id).in('id', markIdsWithSoi);
+      query = query.in('user_id', followingIds);
     }
   } else {
     if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {

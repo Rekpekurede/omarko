@@ -33,7 +33,7 @@ export function FeedTabs({ children, followingContent }: FeedTabsProps) {
             tab === 'evidence' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           }`}
           aria-pressed={tab === 'evidence' ? 'true' : 'false'}
-          aria-label="Following (Sign of influence) feed"
+          aria-label="Following feed"
         >
           Following
         </button>
@@ -42,9 +42,9 @@ export function FeedTabs({ children, followingContent }: FeedTabsProps) {
       {tab === 'marks' && children}
       {tab === 'evidence' && (followingContent ?? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-base font-medium text-foreground">Sign of influence</p>
+          <p className="text-base font-medium text-foreground">Following</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            See your marks where you’ve added signs of influence (posts that take credit from your work).
+            Sign in to see marks from people you follow.
           </p>
         </div>
       ))}

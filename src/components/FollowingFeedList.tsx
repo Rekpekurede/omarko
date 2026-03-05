@@ -72,9 +72,9 @@ export function FollowingFeedList({
   if (!currentUserId) {
     return (
       <div className="rounded-xl border border-border bg-card p-8 text-center">
-        <p className="text-base font-medium text-foreground">Sign of influence</p>
+        <p className="text-base font-medium text-foreground">Following</p>
         <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-          Sign in to see your marks where you’ve added signs of influence (posts that take credit from your work).
+          Sign in to see marks from people you follow.
         </p>
       </div>
     );
@@ -135,7 +135,7 @@ export function FollowingFeedList({
       </ul>
       {marks.length === 0 && (
         <p className="py-8 text-center text-sm text-muted-foreground">
-          No marks with signs of influence yet. Add SOI to your marks from the card or mark detail.
+          No marks from people you follow yet. Follow someone from their profile to see their marks here.
         </p>
       )}
       {nextCursor && (
