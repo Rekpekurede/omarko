@@ -12,12 +12,18 @@ import type { Mark } from '@/lib/types';
 interface MarkCardProps {
   mark: Mark;
   showDisputeButton?: boolean;
+  /** @deprecated Use showDisputeButton */
+  showChallengeButton?: boolean;
   bookmarked?: boolean;
   showBookmark?: boolean;
   currentVote?: 'SUPPORT' | 'OPPOSE' | null;
   canVote?: boolean;
+  /** Passed by some lists for vote state; not used inside MarkCard */
+  currentUserId?: string | null;
   onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
   onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE') => void;
+  /** Optional callback when mark is removed (e.g. bookmark deleted); not wired to BookmarkButton */
+  onDeleted?: (markId: string) => void;
 }
 
 function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null } | null {
@@ -34,7 +40,8 @@ function getHistoricalName(historical: Mark['historical_profiles']): string | nu
 
 export function MarkCard({
   mark,
-  showDisputeButton = true,
+  showDisputeButton: showDisputeButtonProp = true,
+  showChallengeButton,
   bookmarked = false,
   showBookmark = false,
   currentVote = null,
@@ -42,6 +49,7 @@ export function MarkCard({
   onVoteUpdate,
   onVoteSuccess,
 }: MarkCardProps) {
+  const showDisputeButton = showDisputeButtonProp ?? showChallengeButton ?? true;
   const profile = getProfile(mark.profiles);
   const historicalName = getHistoricalName(mark.historical_profiles);
   const isHistorical = !!mark.historical_profile_id && !!historicalName;

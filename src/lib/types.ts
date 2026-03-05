@@ -34,7 +34,7 @@ export interface HistoricalProfile {
 /** Supabase may return profiles as object or array for relation */
 export type MarkProfile = Pick<Profile, 'username' | 'avatar_url'> | Pick<Profile, 'username' | 'avatar_url'>[];
 
-export const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'General'] as const;
+export const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'Food', 'Philosophy', 'General'] as const;
 export const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'] as const;
 export type Domain = (typeof DOMAINS)[number];
 export type ClaimType = (typeof CLAIM_TYPES)[number];

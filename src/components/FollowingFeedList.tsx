@@ -121,7 +121,7 @@ export function FollowingFeedList({
                   return { ...prev, [markId]: newVote };
                 });
               }}
-              onDeleted={(markId) => {
+              onDeleted={(markId: string) => {
                 setMarks((prev) => prev.filter((m) => m.id !== markId));
                 setVoteMapState((prev) => {
                   const next = { ...prev };

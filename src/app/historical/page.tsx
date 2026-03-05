@@ -21,7 +21,8 @@ export default async function HistoricalFiguresPage() {
   const profileMap = new Map<string, { name: string; era: string | null; domain: string | null; count: number }>();
   for (const row of marksWithProfiles ?? []) {
     const id = row.historical_profile_id as string;
-    const hp = row.historical_profiles as { id: string; name: string; era: string | null; domain: string | null } | null;
+    const hpRaw = row.historical_profiles;
+    const hp = (Array.isArray(hpRaw) ? hpRaw[0] : hpRaw) as { id: string; name: string; era: string | null; domain: string | null } | null;
     if (!id || !hp) continue;
     const existing = profileMap.get(id);
     if (existing) {
@@ -123,7 +124,7 @@ export default async function HistoricalFiguresPage() {
             {listWithComments.map((mark) => (
               <li key={mark.id}>
                 <MarkCard
-                  mark={mark as import('@/lib/types').Mark}
+                  mark={mark as unknown as import('@/lib/types').Mark}
                   showDisputeButton={true}
                   showBookmark={false}
                 />

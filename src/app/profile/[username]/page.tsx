@@ -396,7 +396,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             <ul className="space-y-4">
               {withdrawnMarks.map((mark) => (
                 <li key={mark.id}>
-                  <MarkCard mark={mark as unknown as import('@/lib/types').Mark} showChallengeButton={false} />
+                  <MarkCard mark={mark as unknown as import('@/lib/types').Mark} showDisputeButton={false} />
                 </li>
               ))}
             </ul>

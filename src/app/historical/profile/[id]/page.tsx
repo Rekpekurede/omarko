@@ -127,7 +127,7 @@ export default async function HistoricalProfilePage({ params }: PageProps) {
             {listWithComments.map((mark) => (
               <li key={mark.id}>
                 <MarkCard
-                  mark={mark as import('@/lib/types').Mark}
+                  mark={mark as unknown as import('@/lib/types').Mark}
                   showDisputeButton={true}
                   showBookmark={false}
                 />

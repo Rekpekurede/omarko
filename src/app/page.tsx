@@ -1,7 +1,7 @@
 import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
-import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES, type Mark } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
 export const revalidate = 0;
@@ -122,7 +122,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
       />
       <FeedList
         key={`${domain}-${claimType}-${disputedOnly}-${source}`}
-        initialMarks={listWithComments}
+        initialMarks={listWithComments as unknown as Mark[]}
         initialNextCursor={nextCursor}
         domain={domain}
         claimType={claimType}
