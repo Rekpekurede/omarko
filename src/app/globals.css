@@ -1,56 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
   Editorial archive × premium fintech.
-  Dark: near-black #090909, aged parchment gold #C9A84C (ink on vellum).
-  Light: warm parchment #F5F2EC, same gold — document, not website.
+  Dark: #090909, cards #0D1117, gold #C9A84C, text #F0F0F0 / muted #888888.
+  Light: parchment #F5F2EC, cards #FDFAF4, text #1A1408, muted #888888, borders #E0D4A8.
 */
 :root {
   --background: #F5F2EC;
-  --foreground: #1C1917;
-  --card: #FDFCFA;
-  --card-glass: rgba(253, 252, 250, 0.92);
-  --border: #E8E4DC;
-  --muted: #F0EDE6;
-  --muted-foreground: #6B6560;
-  --accent: #E8E4DC;
+  --foreground: #1A1408;
+  --card: #FDFAF4;
+  --card-glass: rgba(253, 250, 244, 0.92);
+  --border: #E0D4A8;
+  --muted: #EDE8DC;
+  --muted-foreground: #888888;
+  --accent: #E0D4A8;
   --primary: #C9A84C;
-  --primary-foreground: #1C1917;
+  --primary-foreground: #1A1408;
   --primary-glow: rgba(201, 168, 76, 0.28);
-  --shadow-card: 0 1px 0 0 var(--border), 0 4px 16px -4px rgba(28, 25, 23, 0.06);
+  --shadow-card: 0 1px 2px 0 rgba(26, 20, 8, 0.05), 0 1px 0 0 var(--border);
   --paper-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+  --tab-container: #F5F2EC;
+  --drawer-bg: #F5F2EC;
+  --drawer-menu-hover: #EDE8DC;
 }
 
 .dark {
   --background: #090909;
-  --foreground: #FAFAF9;
-  --card: #111111;
-  --card-glass: rgba(17, 17, 17, 0.82);
-  --border: #2A2A2A;
+  --foreground: #F0F0F0;
+  --card: #0D1117;
+  --card-glass: rgba(13, 17, 23, 0.92);
+  --border: #1E1E1E;
   --muted: #1A1A1A;
-  --muted-foreground: #A1A1AA;
-  --accent: #2A2A2A;
+  --muted-foreground: #888888;
+  --accent: #222222;
   --primary: #C9A84C;
-  --primary-foreground: #090909;
+  --primary-foreground: #1A1408;
   --primary-glow: rgba(201, 168, 76, 0.18);
   --shadow-card: 0 0 0 1px rgba(201, 168, 76, 0.08), 0 4px 24px -4px rgba(0, 0, 0, 0.4);
   --paper-texture: none;
+  --tab-container: #111111;
+  --drawer-bg: #0A0A0F;
+  --drawer-menu-hover: #1A1408;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-display), Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
+  font-size: 1.1rem;
 }
 
 .font-display {
-  font-family: var(--font-display), Georgia, serif;
+  font-family: 'Cormorant Garamond', Georgia, serif;
 }
 
-.font-mono {
-  font-family: var(--font-mono), ui-monospace, monospace;
+.font-mono,
+.badge,
+.tab-label,
+.timestamp,
+.engagement-count {
+  font-family: 'DM Mono', monospace;
 }
 
 /* Cards: filed document — ruled border, subtle paper (light), frosted (dark) */

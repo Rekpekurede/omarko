@@ -82,6 +82,7 @@ export interface Mark {
   profiles?: MarkProfile | null;
   historical_profiles?: Pick<HistoricalProfile, 'name'> | null;
   comments_count?: number;
+  soi_count?: number;
   latest_comments?: CommentPreview[];
 }
 

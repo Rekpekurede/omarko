@@ -1,5 +1,4 @@
 import type { Metadata, Viewport } from "next";
-import { Cormorant_Garamond, DM_Mono } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -7,17 +6,6 @@ import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { createClient } from "@/lib/supabase/server";
-
-const cormorant = Cormorant_Garamond({
-  weight: ["400", "500", "600", "700"],
-  subsets: ["latin"],
-  variable: "--font-display",
-});
-const dmMono = DM_Mono({
-  weight: ["300", "400", "500"],
-  subsets: ["latin"],
-  variable: "--font-mono",
-});
 
 const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',d);})();`;
 
@@ -67,14 +55,14 @@ export default async function RootLayout({
   const isSignedIn = !!user;
 
   return (
-    <html lang="en" className={`${cormorant.variable} ${dmMono.variable}`} suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
           <CreateMarkModalProvider>
-            <Header brandFontClass={cormorant.className} />
+            <Header brandFontClass="font-display" />
             <CreateMarkModal />
             <main className="pb-24 pt-4 sm:pb-8 sm:pt-6">{children}</main>
             <MobileBottomNav isSignedIn={isSignedIn} username={username} />

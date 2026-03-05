@@ -59,9 +59,10 @@ export async function GET(request: Request) {
 
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
+  const soiCountMap: Record<string, number> = {};
   const latestCommentsMap: Record<string, { username: string; content: string; created_at: string }[]> = {};
   if (markIds.length > 0) {
-    const [countRes, commentsRes] = await Promise.all([
+    const [countRes, commentsRes, soiRes] = await Promise.all([
       supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds }).then((r) => (r.error ? { data: [] } : r)),
       supabase
         .from('comments')
@@ -69,9 +70,13 @@ export async function GET(request: Request) {
         .in('mark_id', markIds)
         .order('created_at', { ascending: false })
         .limit(100),
+      supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
     ]);
     for (const row of countRes.data ?? []) {
       commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+    }
+    for (const row of soiRes.data ?? []) {
+      soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
     }
     const byMark = new Map<string, { username: string; content: string; created_at: string }[]>();
     for (const c of commentsRes.data ?? []) {
@@ -93,6 +98,7 @@ export async function GET(request: Request) {
   const listWithComments = list.map((m) => ({
     ...m,
     comments_count: commentsCountMap[m.id] ?? 0,
+    soi_count: soiCountMap[m.id] ?? 0,
     latest_comments: latestCommentsMap[m.id] ?? [],
   }));
 

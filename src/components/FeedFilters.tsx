@@ -2,20 +2,17 @@
 
 import { useRouter, useSearchParams } from 'next/navigation';
 import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
-import type { FeedSource } from '@/app/page';
 
 interface FeedFiltersProps {
   currentDomain?: string;
   currentClaimType?: string;
-  currentSource?: FeedSource;
-  disputedOnly?: boolean;
+  challengedOnly?: boolean;
 }
 
 export function FeedFilters({
   currentDomain = 'all',
   currentClaimType = 'all',
-  currentSource = 'all',
-  disputedOnly = false,
+  challengedOnly = false,
 }: FeedFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -31,7 +28,7 @@ export function FeedFilters({
     router.push(`/?${next.toString()}`);
   };
 
-  const setDisputedOnly = (v: boolean) => {
+  const setChallengedOnly = (v: boolean) => {
     const next = new URLSearchParams(searchParams.toString());
     if (v) next.set('disputed_only', 'true');
     else next.delete('disputed_only');
@@ -42,20 +39,10 @@ export function FeedFilters({
   return (
     <div className="flex flex-wrap items-center gap-2">
         <select
-          aria-label="Filter by source"
-          value={currentSource}
-          onChange={(e) => setParam('source', e.target.value)}
-          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-        >
-          <option value="all">All Marks</option>
-          <option value="user">User Marks</option>
-          <option value="historical">Historical Marks</option>
-        </select>
-        <select
           aria-label="Filter by domain"
           value={currentDomain}
           onChange={(e) => setParam('domain', e.target.value)}
-          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+          className="min-h-[44px] touch-manipulation rounded-lg border border-gray-700 bg-[#0D1117] px-3 py-2 text-sm text-white focus:border-[#C9A84C] focus:outline-none focus:ring-1 focus:ring-[#C9A84C]"
         >
           <option value="all">All domains</option>
           {DOMAINS.map((d) => (
@@ -66,21 +53,21 @@ export function FeedFilters({
           aria-label="Filter by claim type"
           value={currentClaimType}
           onChange={(e) => setParam('claim_type', e.target.value)}
-          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+          className="min-h-[44px] touch-manipulation rounded-lg border border-gray-700 bg-[#0D1117] px-3 py-2 text-sm text-white focus:border-[#C9A84C] focus:outline-none focus:ring-1 focus:ring-[#C9A84C]"
         >
           <option value="all">All claim types</option>
           {CLAIM_TYPES.map((c) => (
             <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-2 text-sm">
+        <label className="flex cursor-pointer items-center gap-2 text-sm text-gray-300">
           <input
             type="checkbox"
-            checked={disputedOnly}
-            onChange={(e) => setDisputedOnly(e.target.checked)}
-            className="rounded border-gray-300"
+            checked={challengedOnly}
+            onChange={(e) => setChallengedOnly(e.target.checked)}
+            className="rounded border-gray-500 bg-[#0D1117] text-[#C9A84C]"
           />
-          Disputed only
+          Challenged only
         </label>
     </div>
   );

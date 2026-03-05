@@ -6,25 +6,26 @@ import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
-import { formatMarkTime } from '@/lib/time';
 import type { Mark } from '@/lib/types';
 
-interface MarkCardProps {
-  mark: Mark;
-  showDisputeButton?: boolean;
-  /** @deprecated Use showDisputeButton */
-  showChallengeButton?: boolean;
-  bookmarked?: boolean;
-  showBookmark?: boolean;
-  currentVote?: 'SUPPORT' | 'OPPOSE' | null;
-  canVote?: boolean;
-  /** Passed by some lists for vote state; not used inside MarkCard */
-  currentUserId?: string | null;
-  onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
-  onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE') => void;
-  /** Optional callback when mark is removed (e.g. bookmark deleted); not wired to BookmarkButton */
-  onDeleted?: (markId: string) => void;
-}
+/** Domain → filled pill background color (for feed card badges) */
+const DOMAIN_PILL_CLASS: Record<string, string> = {
+  Sport: 'bg-emerald-600 text-white',
+  Technology: 'bg-cyan-600 text-white',
+  Music: 'bg-amber-600 text-white',
+  Science: 'bg-violet-600 text-white',
+  Politics: 'bg-rose-600 text-white',
+  Business: 'bg-sky-600 text-white',
+  Law: 'bg-stone-600 text-white',
+  Culture: 'bg-fuchsia-600 text-white',
+  VisualArt: 'bg-orange-500 text-white',
+  Literature: 'bg-amber-700 text-white',
+  Dance: 'bg-pink-600 text-white',
+  Architecture: 'bg-teal-600 text-white',
+  Food: 'bg-amber-500 text-white',
+  Philosophy: 'bg-indigo-600 text-white',
+  General: 'bg-gray-600 text-white',
+};
 
 function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null } | null {
   if (!profiles) return null;
@@ -38,6 +39,21 @@ function getHistoricalName(historical: Mark['historical_profiles']): string | nu
   return (h as { name?: string } | null)?.name ?? null;
 }
 
+interface MarkCardProps {
+  mark: Mark;
+  showDisputeButton?: boolean;
+  /** @deprecated Use showDisputeButton */
+  showChallengeButton?: boolean;
+  bookmarked?: boolean;
+  showBookmark?: boolean;
+  currentVote?: 'SUPPORT' | 'OPPOSE' | null;
+  canVote?: boolean;
+  currentUserId?: string | null;
+  onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
+  onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE') => void;
+  onDeleted?: (markId: string) => void;
+}
+
 export function MarkCard({
   mark,
   showDisputeButton: showDisputeButtonProp = true,
@@ -49,7 +65,7 @@ export function MarkCard({
   onVoteUpdate,
   onVoteSuccess,
 }: MarkCardProps) {
-  const showDisputeButton = showDisputeButtonProp ?? showChallengeButton ?? true;
+  const showChallenge = showDisputeButtonProp ?? showChallengeButton ?? true;
   const profile = getProfile(mark.profiles);
   const historicalName = getHistoricalName(mark.historical_profiles);
   const isHistorical = !!mark.historical_profile_id && !!historicalName;
@@ -65,18 +81,14 @@ export function MarkCard({
   const handleVote = async (type: 'support' | 'oppose') => {
     if (!canVote || pending) return;
     setPending(true);
-
     const res = await fetch(`/api/marks/${mark.id}/vote`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ type }),
     });
     const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-      setPending(false);
-      return;
-    }
+    setPending(false);
+    if (!res.ok) return;
     if (data) {
       setSupportVotes(data.support_votes ?? supportVotes);
       setOpposeVotes(data.oppose_votes ?? opposeVotes);
@@ -84,148 +96,139 @@ export function MarkCard({
       onVoteUpdate?.(data);
       if (data.userVote) onVoteSuccess?.(mark.id, data.userVote);
     }
-    setPending(false);
   };
 
   const commentsCount = mark.comments_count ?? 0;
-  const latestComments = mark.latest_comments ?? [];
+  const soiCount = mark.soi_count ?? 0;
+  const challengeCount = mark.dispute_count ?? 0;
+  const domainPillClass = (mark.domain && DOMAIN_PILL_CLASS[mark.domain]) ? DOMAIN_PILL_CLASS[mark.domain] : 'bg-gray-600 text-white';
 
   return (
-    <article className="rounded-lg border border-gray-200 bg-white p-4 pb-5 shadow-sm dark:border-gray-800 dark:bg-gray-900">
+    <article className="rounded-xl border border-border bg-card p-4 shadow-sm">
       <div className="flex items-start justify-between gap-2">
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 flex-wrap">
-            {isHistorical ? (
-              <>
-                <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0">
-                  <Avatar username={historicalName} avatarUrl={null} size="sm" />
-                </Link>
-                <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-medium text-black hover:underline dark:text-white">
-                  {historicalName}
-                </Link>
-                <span className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
-                  HISTORICAL FIGURE
-                </span>
-              </>
-            ) : (
-              <>
-                <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0">
-                  <Avatar username={username} avatarUrl={avatarUrl} size="sm" />
-                </Link>
-                <Link href={`/profile/${encodeURIComponent(username)}`} className="font-medium text-black hover:underline dark:text-white">
-                  @{username}
-                </Link>
-              </>
-            )}
-            <RelativeTime dateString={mark.created_at} className="text-xs text-gray-500 dark:text-gray-400" />
-            {mark.status !== 'ACTIVE' && (
-              <MarkStatusLabel status={mark.status} />
-            )}
-            {isWithdrawn && (
-              <span className="inline-flex items-center rounded bg-gray-200 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-700 dark:text-gray-300">
-                Withdrawn
-              </span>
-            )}
-          </div>
-          {mark.image_url && (
-            <Link href={`/mark/${mark.id}`} className="mt-2 block">
-              <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-lg bg-gray-100 dark:bg-gray-800">
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img
-                  src={mark.image_url}
-                  alt=""
-                  className="h-full w-full object-cover"
-                />
-              </div>
-            </Link>
-          )}
-          {mark.content && (
-            <p className="mt-2 text-sm text-gray-600 line-clamp-2 dark:text-gray-300">{mark.content}</p>
-          )}
-          <div className="mt-2 flex flex-wrap items-center gap-2">
-            {mark.domain && (
-              <span className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                {mark.domain}
-              </span>
-            )}
-            {mark.claim_type && (
-              <span className="inline-flex items-center rounded bg-gray-100 px-1.5 py-0.5 text-xs font-medium text-gray-700 dark:bg-gray-800 dark:text-gray-300">
-                {mark.claim_type}
-              </span>
-            )}
-          </div>
-          {latestComments.length > 0 && (
-            <div className="mt-2 space-y-1 border-l-2 border-gray-200 pl-2 text-xs dark:border-gray-700">
-              {latestComments.map((c, i) => (
-                <p key={i} className="text-gray-600 dark:text-gray-400 line-clamp-1">
-                  <span className="font-medium text-gray-700 dark:text-gray-300">@{c.username}</span>
-                  {' '}
-                  <span className="text-gray-500 dark:text-gray-500">{formatMarkTime(c.created_at)}</span>
-                  {': '}
-                  <span className="line-clamp-1">{c.content}</span>
-                </p>
-              ))}
-              <Link href={`/mark/${mark.id}?tab=comments`} className="text-gray-500 hover:underline dark:text-gray-400">
-                View all comments
+        <div className="flex min-w-0 flex-1 items-center gap-2">
+          {isHistorical ? (
+            <>
+              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0">
+                <Avatar username={historicalName} avatarUrl={null} size="sm" className="ring-2 ring-[#C9A84C]/60" />
               </Link>
-            </div>
+              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-bold text-foreground hover:underline">
+                {historicalName}
+              </Link>
+              <span className="badge inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-bold text-amber-400 dark:border-amber-500/70 dark:bg-amber-500/10 dark:text-amber-400">
+                HISTORICAL FIGURE
+              </span>
+            </>
+          ) : (
+            <>
+              <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0">
+                <Avatar username={username} avatarUrl={avatarUrl} size="sm" className="ring-2 ring-blue-500/60" />
+              </Link>
+              <Link href={`/profile/${encodeURIComponent(username)}`} className="font-bold text-foreground hover:underline">
+                @{username}
+              </Link>
+            </>
           )}
         </div>
+        <div className="flex shrink-0 items-center gap-2">
+          <RelativeTime dateString={mark.created_at} className="timestamp text-xs text-muted-foreground" />
+          {mark.status !== 'ACTIVE' && <MarkStatusLabel status={mark.status} />}
+          {isWithdrawn && (
+            <span className="text-xs font-medium text-muted-foreground">Withdrawn</span>
+          )}
+          <button type="button" className="rounded p-1 text-muted-foreground hover:text-foreground" aria-label="More options">
+            <span className="text-lg leading-none">⋯</span>
+          </button>
+        </div>
       </div>
-      <div className="mt-3 flex flex-wrap items-center gap-x-3 gap-y-2 text-sm text-gray-500 dark:text-gray-400">
-        <span>{supportVotes} support</span>
-        <span>{opposeVotes} oppose</span>
-        <span>{mark.dispute_count ?? 0} disputes</span>
-        <Link href={`/mark/${mark.id}?tab=comments`} className="hover:underline">
-          {commentsCount} comment{commentsCount !== 1 ? 's' : ''}
-        </Link>
-        {canVote && !isWithdrawn && (
-          <span className="flex items-center gap-2">
-            <button
-              type="button"
-              onClick={() => handleVote('support')}
-              disabled={pending}
-              className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
-                vote === 'SUPPORT' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Support
-            </button>
-            <button
-              type="button"
-              onClick={() => handleVote('oppose')}
-              disabled={pending}
-              className={`min-h-[44px] min-w-[44px] rounded px-3 py-2 text-xs font-medium disabled:opacity-50 touch-manipulation ${
-                vote === 'OPPOSE' ? 'bg-gray-800 text-white dark:bg-gray-200 dark:text-gray-900' : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700'
-              }`}
-            >
-              Oppose
-            </button>
+
+      <div className="mt-2 flex flex-wrap items-center gap-2">
+        {mark.claim_type && (
+          <span className="badge inline-flex items-center rounded-full border border-[#C9A84C] bg-transparent px-2 py-0.5 text-xs font-bold uppercase text-[#C9A84C]">
+            {mark.claim_type}
           </span>
         )}
-        {showBookmark && <BookmarkButton markId={mark.id} bookmarked={bookmarked} />}
-        <Link
-          href={`/mark/${mark.id}?tab=comments`}
-          className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded bg-gray-100 px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-200 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-        >
-          Reply
+        {mark.domain && (
+          <span className={`badge inline-flex items-center rounded-full px-2 py-0.5 text-xs font-bold uppercase ${domainPillClass}`}>
+            {mark.domain}
+          </span>
+        )}
+      </div>
+
+      {mark.content && (
+        <p className="mt-3 text-base leading-snug text-foreground line-clamp-3">
+          {mark.content}
+        </p>
+      )}
+      {mark.image_url && (
+        <Link href={`/mark/${mark.id}`} className="mt-2 block w-full">
+          <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-xl bg-muted">
+            {/* eslint-disable-next-line @next/next/no-img-element */}
+            <img src={mark.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
+          </div>
         </Link>
-        {showDisputeButton && !isWithdrawn && (
+      )}
+
+      <div className="my-3 border-t border-border" />
+
+      <div className="engagement-count flex flex-wrap items-center gap-x-4 gap-y-2 text-sm text-muted-foreground">
+        <button
+          type="button"
+          onClick={() => handleVote('support')}
+          disabled={!canVote || isWithdrawn || pending}
+          className={`flex items-center gap-1.5 touch-manipulation disabled:opacity-50 ${
+            vote === 'SUPPORT' ? 'text-[#C9A84C]' : 'hover:text-foreground'
+          }`}
+          aria-label="Support"
+        >
+          <span aria-hidden>👍</span>
+          <span>{supportVotes}</span>
+        </button>
+        {showChallenge && !isWithdrawn && (
           isHistorical ? (
-            <span
-              title="Challenges on historical marks are reviewed by designated custodians."
-              className="flex min-h-[44px] min-w-[44px] cursor-not-allowed touch-manipulation items-center justify-center rounded border border-gray-300 bg-gray-100 px-3 py-2 text-xs font-medium text-gray-400 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-500"
-            >
-              Dispute
+            <span className="flex items-center gap-1.5" title="Challenges on historical marks are reviewed by designated custodians.">
+              <span aria-hidden>✖</span>
+              <span>{challengeCount}</span>
+              <span>Challenge</span>
             </span>
           ) : (
-            <Link
-              href={`/mark/${mark.id}`}
-              className="flex min-h-[44px] min-w-[44px] touch-manipulation items-center justify-center rounded border border-gray-300 bg-white px-3 py-2 text-xs font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-700 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
-            >
-              Dispute
+            <Link href={`/mark/${mark.id}`} className="flex items-center gap-1.5 hover:text-foreground">
+              <span aria-hidden>✖</span>
+              <span>{challengeCount}</span>
+              <span>Challenge</span>
             </Link>
           )
+        )}
+        {!showChallenge && (
+          <span className="flex items-center gap-1.5">
+            <span aria-hidden>✖</span>
+            <span>{challengeCount}</span>
+          </span>
+        )}
+        <Link href={`/mark/${mark.id}?tab=soi`} className="flex items-center gap-1.5 hover:text-foreground">
+          <span aria-hidden>SOI</span>
+          <span>{soiCount}</span>
+        </Link>
+        <button
+          type="button"
+          onClick={() => handleVote('oppose')}
+          disabled={!canVote || isWithdrawn || pending}
+          className={`flex items-center gap-1.5 touch-manipulation disabled:opacity-50 ${
+            vote === 'OPPOSE' ? 'text-red-400' : 'hover:text-foreground'
+          }`}
+          aria-label="Oppose"
+        >
+          <span aria-hidden>👎</span>
+          <span>{opposeVotes}</span>
+        </button>
+        <Link href={`/mark/${mark.id}?tab=comments`} className="flex items-center gap-1.5 hover:text-foreground">
+          <span aria-hidden>💬</span>
+          <span>{commentsCount}</span>
+        </Link>
+        {showBookmark && (
+          <span className="inline-flex items-center gap-1.5" title={bookmarked ? 'Saved' : 'Save'}>
+            <BookmarkButton markId={mark.id} bookmarked={bookmarked} />
+          </span>
         )}
       </div>
     </article>

@@ -21,9 +21,9 @@ const config: Config = {
         "primary-foreground": "var(--primary-foreground)",
       },
       fontFamily: {
-        sans: ["var(--font-display)", "Georgia", "serif"],
-        display: ["var(--font-display)", "Georgia", "serif"],
-        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
+        sans: ["'Cormorant Garamond'", "Georgia", "serif"],
+        display: ["'Cormorant Garamond'", "Georgia", "serif"],
+        mono: ["'DM Mono'", "ui-monospace", "monospace"],
       },
       boxShadow: {
         card: "var(--shadow-card)",

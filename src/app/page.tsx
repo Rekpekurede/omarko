@@ -1,6 +1,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
+import { FeedTabs } from '@/components/FeedTabs';
+import { FollowingFeedList } from '@/components/FollowingFeedList';
 import { DOMAINS, CLAIM_TYPES, type Mark } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 
@@ -11,7 +13,7 @@ const FEED_LIMIT = 20;
 export type FeedSource = 'all' | 'user' | 'historical';
 
 interface PageProps {
-  searchParams: Promise<{ domain?: string; claim_type?: string; disputed_only?: string; source?: string }>;
+  searchParams: Promise<{ domain?: string; claim_type?: string; disputed_only?: string; source?: string; tab?: string }>;
 }
 
 export default async function FeedPage({ searchParams }: PageProps) {
@@ -19,6 +21,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   const domain = params.domain ?? 'all';
   const claimType = params.claim_type ?? 'all';
   const disputedOnly = params.disputed_only === 'true';
+  const tab = params.tab === 'following' ? 'following' : 'for_you';
   const source: FeedSource = params.source === 'historical' ? 'historical' : params.source === 'user' ? 'user' : 'all';
 
   const supabase = await createClient();
@@ -55,9 +58,10 @@ export default async function FeedPage({ searchParams }: PageProps) {
 
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
+  const soiCountMap: Record<string, number> = {};
   const latestCommentsMap: Record<string, { username: string; content: string; created_at: string }[]> = {};
   if (markIds.length > 0) {
-    const [countRes, commentsRes] = await Promise.all([
+    const [countRes, commentsRes, soiRes] = await Promise.all([
       supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds }).then((r) => (r.error ? { data: [] } : r)),
       supabase
         .from('comments')
@@ -65,9 +69,13 @@ export default async function FeedPage({ searchParams }: PageProps) {
         .in('mark_id', markIds)
         .order('created_at', { ascending: false })
         .limit(100),
+      supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
     ]);
     for (const row of countRes.data ?? []) {
       commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
+    }
+    for (const row of soiRes.data ?? []) {
+      soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
     }
     const byMark = new Map<string, { username: string; content: string; created_at: string }[]>();
     for (const c of commentsRes.data ?? []) {
@@ -89,6 +97,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   const listWithComments = list.map((m) => ({
     ...m,
     comments_count: commentsCountMap[m.id] ?? 0,
+    soi_count: soiCountMap[m.id] ?? 0,
     latest_comments: latestCommentsMap[m.id] ?? [],
   }));
 
@@ -108,31 +117,39 @@ export default async function FeedPage({ searchParams }: PageProps) {
 
   return (
     <div>
-      <h1 className="mb-4 text-2xl font-bold dark:text-white">Feed</h1>
+      <h1 className="mb-4 text-2xl font-bold text-white">Feed</h1>
       {error && (
         <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error.message}
         </div>
       )}
+      <FeedTabs />
       <FeedFilters
         currentDomain={domain}
         currentClaimType={claimType}
-        currentSource={source}
-        disputedOnly={disputedOnly}
+        challengedOnly={disputedOnly}
       />
-      <FeedList
-        key={`${domain}-${claimType}-${disputedOnly}-${source}`}
-        initialMarks={listWithComments as unknown as Mark[]}
-        initialNextCursor={nextCursor}
-        domain={domain}
-        claimType={claimType}
-        source={source}
-        disputedOnly={disputedOnly}
-        bookmarkIds={bookmarkIds}
-        voteMap={voteMap}
-        showBookmark={!!user}
-        currentUserId={user?.id ?? null}
-      />
+      {tab === 'following' ? (
+        <FollowingFeedList
+          currentUserId={user?.id ?? null}
+          initialBookmarkIds={bookmarkIds}
+          initialVoteMap={voteMap}
+        />
+      ) : (
+        <FeedList
+          key={`${domain}-${claimType}-${disputedOnly}-${source}`}
+          initialMarks={listWithComments as unknown as Mark[]}
+          initialNextCursor={nextCursor}
+          domain={domain}
+          claimType={claimType}
+          source={source}
+          disputedOnly={disputedOnly}
+          bookmarkIds={bookmarkIds}
+          voteMap={voteMap}
+          showBookmark={!!user}
+          currentUserId={user?.id ?? null}
+        />
+      )}
     </div>
   );
 }

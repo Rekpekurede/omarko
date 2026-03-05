@@ -21,7 +21,7 @@ export async function Header({ brandFontClass }: HeaderProps) {
   }
 
   return (
-    <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
+    <header className="sticky top-0 z-50 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-2xl items-center gap-2 px-3 py-2 sm:px-4">
         <NavDrawer username={profile?.username ?? null} avatarUrl={profile?.avatar_url ?? null} />
         <Link href="/" className="flex items-center gap-2" aria-label="OMarko home">
@@ -49,7 +49,7 @@ export async function Header({ brandFontClass }: HeaderProps) {
             {/* Faint stamp crease */}
             <path d="M15 24v-4" stroke="currentColor" strokeWidth="0.35" strokeLinecap="round" className="stroke-[#1A1408] dark:stroke-[#C9A84C] opacity-40" />
           </svg>
-          <span className={`text-xl font-semibold tracking-tight text-[#1A1408] dark:text-[#C9A84C] ${brandFontClass ?? ''}`}>
+          <span className={`text-[1.4rem] font-bold tracking-tight text-[#1A1408] dark:text-[#C9A84C] ${brandFontClass ?? ''}`}>
             OMarko
           </span>
         </Link>
