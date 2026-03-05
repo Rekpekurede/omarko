@@ -91,6 +91,14 @@ export function FeedList({
                   return { ...prev, [markId]: newVote };
                 });
               }}
+              onDeleted={(markId) => {
+                setMarks((prev) => prev.filter((m) => m.id !== markId));
+                setVoteMapState((prev) => {
+                  const next = { ...prev };
+                  delete next[markId];
+                  return next;
+                });
+              }}
             />
           </li>
         ))}

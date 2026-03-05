@@ -56,6 +56,7 @@ export function ProfileMarksList({
               canVote={!!currentUserId}
               showBookmark={!!currentUserId}
               showChallengeButton={true}
+              onDeleted={(markId) => setMarks((prev) => prev.filter((m) => m.id !== markId))}
             />
           </li>
         ))}

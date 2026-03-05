@@ -34,7 +34,12 @@ export function BookmarksList({
       <ul className="space-y-4">
         {marks.map((mark) => (
           <li key={mark.id}>
-            <MarkCard mark={mark} bookmarked showBookmark />
+            <MarkCard
+              mark={mark}
+              bookmarked
+              showBookmark
+              onDeleted={(markId) => setMarks((prev) => prev.filter((m) => m.id !== markId))}
+            />
           </li>
         ))}
       </ul>

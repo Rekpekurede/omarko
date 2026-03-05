@@ -20,6 +20,7 @@ interface MarkCardProps {
   canVote?: boolean;
   onVoteUpdate?: (updatedMark: Partial<Mark>) => void;
   onVoteSuccess?: (markId: string, newVote: 'SUPPORT' | 'OPPOSE' | null) => void;
+  onDeleted?: (markId: string) => void;
 }
 
 function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null } | null {
@@ -69,6 +70,7 @@ export function MarkCard({
   canVote = false,
   onVoteUpdate,
   onVoteSuccess,
+  onDeleted,
 }: MarkCardProps) {
   const router = useRouter();
   const profile = getProfile(mark.profiles);
@@ -251,6 +253,22 @@ export function MarkCard({
     setMenuOpen(false);
   };
 
+  const [deletePending, setDeletePending] = useState(false);
+  const handleDelete = async () => {
+    if (deletePending) return;
+    if (!window.confirm('Delete this post? This cannot be undone.')) return;
+    setMenuOpen(false);
+    setDeletePending(true);
+    const res = await fetch(`/api/marks/${mark.id}`, { method: 'DELETE' });
+    const data = await res.json().catch(() => ({}));
+    setDeletePending(false);
+    if (!res.ok) {
+      setError(data.error ?? 'Failed to delete');
+      return;
+    }
+    onDeleted?.(mark.id);
+  };
+
   const saveClassification = async () => {
     if (!editingClaimType || !editingDomain || classificationSaving) return;
     setClassificationError(null);
@@ -331,6 +349,14 @@ export function MarkCard({
                       className="w-full rounded-lg px-3 py-2 text-left text-sm text-foreground transition hover:bg-accent/60"
                     >
                       Edit claim details
+                    </button>
+                    <button
+                      type="button"
+                      onClick={handleDelete}
+                      disabled={deletePending}
+                      className="w-full rounded-lg px-3 py-2 text-left text-sm text-red-600 transition hover:bg-red-500/10 disabled:opacity-50 dark:text-red-400 dark:hover:bg-red-500/20"
+                    >
+                      {deletePending ? 'Deleting…' : 'Delete'}
                     </button>
                   </div>
                 )}

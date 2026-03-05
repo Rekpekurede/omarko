@@ -97,3 +97,35 @@ export async function PATCH(
   }
   return NextResponse.json(updated);
 }
+
+export async function DELETE(
+  _request: Request,
+  { params }: { params: Promise<{ id: string }> }
+) {
+  const { id: markId } = await params;
+  const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  const { data: mark } = await supabase
+    .from('marks')
+    .select('id, user_id')
+    .eq('id', markId)
+    .single();
+
+  if (!mark) {
+    return NextResponse.json({ error: 'Mark not found' }, { status: 404 });
+  }
+  if (mark.user_id !== user.id) {
+    return NextResponse.json({ error: 'Only the mark owner can delete this post' }, { status: 403 });
+  }
+
+  const { error } = await supabase.from('marks').delete().eq('id', markId).eq('user_id', user.id);
+
+  if (error) {
+    return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true });
+}
