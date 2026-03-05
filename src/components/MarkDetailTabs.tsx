@@ -41,6 +41,7 @@ interface MarkDetailTabsProps {
   challenges: ChallengeRow[];
   comments: CommentRow[];
   canChallenge: boolean;
+  challengeDisabledReason?: string;
   isWithdrawn: boolean;
   currentUserId: string | null;
   versionCount?: number;
@@ -48,6 +49,7 @@ interface MarkDetailTabsProps {
   challengeCount?: number;
   soiCount?: number;
   isOwner?: boolean;
+  canAddSoi?: boolean;
 }
 
 function getUsername(profiles: ChallengeRow['profiles']): string {
@@ -61,6 +63,7 @@ export function MarkDetailTabs({
   challenges,
   comments,
   canChallenge,
+  challengeDisabledReason,
   isWithdrawn,
   currentUserId,
   versionCount = 0,
@@ -68,7 +71,9 @@ export function MarkDetailTabs({
   challengeCount = 0,
   soiCount: initialSoiCount = 0,
   isOwner = false,
+  canAddSoi: canAddSoiProp = false,
 }: MarkDetailTabsProps) {
+  const canAddSoi = canAddSoiProp || (isOwner && !isWithdrawn);
   void canEdit; // reserved for future edit UI
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -186,7 +191,7 @@ export function MarkDetailTabs({
           <p className="text-sm text-muted-foreground">
             Sign of influence (SOI): links to posts or content that you say take credit from your work.
           </p>
-          {isOwner && !isWithdrawn && (
+          {canAddSoi && (
             <form
               onSubmit={async (e) => {
                 e.preventDefault();
@@ -270,7 +275,7 @@ export function MarkDetailTabs({
       {tab === 'challenges' && (
         <div className="space-y-4">
           {!isWithdrawn && currentUserId && (
-            <ChallengeForm markId={markId} canChallenge={canChallenge} />
+            <ChallengeForm markId={markId} canChallenge={canChallenge} challengeDisabledReason={challengeDisabledReason} />
           )}
           <ul className="space-y-3">
             {challenges.map((c) => {

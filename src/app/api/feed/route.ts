@@ -1,17 +1,15 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { DOMAINS } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
-import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
   const claimType = searchParams.get('claim_type');
-  const challengedOnly = searchParams.get('disputed_only') === 'true';
-  const following = searchParams.get('following') === 'true';
+  const source = searchParams.get('source');
+  const disputedOnly = searchParams.get('disputed_only') === 'true';
   const cursor = searchParams.get('cursor');
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '20', 10), 1), 100);
 
@@ -21,36 +19,19 @@ export async function GET(request: Request) {
     .is('withdrawn_at', null)
     .order('created_at', { ascending: false });
 
-  if (following && user) {
-    const { data: followRows } = await supabase
-      .from('follows')
-      .select('following_id')
-      .eq('follower_id', user.id);
-    const followingIds = Array.from(new Set((followRows ?? []).map((r) => r.following_id)));
-    if (followingIds.length === 0) {
-      query = query.eq('id', '00000000-0000-0000-0000-000000000000');
-    } else {
-      query = query.in('user_id', followingIds);
-    }
-  } else {
-    if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
-      query = query.eq('domain', domain);
-    }
-    if (claimType && claimType !== 'all') {
-      let claimTypeName = claimType;
-      if (/^[0-9a-f-]{36}$/i.test(claimType)) {
-        const { data: claimTypeRow } = await supabase
-          .from('claim_types')
-          .select('name')
-          .eq('id', claimType)
-          .maybeSingle();
-        claimTypeName = claimTypeRow?.name ?? claimType;
-      }
-      query = query.eq('claim_type', claimTypeName);
-    }
-    if (challengedOnly) {
-      query = query.gt('dispute_count', 0);
-    }
+  if (source === 'historical') {
+    query = query.not('historical_profile_id', 'is', null);
+  } else if (source === 'user') {
+    query = query.is('historical_profile_id', null);
+  }
+  if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
+    query = query.eq('domain', domain);
+  }
+  if (claimType && claimType !== 'all' && CLAIM_TYPES.includes(claimType as (typeof CLAIM_TYPES)[number])) {
+    query = query.eq('claim_type', claimType);
+  }
+  if (disputedOnly) {
+    query = query.gt('dispute_count', 0);
   }
 
   if (cursor) {
@@ -78,36 +59,54 @@ export async function GET(request: Request) {
 
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
-  const soiCountMap: Record<string, number> = {};
+  const latestCommentsMap: Record<string, { username: string; content: string; created_at: string }[]> = {};
   if (markIds.length > 0) {
-    const [commentsRes, soiRes] = await Promise.all([
-      supabase.from('comments').select('mark_id').in('mark_id', markIds),
-      supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
+    const [countRes, commentsRes] = await Promise.all([
+      supabase.rpc('get_comment_counts_for_marks', { p_mark_ids: markIds }).then((r) => (r.error ? { data: [] } : r)),
+      supabase
+        .from('comments')
+        .select('mark_id, content, created_at, profiles!comments_user_id_fkey(username)')
+        .in('mark_id', markIds)
+        .order('created_at', { ascending: false })
+        .limit(100),
     ]);
-    for (const row of commentsRes.data ?? []) {
-      commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+    for (const row of countRes.data ?? []) {
+      commentsCountMap[row.mark_id] = Number(row.cnt ?? 0);
     }
-    for (const row of soiRes.data ?? []) {
-      soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
+    const byMark = new Map<string, { username: string; content: string; created_at: string }[]>();
+    for (const c of commentsRes.data ?? []) {
+      const mid = c.mark_id;
+      const arr = byMark.get(mid) ?? [];
+      if (arr.length < 2) {
+        const p = c.profiles as { username?: string } | { username?: string }[] | null;
+        const u = (p && (Array.isArray(p) ? p[0]?.username : (p as { username?: string }).username)) ?? 'unknown';
+        arr.push({ username: u, content: c.content, created_at: c.created_at });
+        byMark.set(mid, arr);
+      }
+    }
+    for (const mid of markIds) {
+      latestCommentsMap[mid] = byMark.get(mid) ?? [];
+      if (!(mid in commentsCountMap)) commentsCountMap[mid] = 0;
     }
   }
-  const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
-  const listWithCounts = list.map((m) => ({
+
+  const listWithComments = list.map((m) => ({
     ...m,
     comments_count: commentsCountMap[m.id] ?? 0,
-    soi_count: soiCountMap[m.id] ?? 0,
-    media: mediaByMarkId[m.id] ?? [],
+    latest_comments: latestCommentsMap[m.id] ?? [],
   }));
+
+  const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
-  if (user && listWithCounts.length > 0) {
+  if (user && listWithComments.length > 0) {
     const [bRes, vRes] = await Promise.all([
-      supabase.from('bookmarks').select('mark_id').eq('user_id', user.id).in('mark_id', listWithCounts.map((m) => m.id)),
-      supabase.from('votes').select('mark_id, vote_type').eq('voter_id', user.id).in('mark_id', listWithCounts.map((m) => m.id)),
+      supabase.from('bookmarks').select('mark_id').eq('user_id', user.id).in('mark_id', listWithComments.map((m) => m.id)),
+      supabase.from('votes').select('mark_id, vote_type').eq('voter_id', user.id).in('mark_id', listWithComments.map((m) => m.id)),
     ]);
     bookmarkIds = (bRes.data ?? []).map((x) => x.mark_id);
     voteMap = Object.fromEntries((vRes.data ?? []).map((v) => [v.mark_id, v.vote_type as 'SUPPORT' | 'OPPOSE']));
   }
 
-  return NextResponse.json({ marks: listWithCounts, nextCursor, bookmarkIds, voteMap });
+  return NextResponse.json({ marks: listWithComments, nextCursor, bookmarkIds, voteMap });
 }

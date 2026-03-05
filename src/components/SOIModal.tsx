@@ -67,7 +67,7 @@ export function SOIModal({ markId, count, open, onClose }: SOIModalProps) {
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : soi.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No signs of influence yet.</p>
+            <p className="text-sm text-muted-foreground">No signs of influence added yet.</p>
           ) : (
             <ul className="space-y-3">
               {soi.map((item) => {

@@ -6,9 +6,10 @@ import { useRouter } from 'next/navigation';
 interface ChallengeFormProps {
   markId: string;
   canChallenge: boolean;
+  challengeDisabledReason?: string;
 }
 
-export function ChallengeForm({ markId, canChallenge }: ChallengeFormProps) {
+export function ChallengeForm({ markId, canChallenge, challengeDisabledReason }: ChallengeFormProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -46,8 +47,8 @@ export function ChallengeForm({ markId, canChallenge }: ChallengeFormProps) {
 
   if (!canChallenge) {
     return (
-      <p className="text-sm text-gray-500">
-        You cannot challenge this mark (you may be the author or have already challenged).
+      <p className="text-sm text-gray-500" title={challengeDisabledReason}>
+        {challengeDisabledReason ?? 'You cannot challenge this mark (you may be the author or have already challenged).'}
       </p>
     );
   }

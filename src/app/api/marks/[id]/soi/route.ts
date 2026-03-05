@@ -45,14 +45,15 @@ export async function POST(
 
   const { data: mark } = await supabase
     .from('marks')
-    .select('id, user_id')
+    .select('id, user_id, historical_profile_id')
     .eq('id', markId)
     .single();
 
   if (!mark) {
     return NextResponse.json({ error: 'Mark not found' }, { status: 404 });
   }
-  if (mark.user_id !== user.id) {
+  const isHistorical = !!mark.historical_profile_id;
+  if (!isHistorical && mark.user_id !== user.id) {
     return NextResponse.json({ error: 'Only the mark owner can add SOI' }, { status: 403 });
   }
 

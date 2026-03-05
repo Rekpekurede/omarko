@@ -27,7 +27,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url), historical_profiles(name)')
     .eq('id', id)
     .single();
 
@@ -44,13 +44,19 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     withdrawnByUsername = withdrawnByProfile?.username ?? null;
   }
 
+  const isHistorical = !!mark.historical_profile_id;
+  const historicalName = (() => {
+    const h = (mark as { historical_profiles?: { name?: string } | { name?: string }[] | null }).historical_profiles;
+    if (!h) return null;
+    const o = Array.isArray(h) ? h[0] : h;
+    return o?.name ?? null;
+  })();
   const isOwner = !!user && user.id === mark.user_id;
   const { count: challengeCount } = await supabase
     .from('challenges')
     .select('id', { count: 'exact', head: true })
     .eq('mark_id', id);
   const hasChallenges = (challengeCount ?? 0) > 0;
-  const showOwnerActions = isOwner && !isWithdrawn;
 
   const { data: challenges } = await supabase
     .from('challenges')
@@ -65,7 +71,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     .order('created_at', { ascending: false });
 
   let currentVote: 'SUPPORT' | 'OPPOSE' | null = null;
-  let canChallenge = !!user && user.id !== mark.user_id;
+  let canChallenge = !isHistorical && !!user && user.id !== mark.user_id;
   const canVote = !!user;
   if (user) {
     const { data: vote } = await supabase
@@ -86,8 +92,9 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const profilesData = (mark as { profiles?: { username: string; avatar_url?: string | null } | { username: string; avatar_url?: string | null }[] | null }).profiles;
   const profileObj = Array.isArray(profilesData) ? profilesData[0] : profilesData;
-  const displayUsername = profileObj?.username ?? 'unknown';
+  const displayUsername = isHistorical && historicalName ? historicalName : (profileObj?.username ?? 'unknown');
   const avatarUrl = profileObj?.avatar_url ?? null;
+  const showOwnerActions = isOwner && !isWithdrawn && !isHistorical;
   const content = (mark as { content?: string }).content ?? '';
   const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
   const claimTypeName = mark.claim_type ?? 'Unclassified';
@@ -121,11 +128,22 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-center gap-3">
-              <Avatar username={displayUsername} avatarUrl={avatarUrl} size="md" />
+              <Avatar username={displayUsername} avatarUrl={isHistorical ? null : avatarUrl} size="md" />
               <div>
-                <Link href={`/profile/${displayUsername}`} className="text-sm font-medium text-foreground hover:underline">
-                  @{displayUsername}
-                </Link>
+                {isHistorical && mark.historical_profile_id ? (
+                  <>
+                    <Link href={`/historical/${mark.historical_profile_id}`} className="text-sm font-medium text-foreground hover:underline">
+                      {displayUsername}
+                    </Link>
+                    <span className="ml-2 inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                      HISTORICAL FIGURE
+                    </span>
+                  </>
+                ) : (
+                  <Link href={`/profile/${encodeURIComponent(displayUsername)}`} className="text-sm font-medium text-foreground hover:underline">
+                    @{displayUsername}
+                  </Link>
+                )}
                 <span className="ml-2 text-xs text-muted-foreground">
                   {(mark as { domain?: string }).domain}
                   {(mark as { claim_type?: string }).claim_type && ` · ${(mark as { claim_type: string }).claim_type}`}
@@ -206,6 +224,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         challenges={challenges ?? []}
         comments={comments ?? []}
         canChallenge={canChallenge}
+        challengeDisabledReason={isHistorical ? 'Challenges on historical marks are reviewed by designated custodians.' : undefined}
         isWithdrawn={isWithdrawn}
         currentUserId={user?.id ?? null}
         versionCount={versionCount}
@@ -213,6 +232,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         challengeCount={challengeCount ?? 0}
         soiCount={soiCount}
         isOwner={isOwner}
+        canAddSoi={isHistorical ? !!user : (isOwner && !isWithdrawn)}
       />
 
       {mark.owner_response && (

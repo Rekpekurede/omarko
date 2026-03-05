@@ -1,20 +1,21 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import { DOMAINS } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES } from '@/lib/types';
+import type { FeedSource } from '@/app/page';
 
 interface FeedFiltersProps {
   currentDomain?: string;
   currentClaimType?: string;
-  claimTypeOptions?: Array<{ id: string; name: string }>;
-  challengedOnly?: boolean;
+  currentSource?: FeedSource;
+  disputedOnly?: boolean;
 }
 
 export function FeedFilters({
   currentDomain = 'all',
   currentClaimType = 'all',
-  claimTypeOptions = [],
-  challengedOnly = false,
+  currentSource = 'all',
+  disputedOnly = false,
 }: FeedFiltersProps) {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -30,7 +31,7 @@ export function FeedFilters({
     router.push(`/?${next.toString()}`);
   };
 
-  const setChallengedOnly = (v: boolean) => {
+  const setDisputedOnly = (v: boolean) => {
     const next = new URLSearchParams(searchParams.toString());
     if (v) next.set('disputed_only', 'true');
     else next.delete('disputed_only');
@@ -39,12 +40,22 @@ export function FeedFilters({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
+    <div className="flex flex-wrap items-center gap-2">
+        <select
+          aria-label="Filter by source"
+          value={currentSource}
+          onChange={(e) => setParam('source', e.target.value)}
+          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+        >
+          <option value="all">All Marks</option>
+          <option value="user">User Marks</option>
+          <option value="historical">Historical Marks</option>
+        </select>
         <select
           aria-label="Filter by domain"
           value={currentDomain}
           onChange={(e) => setParam('domain', e.target.value)}
-          className="min-h-[40px] rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           <option value="all">All domains</option>
           {DOMAINS.map((d) => (
@@ -55,21 +66,21 @@ export function FeedFilters({
           aria-label="Filter by claim type"
           value={currentClaimType}
           onChange={(e) => setParam('claim_type', e.target.value)}
-          className="min-h-[40px] rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+          className="min-h-[44px] touch-manipulation rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
         >
           <option value="all">All claim types</option>
-          {claimTypeOptions.map((c) => (
-            <option key={c.id} value={c.id}>{c.name}</option>
+          {CLAIM_TYPES.map((c) => (
+            <option key={c} value={c}>{c}</option>
           ))}
         </select>
-        <label className="flex cursor-pointer items-center gap-2 text-sm text-muted-foreground">
+        <label className="flex cursor-pointer items-center gap-2 text-sm">
           <input
             type="checkbox"
-            checked={challengedOnly}
-            onChange={(e) => setChallengedOnly(e.target.checked)}
+            checked={disputedOnly}
+            onChange={(e) => setDisputedOnly(e.target.checked)}
             className="rounded border-gray-300"
           />
-          Challenged only
+          Disputed only
         </label>
     </div>
   );
