@@ -1,11 +1,23 @@
 /** Placeholder logo – replace with final asset when ready */
 function PlaceholderLogo() {
   return (
-    <div
-      className="mx-auto flex h-12 w-12 items-center justify-center rounded-xl border-2 border-foreground/80 bg-muted/50"
-      aria-hidden
-    >
-      <span className="h-2 w-2 rounded-full bg-foreground" />
+    <div className="mx-auto flex h-14 w-14 items-center justify-center" aria-hidden>
+      <svg
+        viewBox="0 0 48 48"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+        className="h-14 w-14 text-foreground drop-shadow-sm"
+      >
+        <circle
+          cx="24"
+          cy="24"
+          r="20"
+          stroke="currentColor"
+          strokeWidth="2.25"
+          className="opacity-90"
+        />
+        <circle cx="24" cy="24" r="5" fill="currentColor" className="opacity-90" />
+      </svg>
     </div>
   );
 }
