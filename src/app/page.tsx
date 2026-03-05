@@ -2,6 +2,7 @@ import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
 import { FeedList } from '@/components/FeedList';
 import { FeedIntroBanner } from '@/components/FeedIntroBanner';
+import { FeedTabs } from '@/components/FeedTabs';
 import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
@@ -101,24 +102,26 @@ export default async function FeedPage({ searchParams }: PageProps) {
           {error.message}
         </div>
       )}
-      <FeedFilters
-        currentDomain={domain}
-        currentClaimType={claimType}
-        claimTypeOptions={claimTypeOptions ?? []}
-        challengedOnly={challengedOnly}
-      />
-      <FeedList
-        key={`${domain}-${claimType}-${challengedOnly}`}
-        initialMarks={listWithCounts}
-        initialNextCursor={nextCursor}
-        domain={domain}
-        claimType={claimType}
-        challengedOnly={challengedOnly}
-        bookmarkIds={bookmarkIds}
-        voteMap={voteMap}
-        showBookmark={!!user}
-        currentUserId={user?.id ?? null}
-      />
+      <FeedTabs>
+        <FeedFilters
+          currentDomain={domain}
+          currentClaimType={claimType}
+          claimTypeOptions={claimTypeOptions ?? []}
+          challengedOnly={challengedOnly}
+        />
+        <FeedList
+          key={`${domain}-${claimType}-${challengedOnly}`}
+          initialMarks={listWithCounts}
+          initialNextCursor={nextCursor}
+          domain={domain}
+          claimType={claimType}
+          challengedOnly={challengedOnly}
+          bookmarkIds={bookmarkIds}
+          voteMap={voteMap}
+          showBookmark={!!user}
+          currentUserId={user?.id ?? null}
+        />
+      </FeedTabs>
     </PageContainer>
   );
 }

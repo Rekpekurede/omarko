@@ -330,7 +330,7 @@ export function MarkCard({
                       onClick={openClassificationModal}
                       className="w-full rounded-lg px-3 py-2 text-left text-sm text-foreground transition hover:bg-accent/60"
                     >
-                      Edit
+                      Edit claim details
                     </button>
                   </div>
                 )}
@@ -366,17 +366,17 @@ export function MarkCard({
             <button
               type="button"
               onClick={() => setLightboxOpen(true)}
-              className="block w-full text-left"
+              className="block w-full overflow-hidden rounded-xl bg-black"
               aria-label="Open video preview"
             >
-              <div className="relative h-[280px] w-full overflow-hidden rounded-xl border border-border bg-muted sm:h-[420px]">
+              <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: '16/9' }}>
                 {mediaPoster ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={mediaPoster} alt="" className="h-full w-full object-cover" />
+                  <img src={mediaPoster} alt="" className="absolute inset-0 h-full w-full object-cover" />
                 ) : (
-                  <div className="flex h-full w-full items-center justify-center text-4xl text-muted-foreground">▶</div>
+                  <div className="absolute inset-0 flex items-center justify-center bg-muted/30 text-4xl text-muted-foreground">▶</div>
                 )}
-                <div className="absolute inset-0 flex items-center justify-center text-4xl text-white/90">▶</div>
+                <div className="absolute inset-0 flex items-center justify-center text-4xl text-white/90 drop-shadow-lg">▶</div>
               </div>
             </button>
           )}

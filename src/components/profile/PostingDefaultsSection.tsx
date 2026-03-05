@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { DOMAINS } from '@/lib/types';
 import { ClaimTypePicker } from '@/components/ClaimTypePicker';
 
@@ -20,6 +20,17 @@ export function PostingDefaultsSection({
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [defaultsUnavailable, setDefaultsUnavailable] = useState(false);
+
+  useEffect(() => {
+    fetch('/api/profile/defaults')
+      .then((res) => {
+        if (res.status === 503 || !res.ok) {
+          setDefaultsUnavailable(true);
+        }
+      })
+      .catch(() => setDefaultsUnavailable(true));
+  }, []);
 
   const saveDefaults = async () => {
     setSaving(true);
@@ -41,6 +52,17 @@ export function PostingDefaultsSection({
     setToast('Defaults saved');
     setTimeout(() => setToast(null), 1600);
   };
+
+  if (defaultsUnavailable) {
+    return (
+      <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">
+        <h3 className="text-base font-semibold text-foreground">Posting Defaults</h3>
+        <p className="mt-2 text-sm text-muted-foreground">
+          Posting defaults are not available right now. You can still set domain and claim type on each post.
+        </p>
+      </section>
+    );
+  }
 
   return (
     <section className="rounded-2xl border border-border bg-card p-4 sm:p-5">

@@ -14,14 +14,18 @@ export async function GET() {
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  const { data: profile } = await supabase
+  let profile: { default_domain?: string | null; default_claim_type?: string | null } | null = null;
+  const profileRes = await supabase
     .from('profiles')
     .select('default_domain, default_claim_type')
     .eq('id', user.id)
     .maybeSingle();
-
-  let claimTypeOption: { id: string; name: string } | null = null;
+  if (!profileRes.error) {
+    profile = profileRes.data;
+  }
+  // If schema cache or column missing (e.g. default_claim_type), profile may be null; return safe defaults
   const defaultClaimType = profile?.default_claim_type ?? null;
+  let claimTypeOption: { id: string; name: string } | null = null;
   if (defaultClaimType) {
     const { data, error } = await supabase
       .from('claim_types')
@@ -102,11 +106,17 @@ export async function PATCH(request: Request) {
     .single();
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    const msg = error.message ?? '';
+    if (msg.includes('default_claim_type') || msg.includes('default_domain') || msg.includes('column')) {
+      return NextResponse.json({
+        error: 'Posting defaults are not available yet. Please try again later.',
+      }, { status: 503 });
+    }
+    return NextResponse.json({ error: msg }, { status: 500 });
   }
 
   return NextResponse.json({
-    defaultDomain: data.default_domain ?? null,
-    defaultClaimType: data.default_claim_type ?? null,
+    defaultDomain: data?.default_domain ?? null,
+    defaultClaimType: data?.default_claim_type ?? null,
   });
 }

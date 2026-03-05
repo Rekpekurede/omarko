@@ -20,7 +20,6 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
   const [claimPickerOpenToken, setClaimPickerOpenToken] = useState(0);
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
   const [contentDraft, setContentDraft] = useState('');
-  const [imageDescription, setImageDescription] = useState('');
   const [imagePreview, setImagePreview] = useState<string | null>(null);
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
@@ -52,9 +51,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
 
   useEffect(() => {
     const text = contentDraft.trim();
-    const imageCaption = imageFile?.name ?? '';
-    const description = imageDescription.trim();
-    if (!text && !imageCaption && !description) {
+    if (!text && !imageFile) {
       setAiSuggestion(null);
       return;
     }
@@ -63,11 +60,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       const res = await fetch('/api/classify-claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          imageCaption,
-          imageDescription: description,
-        }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.claimType && data.domain) {
@@ -76,7 +69,7 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       setAiLoading(false);
     }, 450);
     return () => window.clearTimeout(timer);
-  }, [contentDraft, imageDescription, imageFile]);
+  }, [contentDraft, imageFile]);
 
   const applyAiSuggestion = async () => {
     if (!aiSuggestion) return;
@@ -302,18 +295,6 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
             forceOpenToken={claimPickerOpenToken}
           />
         </div>
-      </div>
-      <div>
-        <label htmlFor="image_description" className="block text-sm font-medium text-black dark:text-white">
-          Image description (optional)
-        </label>
-        <input
-          id="image_description"
-          value={imageDescription}
-          onChange={(e) => setImageDescription(e.target.value)}
-          placeholder="Optional caption or context"
-          className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-        />
       </div>
       <label className="flex items-center gap-2 text-xs text-muted-foreground">
         <input

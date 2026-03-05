@@ -16,7 +16,6 @@ export function CreateMarkModal() {
   const [content, setContent] = useState('');
   const [domain, setDomain] = useState<(typeof DOMAINS)[number]>(DOMAINS[0]);
   const [selectedClaimType, setSelectedClaimType] = useState<{ id: string; name: string } | null>(null);
-  const [imageDescription, setImageDescription] = useState('');
   const [attachmentFile, setAttachmentFile] = useState<File | null>(null);
   const [attachmentPreviewUrl, setAttachmentPreviewUrl] = useState<string | null>(null);
   const [attachmentMeta, setAttachmentMeta] = useState<{ kind: 'image' | 'audio' | 'video'; durationMs?: number; width?: number; height?: number } | null>(null);
@@ -70,7 +69,6 @@ export function CreateMarkModal() {
 
   const resetForm = () => {
     setContent('');
-    setImageDescription('');
     setDomain(DOMAINS[0]);
     setSelectedClaimType(null);
     setDomainTouched(false);
@@ -137,9 +135,7 @@ export function CreateMarkModal() {
   useEffect(() => {
     if (!isOpen) return;
     const text = content.trim();
-    const imageCaption = attachmentFile?.name ?? '';
-    const description = imageDescription.trim();
-    if (!text && !imageCaption && !description) {
+    if (!text && !attachmentFile) {
       setAiSuggestion(null);
       return;
     }
@@ -148,11 +144,7 @@ export function CreateMarkModal() {
       const res = await fetch('/api/classify-claim', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          text,
-          imageCaption,
-          imageDescription: description,
-        }),
+        body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
       if (res.ok && data.claimType && data.domain) {
@@ -162,7 +154,7 @@ export function CreateMarkModal() {
     }, 450);
 
     return () => window.clearTimeout(timer);
-  }, [isOpen, content, imageDescription, attachmentFile]);
+  }, [isOpen, content, attachmentFile]);
 
   const applyAiSuggestion = async () => {
     if (!aiSuggestion) return;
@@ -225,13 +217,20 @@ export function CreateMarkModal() {
       if (attachmentMeta?.durationMs) uploadForm.append('duration_ms', String(attachmentMeta.durationMs));
       if (attachmentMeta?.width) uploadForm.append('width', String(attachmentMeta.width));
       if (attachmentMeta?.height) uploadForm.append('height', String(attachmentMeta.height));
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[CreateMarkModal] Uploading attachment', { markId, kind: attachmentMeta?.kind, size: attachmentFile.size });
+      }
       const uploadRes = await fetch('/api/marks/upload-image', {
         method: 'POST',
         body: uploadForm,
       });
       const uploadData = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok) {
-        setUploadNotice(uploadData.error ?? 'Attachment upload failed after posting.');
+        const errMsg = uploadData.error ?? 'Attachment upload failed after posting.';
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[CreateMarkModal] Upload failed', uploadRes.status, uploadData);
+        }
+        setUploadNotice(errMsg);
       }
     }
 
@@ -361,17 +360,6 @@ export function CreateMarkModal() {
                   Example: &quot;Silent Hustle&quot; - a phrase you coined
                 </p>
               </div>
-              <div>
-                <label htmlFor="composer-image-description" className="block text-sm font-medium text-black dark:text-white">Image description (optional)</label>
-                <input
-                  id="composer-image-description"
-                  value={imageDescription}
-                  onChange={(e) => setImageDescription(e.target.value)}
-                  placeholder="Optional caption or context"
-                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
-                />
-              </div>
-
               <div>
                 <label className="block text-sm font-medium text-black dark:text-white">Attachment (optional)</label>
                 <input
