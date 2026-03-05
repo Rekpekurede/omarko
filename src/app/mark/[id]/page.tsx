@@ -132,7 +132,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
               <div>
                 {isHistorical && mark.historical_profile_id ? (
                   <>
-                    <Link href={`/historical/${mark.historical_profile_id}`} className="text-sm font-medium text-foreground hover:underline">
+                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-sm font-medium text-foreground hover:underline">
                       {displayUsername}
                     </Link>
                     <span className="ml-2 inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">

@@ -5,6 +5,7 @@ import { NotificationsBell } from './NotificationsBell';
 import { SearchBar } from './SearchBar';
 import { ThemeToggle } from './ThemeToggle';
 import { CreateMarkButton } from './CreateMarkButton';
+import { NavDrawer } from './NavDrawer';
 
 interface HeaderProps {
   brandFontClass?: string;
@@ -13,15 +14,16 @@ interface HeaderProps {
 export async function Header({ brandFontClass }: HeaderProps) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
-  let profile: { username: string } | null = null;
+  let profile: { username: string; avatar_url?: string | null } | null = null;
   if (user) {
-    const { data } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+    const { data } = await supabase.from('profiles').select('username, avatar_url').eq('id', user.id).single();
     profile = data;
   }
 
   return (
     <header className="sticky top-0 z-20 border-b border-border bg-background/90 backdrop-blur">
       <div className="mx-auto flex w-full max-w-2xl items-center gap-2 px-3 py-2 sm:px-4">
+        <NavDrawer username={profile?.username ?? null} avatarUrl={profile?.avatar_url ?? null} />
         <Link href="/" className="flex items-center gap-2" aria-label="OMarko home">
           <svg
             width="32"

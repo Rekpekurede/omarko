@@ -226,7 +226,7 @@ export function AdminHistoricalClient({
           ) : (
             profiles.map((p) => (
               <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
-                <Link href={`/historical/${p.id}`} className="font-medium text-foreground hover:underline">
+                <Link href={`/historical/profile/${p.id}`} className="font-medium text-foreground hover:underline">
                   {p.name}
                 </Link>
                 <span className="text-muted-foreground">{p.marks_count} marks</span>

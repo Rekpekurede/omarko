@@ -89,8 +89,10 @@ export function MarkCard({
           <div className="flex items-center gap-2 flex-wrap">
             {isHistorical ? (
               <>
-                <Avatar username={historicalName} avatarUrl={null} size="sm" />
-                <Link href={`/historical/${mark.historical_profile_id}`} className="font-medium text-black hover:underline dark:text-white">
+                <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0">
+                  <Avatar username={historicalName} avatarUrl={null} size="sm" />
+                </Link>
+                <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-medium text-black hover:underline dark:text-white">
                   {historicalName}
                 </Link>
                 <span className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
@@ -99,7 +101,9 @@ export function MarkCard({
               </>
             ) : (
               <>
-                <Avatar username={username} avatarUrl={avatarUrl} size="sm" />
+                <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0">
+                  <Avatar username={username} avatarUrl={avatarUrl} size="sm" />
+                </Link>
                 <Link href={`/profile/${encodeURIComponent(username)}`} className="font-medium text-black hover:underline dark:text-white">
                   @{username}
                 </Link>

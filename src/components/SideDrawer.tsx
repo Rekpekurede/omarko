@@ -19,7 +19,7 @@ const menuItems = [
 ] as const;
 
 export function SideDrawer({ open, onClose, username, avatarUrl }: SideDrawerProps) {
-  const router = useRouter();
+  const handleLinkClick = () => onClose();
 
   useEffect(() => {
     if (!open) return;
@@ -33,12 +33,6 @@ export function SideDrawer({ open, onClose, username, avatarUrl }: SideDrawerPro
       document.body.style.overflow = '';
     };
   }, [open, onClose]);
-
-  const handleLinkClick = (href: string, useUsername: boolean) => {
-    onClose();
-    if (useUsername && username) router.push(`/profile/${encodeURIComponent(username)}`);
-    else router.push(href);
-  };
 
   return (
     <>
@@ -69,14 +63,14 @@ export function SideDrawer({ open, onClose, username, avatarUrl }: SideDrawerPro
 
           <nav className="flex flex-col gap-0.5">
             {menuItems.map((item) => {
-              const href = item.useUsername && username
-                ? `/profile/${encodeURIComponent(username)}`
+              const href = item.useUsername
+                ? (username ? `/profile/${encodeURIComponent(username)}` : '/auth')
                 : item.href;
               return (
                 <Link
                   key={item.label}
                   href={href}
-                  onClick={() => onClose()}
+                  onClick={handleLinkClick}
                   className="flex items-center gap-3 rounded-lg border-l-4 border-transparent py-3 pl-3 pr-4 text-left text-foreground transition-colors hover:border-[#C9A84C] hover:bg-[#C9A84C]/10 dark:hover:bg-[#C9A84C]/15"
                 >
                   <span className="text-xl" aria-hidden>{item.icon}</span>
