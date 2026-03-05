@@ -39,10 +39,10 @@ export function ProfileStats({
       {stats.map(({ label, value }) => (
         <div
           key={label}
-          className="rounded-2xl border border-border bg-card p-3"
+          className="rounded-sm border border-border bg-card p-4 dark:bg-card-glass dark:backdrop-blur-sm"
         >
-          <span className="block text-lg font-semibold text-foreground">{value}</span>
-          <span className="text-xs text-muted-foreground">{label}</span>
+          <span className="font-mono block tabular-nums text-xl font-medium text-foreground">{value}</span>
+          <span className="font-mono mt-0.5 block text-[11px] uppercase tracking-wider text-muted-foreground">{label}</span>
         </div>
       ))}
     </div>

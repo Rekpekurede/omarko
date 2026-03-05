@@ -21,21 +21,22 @@ const config: Config = {
         "primary-foreground": "var(--primary-foreground)",
       },
       fontFamily: {
-        sans: ["var(--font-sans)", "system-ui", "sans-serif"],
-        display: ["var(--font-display)", "var(--font-sans)", "system-ui", "sans-serif"],
+        sans: ["var(--font-display)", "Georgia", "serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
+        mono: ["var(--font-mono)", "ui-monospace", "monospace"],
       },
       boxShadow: {
         card: "var(--shadow-card)",
-        "glow-sm": "0 0 20px var(--primary-glow)",
-        "glow-md": "0 0 32px var(--primary-glow)",
+        "glow-sm": "0 0 24px var(--primary-glow)",
+        "glow-md": "0 0 40px var(--primary-glow)",
       },
       animation: {
-        "pulse-glow": "pulse-glow 2.5s ease-in-out infinite",
+        "breathing-glow": "breathing-glow 4s ease-in-out infinite",
       },
       keyframes: {
-        "pulse-glow": {
-          "0%, 100%": { opacity: "0.6", transform: "scale(1)" },
-          "50%": { opacity: "1", transform: "scale(1.03)" },
+        "breathing-glow": {
+          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
+          "50%": { opacity: "0.9", transform: "scale(1.02)" },
         },
       },
     },

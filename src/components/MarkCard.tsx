@@ -313,17 +313,17 @@ export function MarkCard({
   const mediaPoster = firstMedia?.poster_signed_url ?? null;
 
   return (
-    <article className="tap-press w-full rounded-2xl border border-border/80 bg-card/90 p-5 shadow-card backdrop-blur-sm transition-all hover:border-foreground/15 dark:border-primary/10 dark:bg-card-glass dark:shadow-glow-sm dark:hover:border-primary/20">
+    <article className="card-document tap-press w-full rounded-sm border border-border p-5 transition-colors hover:border-foreground/20 dark:border-primary/10 dark:backdrop-blur-sm">
       <div className="flex gap-3">
         <div className="shrink-0 pt-0.5">
           <Avatar username={username} avatarUrl={avatarUrl} size="md" className="h-10 w-10 rounded-full" />
         </div>
         <div className="min-w-0 flex-1 space-y-2">
           <div className="flex items-center gap-2.5">
-            <Link href={`/profile/${encodeURIComponent(username)}`} className="text-sm font-medium text-foreground hover:underline">
+            <Link href={`/profile/${encodeURIComponent(username)}`} className="font-mono text-xs font-medium text-foreground hover:underline">
               @{username}
             </Link>
-            <RelativeTime dateString={mark.created_at} className="ml-auto text-xs text-muted-foreground" />
+            <RelativeTime dateString={mark.created_at} className="ml-auto" />
             {mark.status !== 'ACTIVE' && (
               <MarkStatusLabel status={mark.status} />
             )}
@@ -417,7 +417,7 @@ export function MarkCard({
           )}
         </div>
       </div>
-      <div className="mt-4 border-t border-border/80 pt-4">
+      <div className="mt-4 border-t border-border pt-4">
         <div className="grid grid-cols-6 items-center gap-1 text-sm">
           <div className="relative min-w-0">
             {activeTooltip === 'support' && (

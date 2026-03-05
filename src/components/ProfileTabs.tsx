@@ -64,17 +64,17 @@ export function ProfileTabs({
   };
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-4">
-      <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-1">
+    <div className="rounded-sm border border-border bg-card p-4 dark:bg-card-glass dark:backdrop-blur-sm">
+      <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-3">
         {(['marks', 'challenges', 'comments', 'supported'] as Tab[]).map((t) => (
           <button
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`rounded-xl px-3 py-2 text-sm font-medium capitalize transition ${
+            className={`tap-press font-mono rounded-sm px-3 py-2 text-[11px] font-medium uppercase tracking-wider transition ${
               currentTab === t
-                ? 'bg-foreground text-background'
-                : 'text-muted-foreground hover:bg-accent hover:text-foreground'
+                ? 'bg-primary text-primary-foreground'
+                : 'text-muted-foreground hover:bg-muted hover:text-foreground'
             }`}
           >
             {t}

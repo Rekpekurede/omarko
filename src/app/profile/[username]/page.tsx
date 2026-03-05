@@ -355,7 +355,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           followingCount={followingCount}
         />
         <div>
-          <h2 className="mb-3 text-sm font-medium text-muted-foreground">Stats</h2>
+          <h2 className="font-mono mb-3 text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Stats</h2>
           <ProfileStats
             totalMarks={totalMarks ?? 0}
             champions={champions}
@@ -392,7 +392,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
 
         {isOwner && withdrawnMarks.length > 0 && (
           <div>
-            <h2 className="mb-3 text-lg font-semibold">My Withdrawn</h2>
+            <h2 className="font-display mb-3 text-lg font-semibold tracking-tight">My Withdrawn</h2>
             <ul className="space-y-4">
               {withdrawnMarks.map((mark) => (
                 <li key={mark.id}>

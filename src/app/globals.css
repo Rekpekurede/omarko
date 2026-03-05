@@ -2,51 +2,69 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Design tokens: light = warm editorial, dark = deep premium with amber */
+/*
+  Editorial archive × premium fintech.
+  Dark: near-black #090909, aged parchment gold #C9A84C (ink on vellum).
+  Light: warm parchment #F5F2EC, same gold — document, not website.
+*/
 :root {
-  --background: #F8F6F1;
+  --background: #F5F2EC;
   --foreground: #1C1917;
-  --card: #FFFFFF;
-  --card-glass: rgba(255, 255, 255, 0.85);
-  --border: #E7E5E0;
-  --muted: #F5F3EF;
-  --muted-foreground: #78716C;
-  --accent: #F5F3EF;
-  --primary: #B45309;
-  --primary-foreground: #FFFFFF;
-  --primary-glow: rgba(180, 83, 9, 0.35);
-  --shadow-card: 0 4px 24px -4px rgba(28, 25, 23, 0.08), 0 2px 8px -2px rgba(28, 25, 23, 0.04);
-  --ring-support: #B45309;
-  --ring-oppose: #DC2626;
-  --ring-challenge: #EA580C;
+  --card: #FDFCFA;
+  --card-glass: rgba(253, 252, 250, 0.92);
+  --border: #E8E4DC;
+  --muted: #F0EDE6;
+  --muted-foreground: #6B6560;
+  --accent: #E8E4DC;
+  --primary: #C9A84C;
+  --primary-foreground: #1C1917;
+  --primary-glow: rgba(201, 168, 76, 0.28);
+  --shadow-card: 0 1px 0 0 var(--border), 0 4px 16px -4px rgba(28, 25, 23, 0.06);
+  --paper-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
 }
 
 .dark {
-  --background: #0A0A0F;
+  --background: #090909;
   --foreground: #FAFAF9;
-  --card: #14141A;
-  --card-glass: rgba(20, 20, 26, 0.75);
-  --border: #27272A;
-  --muted: #18181B;
+  --card: #111111;
+  --card-glass: rgba(17, 17, 17, 0.82);
+  --border: #2A2A2A;
+  --muted: #1A1A1A;
   --muted-foreground: #A1A1AA;
-  --accent: #27272A;
-  --primary: #F59E0B;
-  --primary-foreground: #0A0A0F;
-  --primary-glow: rgba(245, 158, 11, 0.25);
-  --shadow-card: 0 0 0 1px rgba(245, 158, 11, 0.06), 0 4px 24px -4px rgba(0, 0, 0, 0.5);
-  --ring-support: #F59E0B;
-  --ring-oppose: #EF4444;
-  --ring-challenge: #F97316;
+  --accent: #2A2A2A;
+  --primary: #C9A84C;
+  --primary-foreground: #090909;
+  --primary-glow: rgba(201, 168, 76, 0.18);
+  --shadow-card: 0 0 0 1px rgba(201, 168, 76, 0.08), 0 4px 24px -4px rgba(0, 0, 0, 0.4);
+  --paper-texture: none;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-display), Georgia, serif;
 }
 
 .font-display {
-  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
+  font-family: var(--font-display), Georgia, serif;
+}
+
+.font-mono {
+  font-family: var(--font-mono), ui-monospace, monospace;
+}
+
+/* Cards: filed document — ruled border, subtle paper (light), frosted (dark) */
+.card-document {
+  background-image: var(--paper-texture);
+  background-color: var(--card);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow-card);
+}
+.dark .card-document {
+  background-image: none;
+  background-color: var(--card-glass);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
 }
 
 @layer utilities {
@@ -62,8 +80,9 @@ body {
     animation: scale-in 160ms ease-out;
   }
 
-  .animate-pulse-glow {
-    animation: pulse-glow 2.5s ease-in-out infinite;
+  /* Breathing pulse: idea coming to life — gold dark, deep amber light */
+  .animate-breathing-glow {
+    animation: breathing-glow 4s ease-in-out infinite;
   }
 
   .tap-press {
@@ -87,7 +106,7 @@ body {
   }
 }
 
-@keyframes pulse-glow {
-  0%, 100% { opacity: 0.6; transform: scale(1); }
-  50% { opacity: 1; transform: scale(1.03); }
+@keyframes breathing-glow {
+  0%, 100% { opacity: 0.5; transform: scale(1); filter: brightness(1); }
+  50% { opacity: 0.9; transform: scale(1.02); filter: brightness(1.08); }
 }

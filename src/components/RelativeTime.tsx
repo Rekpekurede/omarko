@@ -13,8 +13,12 @@ interface RelativeTimeProps {
  */
 export function RelativeTime({ dateString, className }: RelativeTimeProps) {
   return (
-    <span className={className} suppressHydrationWarning>
+    <time
+      dateTime={dateString}
+      className={`font-mono text-[11px] tabular-nums text-muted-foreground ${className ?? ''}`}
+      suppressHydrationWarning
+    >
       {formatMarkTime(dateString)}
-    </span>
+    </time>
   );
 }

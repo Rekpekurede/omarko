@@ -283,14 +283,14 @@ export function CreateMarkModal() {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-t-3xl border border-border/80 bg-card shadow-card dark:border-primary/10 dark:bg-card sm:max-w-2xl sm:rounded-2xl">
-            <div className="sticky top-0 z-10 border-b border-border/80 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10">
-              <div className="flex items-center justify-between px-4 py-4 sm:px-6">
-                <h2 className="font-display text-xl font-bold tracking-tight text-foreground">Create mark</h2>
+          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-t-sm border border-border bg-card shadow-card dark:border-primary/10 dark:bg-card sm:max-w-2xl sm:rounded-sm">
+            <div className="sticky top-0 z-10 border-b border-border bg-card dark:bg-card">
+              <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6">
+                <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">Create mark</h2>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="tap-press rounded-xl p-2 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                  className="tap-press font-mono p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
                   aria-label="Close composer"
                 >
                   ×
@@ -298,13 +298,13 @@ export function CreateMarkModal() {
               </div>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-4 p-4 sm:p-6">
-              <div>
-                <label className="block text-sm font-medium text-black dark:text-white">Claim type</label>
+            <form onSubmit={onSubmit} className="space-y-5 p-4 sm:p-6">
+              <div className="border-b border-border pb-5">
+                <label className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Claim type</label>
                 <button
                   type="button"
                   onClick={() => setIsClaimTypePickerOpen(true)}
-                  className="tap-press mt-1 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm transition hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
+                  className="tap-press mt-2 flex min-h-[48px] w-full items-center justify-between rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground transition hover:border-foreground/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
                 >
                   <span className={selectedClaimType ? 'text-foreground' : 'text-muted-foreground'}>
                     {selectedClaimType?.name ?? 'Select claim type'}
@@ -347,8 +347,8 @@ export function CreateMarkModal() {
                 )}
               </div>
 
-              <div>
-                <label htmlFor="composer-domain" className="block text-sm font-medium text-black dark:text-white">Domain</label>
+              <div className="border-b border-border pb-5">
+                <label htmlFor="composer-domain" className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Domain</label>
                 <select
                   id="composer-domain"
                   value={domain}
@@ -356,7 +356,7 @@ export function CreateMarkModal() {
                     setDomain(e.target.value as (typeof DOMAINS)[number]);
                     setDomainTouched(true);
                   }}
-                  className="mt-1 min-h-[48px] w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-foreground transition focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="mt-2 min-h-[48px] w-full rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 >
                   {DOMAINS.map((d) => (
                     <option key={d} value={d}>{d}</option>
@@ -364,15 +364,15 @@ export function CreateMarkModal() {
                 </select>
               </div>
 
-              <div>
-                <label htmlFor="composer-content" className="block text-sm font-medium text-black dark:text-white">Text content (optional)</label>
+              <div className="border-b border-border pb-5">
+                <label htmlFor="composer-content" className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Text content (optional)</label>
                 <textarea
                   id="composer-content"
                   rows={5}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="What&apos;s yours?"
-                  className="mt-1 w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
+                  className="mt-2 w-full rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   Example: &quot;Silent Hustle&quot; - a phrase you coined
@@ -489,11 +489,11 @@ export function CreateMarkModal() {
                 Save as my default
               </label>
 
-              <div className="flex justify-end pt-2">
+              <div className="flex justify-end border-t border-border pt-5">
                 <button
                   type="submit"
                   disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
-                  className="tap-press min-h-[48px] rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-md transition hover:opacity-90 disabled:opacity-50"
+                  className="tap-press min-h-[48px] rounded-sm border border-primary bg-primary px-6 py-3 font-display font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
                 >
                   {submitting ? 'Posting…' : 'Post'}
                 </button>

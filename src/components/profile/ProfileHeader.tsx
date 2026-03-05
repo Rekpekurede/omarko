@@ -47,12 +47,12 @@ export function ProfileHeader({
   }, [displayName, bio, location, website, avatarUrl, username]);
 
   return (
-    <div className="rounded-2xl border border-border bg-card p-5 sm:p-6">
+    <div className="rounded-sm border border-border bg-card p-5 dark:bg-card-glass dark:backdrop-blur-sm sm:p-6">
       <div className="relative">
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-end">
           <div className="flex flex-col items-center sm:items-start">
             {isOwner ? (
-              <div className="rounded-full ring-2 ring-border ring-offset-2 ring-offset-background">
+              <div className="rounded-full ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
                 <AvatarUpload
                   username={username}
                   avatarUrl={localAvatarUrl}
@@ -62,13 +62,13 @@ export function ProfileHeader({
                 />
               </div>
             ) : (
-              <div className="rounded-full ring-2 ring-border ring-offset-2 ring-offset-background">
+              <div className="rounded-full ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
                 <Avatar username={username} avatarUrl={localAvatarUrl} size="xl" />
               </div>
             )}
           </div>
           <div className="min-w-0 flex-1 text-center sm:text-left">
-            <h1 className="text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
+            <h1 className="font-display text-2xl font-semibold tracking-tight text-foreground sm:text-3xl">
               @{username}
             </h1>
             {localDisplayName && (
