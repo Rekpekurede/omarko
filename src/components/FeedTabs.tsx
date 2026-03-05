@@ -6,9 +6,10 @@ type FeedTab = 'marks' | 'evidence';
 
 interface FeedTabsProps {
   children: React.ReactNode;
+  followingContent?: React.ReactNode;
 }
 
-export function FeedTabs({ children }: FeedTabsProps) {
+export function FeedTabs({ children, followingContent }: FeedTabsProps) {
   const [tab, setTab] = useState<FeedTab>('marks');
 
   return (
@@ -21,9 +22,9 @@ export function FeedTabs({ children }: FeedTabsProps) {
             tab === 'marks' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           }`}
           aria-pressed={tab === 'marks' ? 'true' : 'false'}
-          aria-label="Marks feed"
+          aria-label="For you feed"
         >
-          Marks
+          For you
         </button>
         <button
           type="button"
@@ -32,21 +33,21 @@ export function FeedTabs({ children }: FeedTabsProps) {
             tab === 'evidence' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-muted/50 hover:text-foreground'
           }`}
           aria-pressed={tab === 'evidence' ? 'true' : 'false'}
-          aria-label="Evidence of influence feed"
+          aria-label="Following (Sign of influence) feed"
         >
-          Evidence of influence
+          Following
         </button>
       </div>
 
       {tab === 'marks' && children}
-      {tab === 'evidence' && (
+      {tab === 'evidence' && (followingContent ?? (
         <div className="rounded-xl border border-border bg-card p-8 text-center">
-          <p className="text-base font-medium text-foreground">Evidence of influence</p>
+          <p className="text-base font-medium text-foreground">Sign of influence</p>
           <p className="mx-auto mt-2 max-w-md text-sm leading-relaxed text-muted-foreground">
-            See how claims connect and influence others. This view is coming soon.
+            See your marks where you’ve added signs of influence (posts that take credit from your work).
           </p>
         </div>
-      )}
+      ))}
     </div>
   );
 }

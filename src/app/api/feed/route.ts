@@ -6,10 +6,12 @@ import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 export async function GET(request: Request) {
   const supabase = await createClient();
+  const { data: { user } } = await supabase.auth.getUser();
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
   const claimType = searchParams.get('claim_type');
   const challengedOnly = searchParams.get('disputed_only') === 'true';
+  const following = searchParams.get('following') === 'true';
   const cursor = searchParams.get('cursor');
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '20', 10), 1), 100);
 
@@ -19,23 +21,35 @@ export async function GET(request: Request) {
     .is('withdrawn_at', null)
     .order('created_at', { ascending: false });
 
-  if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
-    query = query.eq('domain', domain);
-  }
-  if (claimType && claimType !== 'all') {
-    let claimTypeName = claimType;
-    if (/^[0-9a-f-]{36}$/i.test(claimType)) {
-      const { data: claimTypeRow } = await supabase
-        .from('claim_types')
-        .select('name')
-        .eq('id', claimType)
-        .maybeSingle();
-      claimTypeName = claimTypeRow?.name ?? claimType;
+  if (following && user) {
+    const { data: soiRows } = await supabase
+      .from('signs_of_influence')
+      .select('mark_id');
+    const markIdsWithSoi = [...new Set((soiRows ?? []).map((r) => r.mark_id))];
+    if (markIdsWithSoi.length === 0) {
+      query = query.eq('id', '00000000-0000-0000-0000-000000000000');
+    } else {
+      query = query.eq('user_id', user.id).in('id', markIdsWithSoi);
     }
-    query = query.eq('claim_type', claimTypeName);
-  }
-  if (challengedOnly) {
-    query = query.gt('dispute_count', 0);
+  } else {
+    if (domain && domain !== 'all' && DOMAINS.includes(domain as (typeof DOMAINS)[number])) {
+      query = query.eq('domain', domain);
+    }
+    if (claimType && claimType !== 'all') {
+      let claimTypeName = claimType;
+      if (/^[0-9a-f-]{36}$/i.test(claimType)) {
+        const { data: claimTypeRow } = await supabase
+          .from('claim_types')
+          .select('name')
+          .eq('id', claimType)
+          .maybeSingle();
+        claimTypeName = claimTypeRow?.name ?? claimType;
+      }
+      query = query.eq('claim_type', claimTypeName);
+    }
+    if (challengedOnly) {
+      query = query.gt('dispute_count', 0);
+    }
   }
 
   if (cursor) {
@@ -63,28 +77,26 @@ export async function GET(request: Request) {
 
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
+  const soiCountMap: Record<string, number> = {};
   if (markIds.length > 0) {
-    const { data: commentRows, error: commentsErr } = await supabase
-      .from('comments')
-      .select('mark_id')
-      .in('mark_id', markIds);
-    if (!commentsErr) {
-      for (const row of commentRows ?? []) {
-        commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
-      }
+    const [commentsRes, soiRes] = await Promise.all([
+      supabase.from('comments').select('mark_id').in('mark_id', markIds),
+      supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
+    ]);
+    for (const row of commentsRes.data ?? []) {
+      commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
     }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[feed.GET] comment counts sample', markIds.slice(0, 3).map((id) => ({ markId: id, comments_count: commentsCountMap[id] ?? 0 })));
+    for (const row of soiRes.data ?? []) {
+      soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
     }
   }
   const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
   const listWithCounts = list.map((m) => ({
     ...m,
     comments_count: commentsCountMap[m.id] ?? 0,
+    soi_count: soiCountMap[m.id] ?? 0,
     media: mediaByMarkId[m.id] ?? [],
   }));
-
-  const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
   if (user && listWithCounts.length > 0) {

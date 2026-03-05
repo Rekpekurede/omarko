@@ -28,9 +28,16 @@ interface CommentRow {
   profiles?: { username: string } | { username: string }[] | null;
 }
 
+interface SoiRow {
+  id: string;
+  mark_id: string;
+  url: string;
+  created_at: string;
+}
+
 interface MarkDetailTabsProps {
   markId: string;
-  currentTab: 'overview' | 'challenges' | 'comments' | 'versions';
+  currentTab: 'overview' | 'challenges' | 'comments' | 'versions' | 'soi';
   challenges: ChallengeRow[];
   comments: CommentRow[];
   canChallenge: boolean;
@@ -39,6 +46,8 @@ interface MarkDetailTabsProps {
   versionCount?: number;
   canEdit?: boolean;
   challengeCount?: number;
+  soiCount?: number;
+  isOwner?: boolean;
 }
 
 function getUsername(profiles: ChallengeRow['profiles']): string {
@@ -57,21 +66,44 @@ export function MarkDetailTabs({
   versionCount = 0,
   canEdit = false,
   challengeCount = 0,
+  soiCount: initialSoiCount = 0,
+  isOwner = false,
 }: MarkDetailTabsProps) {
   void canEdit; // reserved for future edit UI
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [tab, setTab] = useState<'overview' | 'challenges' | 'comments' | 'versions'>(currentTab);
+  const [tab, setTab] = useState<'overview' | 'challenges' | 'comments' | 'versions' | 'soi'>(currentTab);
   const [commentContent, setCommentContent] = useState('');
   const [commentSubmitting, setCommentSubmitting] = useState(false);
   const [commentError, setCommentError] = useState<string | null>(null);
   const commentInputRef = useRef<HTMLTextAreaElement | null>(null);
+  const [soiList, setSoiList] = useState<SoiRow[]>([]);
+  const [soiLoading, setSoiLoading] = useState(false);
+  const [soiUrl, setSoiUrl] = useState('');
+  const [soiSubmitting, setSoiSubmitting] = useState(false);
+  const [soiError, setSoiError] = useState<string | null>(null);
+
+  useEffect(() => {
+    setTab(currentTab);
+  }, [currentTab]);
 
   useEffect(() => {
     if (tab !== 'comments') return;
     if (searchParams.get('focus') !== '1') return;
     commentInputRef.current?.focus();
   }, [tab, searchParams]);
+
+  useEffect(() => {
+    if (tab !== 'soi') return;
+    setSoiLoading(true);
+    fetch(`/api/marks/${markId}/soi`)
+      .then((res) => res.json())
+      .then((data) => {
+        setSoiList(Array.isArray(data.soi) ? data.soi : []);
+      })
+      .catch(() => setSoiList([]))
+      .finally(() => setSoiLoading(false));
+  }, [tab, markId]);
 
   const handleAddComment = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -119,6 +151,13 @@ export function MarkDetailTabs({
         </button>
         <button
           type="button"
+          onClick={() => setTab('soi')}
+          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'soi' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
+        >
+          SOI ({tab === 'soi' ? soiList.length : initialSoiCount})
+        </button>
+        <button
+          type="button"
           onClick={() => setTab('comments')}
           className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'comments' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
         >
@@ -137,8 +176,90 @@ export function MarkDetailTabs({
 
       {tab === 'overview' && (
         <div className="space-y-3 text-sm text-muted-foreground">
-          <p>This mark has {challengeCount} challenge{challengeCount !== 1 ? 's' : ''} and {comments.length} comment{comments.length !== 1 ? 's' : ''}.</p>
+          <p>This mark has {challengeCount} challenge{challengeCount !== 1 ? 's' : ''}, {initialSoiCount} sign{initialSoiCount !== 1 ? 's' : ''} of influence, and {comments.length} comment{comments.length !== 1 ? 's' : ''}.</p>
           <p>Use the tabs above to view details.</p>
+        </div>
+      )}
+
+      {tab === 'soi' && (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Sign of influence (SOI): links to posts or content that you say take credit from your work.
+          </p>
+          {isOwner && !isWithdrawn && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault();
+                const url = soiUrl.trim();
+                if (!url || soiSubmitting) return;
+                setSoiError(null);
+                setSoiSubmitting(true);
+                const res = await fetch(`/api/marks/${markId}/soi`, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({ url }),
+                });
+                const data = await res.json().catch(() => ({}));
+                if (!res.ok) {
+                  setSoiError(data.error ?? 'Failed to add SOI');
+                  setSoiSubmitting(false);
+                  return;
+                }
+                setSoiList((prev) => [...prev, data]);
+                setSoiUrl('');
+                router.refresh();
+                setSoiSubmitting(false);
+              }}
+              className="space-y-2"
+            >
+              <input
+                type="url"
+                value={soiUrl}
+                onChange={(e) => setSoiUrl(e.target.value)}
+                placeholder="https://..."
+                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+              />
+              {soiError && <p className="text-sm text-red-600">{soiError}</p>}
+              <button
+                type="submit"
+                disabled={!soiUrl.trim() || soiSubmitting}
+                className="min-h-[40px] rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+              >
+                {soiSubmitting ? 'Adding…' : 'Add SOI'}
+              </button>
+            </form>
+          )}
+          {soiLoading ? (
+            <p className="text-sm text-muted-foreground">Loading…</p>
+          ) : (
+            <ul className="space-y-2">
+              {soiList.map((s) => (
+                <li key={s.id} className="flex items-center justify-between gap-2 rounded-xl border border-border bg-muted/50 p-3 text-sm">
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="min-w-0 truncate text-foreground hover:underline">
+                    {s.url}
+                  </a>
+                  {isOwner && (
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        const res = await fetch(`/api/marks/${markId}/soi/${s.id}`, { method: 'DELETE' });
+                        if (res.ok) {
+                          setSoiList((prev) => prev.filter((x) => x.id !== s.id));
+                          router.refresh();
+                        }
+                      }}
+                      className="shrink-0 rounded px-2 py-1 text-xs text-red-600 hover:bg-red-500/10 dark:text-red-400"
+                    >
+                      Remove
+                    </button>
+                  )}
+                </li>
+              ))}
+            </ul>
+          )}
+          {!soiLoading && soiList.length === 0 && (
+            <p className="text-sm text-muted-foreground">No signs of influence yet.</p>
+          )}
         </div>
       )}
 

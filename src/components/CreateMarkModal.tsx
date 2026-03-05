@@ -30,6 +30,8 @@ export function CreateMarkModal() {
   const [error, setError] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
+  const [soiUrls, setSoiUrls] = useState<string[]>([]);
+  const [soiUrlInput, setSoiUrlInput] = useState('');
 
   useEffect(() => {
     if (!isOpen) return;
@@ -83,6 +85,8 @@ export function CreateMarkModal() {
     setAiSuggestion(null);
     setAiSuggestionDismissed(false);
     setIsClaimTypePickerOpen(false);
+    setSoiUrls([]);
+    setSoiUrlInput('');
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -231,6 +235,18 @@ export function CreateMarkModal() {
           console.error('[CreateMarkModal] Upload failed', uploadRes.status, uploadData);
         }
         setUploadNotice(errMsg);
+      }
+    }
+
+    if (markId && soiUrls.length > 0) {
+      for (const url of soiUrls) {
+        const u = url.trim();
+        if (!u) continue;
+        await fetch(`/api/marks/${markId}/soi`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ url: u }),
+        });
       }
     }
 
@@ -414,6 +430,50 @@ export function CreateMarkModal() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium text-black dark:text-white">Sign of influence (optional)</label>
+                <p className="mt-0.5 text-xs text-muted-foreground">Links to posts that take credit from your work. You can add more later from the mark.</p>
+                <div className="mt-2 flex flex-wrap items-center gap-2">
+                  <input
+                    type="url"
+                    value={soiUrlInput}
+                    onChange={(e) => setSoiUrlInput(e.target.value)}
+                    placeholder="https://..."
+                    className="min-w-[200px] flex-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const u = soiUrlInput.trim();
+                      if (u && !soiUrls.includes(u)) {
+                        setSoiUrls((prev) => [...prev, u]);
+                        setSoiUrlInput('');
+                      }
+                    }}
+                    disabled={!soiUrlInput.trim()}
+                    className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                  >
+                    Add
+                  </button>
+                </div>
+                {soiUrls.length > 0 && (
+                  <ul className="mt-2 space-y-1">
+                    {soiUrls.map((u) => (
+                      <li key={u} className="flex items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800">
+                        <span className="min-w-0 truncate text-foreground">{u}</span>
+                        <button
+                          type="button"
+                          onClick={() => setSoiUrls((prev) => prev.filter((x) => x !== u))}
+                          className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                        >
+                          Remove
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                )}
               </div>
 
               {error && <p className="text-sm text-red-600">{error}</p>}

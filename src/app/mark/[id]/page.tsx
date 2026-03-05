@@ -106,7 +106,14 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     isBookmarked = !!b;
   }
 
-  const currentTab = tab === 'comments' ? 'comments' : tab === 'challenges' ? 'challenges' : tab === 'versions' ? 'versions' : 'overview';
+  const currentTab = tab === 'comments' ? 'comments' : tab === 'challenges' ? 'challenges' : tab === 'versions' ? 'versions' : tab === 'soi' ? 'soi' : 'overview';
+
+  let soiCount = 0;
+  const { count: soiCountResult } = await supabase
+    .from('signs_of_influence')
+    .select('id', { count: 'exact', head: true })
+    .eq('mark_id', id);
+  soiCount = soiCountResult ?? 0;
 
   return (
     <PageContainer className="space-y-6">
@@ -204,6 +211,8 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         versionCount={versionCount}
         canEdit={isOwner && !hasChallenges && !isWithdrawn}
         challengeCount={challengeCount ?? 0}
+        soiCount={soiCount}
+        isOwner={isOwner}
       />
 
       {mark.owner_response && (

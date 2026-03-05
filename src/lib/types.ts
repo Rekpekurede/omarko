@@ -115,6 +115,7 @@ export interface Mark {
   updated_at: string;
   profiles?: MarkProfile | null;
   comments_count?: number;
+  soi_count?: number;
   media?: Array<{
     id: string;
     kind: 'image' | 'audio' | 'video';

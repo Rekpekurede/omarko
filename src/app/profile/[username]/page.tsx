@@ -182,21 +182,24 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
         const markIds = list.map((m) => m.id);
         const commentsCountMap: Record<string, number> = {};
+        const soiCountMap: Record<string, number> = {};
         if (markIds.length > 0) {
-          const { data: commentRows, error: commentsErr } = await supabase
-            .from('comments')
-            .select('mark_id')
-            .in('mark_id', markIds);
-          if (!commentsErr) {
-            for (const row of commentRows ?? []) {
-              commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
-            }
+          const [commentsRes, soiRes] = await Promise.all([
+            supabase.from('comments').select('mark_id').in('mark_id', markIds),
+            supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
+          ]);
+          for (const row of commentsRes.data ?? []) {
+            commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+          }
+          for (const row of soiRes.data ?? []) {
+            soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
           }
         }
         const mediaByMarkId = await getSignedMediaForMarkIds(supabase, markIds);
         marksWithProfile = list.map((m) => ({
           ...m,
           comments_count: commentsCountMap[m.id] ?? 0,
+          soi_count: soiCountMap[m.id] ?? 0,
           media: mediaByMarkId[m.id] ?? [],
         }));
         marksNextCursor = marksWithProfile.length === PROFILE_MARKS_LIMIT && marksWithProfile[marksWithProfile.length - 1]
@@ -248,15 +251,17 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const orderMap = new Map(supportedMarkIds.map((id, i) => [id, i]));
         const sorted = (sm ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
         const commentsCountMap: Record<string, number> = {};
+        const soiCountMap: Record<string, number> = {};
         if (supportedMarkIds.length > 0) {
-          const { data: commentRows, error: commentsErr } = await supabase
-            .from('comments')
-            .select('mark_id')
-            .in('mark_id', supportedMarkIds);
-          if (!commentsErr) {
-            for (const row of commentRows ?? []) {
-              commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
-            }
+          const [commentsRes, soiRes] = await Promise.all([
+            supabase.from('comments').select('mark_id').in('mark_id', supportedMarkIds),
+            supabase.from('signs_of_influence').select('mark_id').in('mark_id', supportedMarkIds),
+          ]);
+          for (const row of commentsRes.data ?? []) {
+            commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+          }
+          for (const row of soiRes.data ?? []) {
+            soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
           }
         }
         const mediaByMarkId = await getSignedMediaForMarkIds(supabase, supportedMarkIds);
@@ -268,6 +273,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
             ...m,
             profiles: { username: u, avatar_url: av },
             comments_count: commentsCountMap[m.id] ?? 0,
+            soi_count: soiCountMap[m.id] ?? 0,
             media: mediaByMarkId[m.id] ?? [],
           };
         });

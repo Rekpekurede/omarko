@@ -50,21 +50,24 @@ export async function GET(request: Request) {
   const sorted = (marks ?? []).sort((a, b) => (orderMap.get(a.id) ?? 0) - (orderMap.get(b.id) ?? 0));
   const sortedIds = sorted.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
+  const soiCountMap: Record<string, number> = {};
   if (sortedIds.length > 0) {
-    const { data: commentRows, error: commentsErr } = await supabase
-      .from('comments')
-      .select('mark_id')
-      .in('mark_id', sortedIds);
-    if (!commentsErr) {
-      for (const row of commentRows ?? []) {
-        commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
-      }
+    const [commentsRes, soiRes] = await Promise.all([
+      supabase.from('comments').select('mark_id').in('mark_id', sortedIds),
+      supabase.from('signs_of_influence').select('mark_id').in('mark_id', sortedIds),
+    ]);
+    for (const row of commentsRes.data ?? []) {
+      commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
+    }
+    for (const row of soiRes.data ?? []) {
+      soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
     }
   }
   const mediaByMarkId = await getSignedMediaForMarkIds(supabase, sortedIds);
   const sortedWithCounts = sorted.map((m) => ({
     ...m,
     comments_count: commentsCountMap[m.id] ?? 0,
+    soi_count: soiCountMap[m.id] ?? 0,
     media: mediaByMarkId[m.id] ?? [],
   }));
   const nextCursor = sorted.length === limit && sorted[sorted.length - 1]
