@@ -2,30 +2,51 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Design tokens: light = warm editorial, dark = deep premium with amber */
 :root {
-  --background: #f6f7f9;
-  --foreground: #111827;
-  --card: #ffffff;
-  --border: #e5e7eb;
-  --muted: #f3f4f6;
-  --muted-foreground: #6b7280;
-  --accent: #f3f4f6;
+  --background: #F8F6F1;
+  --foreground: #1C1917;
+  --card: #FFFFFF;
+  --card-glass: rgba(255, 255, 255, 0.85);
+  --border: #E7E5E0;
+  --muted: #F5F3EF;
+  --muted-foreground: #78716C;
+  --accent: #F5F3EF;
+  --primary: #B45309;
+  --primary-foreground: #FFFFFF;
+  --primary-glow: rgba(180, 83, 9, 0.35);
+  --shadow-card: 0 4px 24px -4px rgba(28, 25, 23, 0.08), 0 2px 8px -2px rgba(28, 25, 23, 0.04);
+  --ring-support: #B45309;
+  --ring-oppose: #DC2626;
+  --ring-challenge: #EA580C;
 }
 
 .dark {
-  --background: #0b0f19;
-  --foreground: #f9fafb;
-  --card: #111827;
-  --border: #1f2937;
-  --muted: #111827;
-  --muted-foreground: #9ca3af;
-  --accent: #1f2937;
+  --background: #0A0A0F;
+  --foreground: #FAFAF9;
+  --card: #14141A;
+  --card-glass: rgba(20, 20, 26, 0.75);
+  --border: #27272A;
+  --muted: #18181B;
+  --muted-foreground: #A1A1AA;
+  --accent: #27272A;
+  --primary: #F59E0B;
+  --primary-foreground: #0A0A0F;
+  --primary-glow: rgba(245, 158, 11, 0.25);
+  --shadow-card: 0 0 0 1px rgba(245, 158, 11, 0.06), 0 4px 24px -4px rgba(0, 0, 0, 0.5);
+  --ring-support: #F59E0B;
+  --ring-oppose: #EF4444;
+  --ring-challenge: #F97316;
 }
 
 body {
   color: var(--foreground);
   background: var(--background);
-  font-family: var(--font-sora), Arial, Helvetica, sans-serif;
+  font-family: var(--font-sans), system-ui, sans-serif;
+}
+
+.font-display {
+  font-family: var(--font-display), var(--font-sans), system-ui, sans-serif;
 }
 
 @layer utilities {
@@ -39,6 +60,14 @@ body {
 
   .animate-scale-in {
     animation: scale-in 160ms ease-out;
+  }
+
+  .animate-pulse-glow {
+    animation: pulse-glow 2.5s ease-in-out infinite;
+  }
+
+  .tap-press {
+    @apply transition-transform duration-150 active:scale-95;
   }
 }
 
@@ -56,4 +85,9 @@ body {
     opacity: 1;
     transform: scale(1);
   }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.03); }
 }

@@ -24,9 +24,9 @@ function isActive(pathname: string, href: string) {
 }
 
 function NavItem({ href, label, active, onClick, icon }: NavItemProps) {
-  const classes = `flex min-w-[3.9rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-1.5 transition duration-150 active:scale-[0.98] ${
+  const classes = `tap-press flex min-w-[3.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 transition duration-150 ${
     active
-      ? 'bg-foreground text-background shadow-sm'
+      ? 'bg-primary text-primary-foreground shadow-sm'
       : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
   }`;
 
@@ -60,8 +60,8 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-30 px-3 pb-[max(env(safe-area-inset-bottom),0.75rem)] pt-2 sm:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-1 rounded-2xl border border-border/90 bg-card/85 px-2 py-2 shadow-[0_16px_34px_-22px_rgba(0,0,0,0.55)] backdrop-blur-xl">
+      <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3 sm:hidden">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-1 rounded-[1.25rem] border border-border/80 bg-card/80 px-3 py-2.5 shadow-card backdrop-blur-xl dark:border-primary/10 dark:bg-card-glass dark:shadow-glow-sm">
           <NavItem
             href="/"
             label="Home"

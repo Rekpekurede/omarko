@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Sora } from "next/font/google";
+import { Sora, Syne } from "next/font/google";
 import "./globals.css";
 import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -8,7 +8,8 @@ import { CreateMarkModal } from "@/components/CreateMarkModal";
 import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { createClient } from "@/lib/supabase/server";
 
-const sora = Sora({ subsets: ["latin"], variable: "--font-sora" });
+const sora = Sora({ subsets: ["latin"], variable: "--font-sans" });
+const syne = Syne({ subsets: ["latin"], variable: "--font-display" });
 
 const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',d);})();`;
 
@@ -58,14 +59,14 @@ export default async function RootLayout({
   const isSignedIn = !!user;
 
   return (
-    <html lang="en" className={sora.variable} suppressHydrationWarning>
+    <html lang="en" className={`${sora.variable} ${syne.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
       <body className="min-h-screen bg-background text-foreground antialiased">
         <ThemeProvider>
           <CreateMarkModalProvider>
-            <Header brandFontClass={sora.className} />
+            <Header brandFontClass={syne.className} />
             <CreateMarkModal />
             <main className="pb-24 pt-4 sm:pb-8 sm:pt-6">{children}</main>
             <MobileBottomNav isSignedIn={isSignedIn} username={username} />

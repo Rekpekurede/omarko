@@ -29,17 +29,23 @@ export function Avatar({ username, avatarUrl, size = 'sm', className = '' }: Ava
 
   if (avatarUrl && !imageError) {
     return (
-      <Image
-        src={avatarUrl}
-        alt={`@${username} avatar`}
-        width={sizePx[size]}
-        height={sizePx[size]}
-        className={`rounded-full object-cover ${sizeClasses[size]} ${className}`}
-        unoptimized
-        onError={() => setImageError(true)}
-      />
+      <span className={`inline-block rounded-full ring-2 ring-primary/40 ring-offset-2 ring-offset-background ${className}`}>
+        <Image
+          src={avatarUrl}
+          alt={`@${username} avatar`}
+          width={sizePx[size]}
+          height={sizePx[size]}
+          className={`rounded-full object-cover ${sizeClasses[size]}`}
+          unoptimized
+          onError={() => setImageError(true)}
+        />
+      </span>
     );
   }
 
-  return <InitialsFallback username={username} size={size} className={className} />;
+  return (
+    <span className={`inline-block rounded-full ring-2 ring-primary/40 ring-offset-2 ring-offset-background ${className}`}>
+      <InitialsFallback username={username} size={size} className="" />
+    </span>
+  );
 }

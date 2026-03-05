@@ -278,31 +278,33 @@ export function CreateMarkModal() {
       )}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-end bg-black/50 sm:items-center sm:justify-center"
+          className="fixed inset-0 z-[60] flex items-end bg-black/50 backdrop-blur-sm sm:items-center sm:justify-center"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="relative w-full max-h-[80vh] overflow-y-auto rounded-t-2xl border border-gray-200 bg-white p-4 shadow-xl dark:border-gray-700 dark:bg-gray-900 sm:max-w-2xl sm:rounded-xl">
-            <div className="mb-3 flex items-center justify-between">
-              <h2 className="text-lg font-semibold text-black dark:text-white">Create mark</h2>
-              <button
-                type="button"
-                onClick={onClose}
-                className="rounded p-1 text-gray-500 hover:bg-gray-100 hover:text-black dark:text-gray-400 dark:hover:bg-gray-800 dark:hover:text-white"
-                aria-label="Close composer"
-              >
-                ×
-              </button>
+          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-t-3xl border border-border/80 bg-card shadow-card dark:border-primary/10 dark:bg-card sm:max-w-2xl sm:rounded-2xl">
+            <div className="sticky top-0 z-10 border-b border-border/80 bg-gradient-to-r from-primary/10 via-primary/5 to-transparent dark:from-primary/20 dark:via-primary/10">
+              <div className="flex items-center justify-between px-4 py-4 sm:px-6">
+                <h2 className="font-display text-xl font-bold tracking-tight text-foreground">Create mark</h2>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="tap-press rounded-xl p-2 text-muted-foreground transition hover:bg-accent hover:text-foreground"
+                  aria-label="Close composer"
+                >
+                  ×
+                </button>
+              </div>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-4">
+            <form onSubmit={onSubmit} className="space-y-4 p-4 sm:p-6">
               <div>
                 <label className="block text-sm font-medium text-black dark:text-white">Claim type</label>
                 <button
                   type="button"
                   onClick={() => setIsClaimTypePickerOpen(true)}
-                  className="mt-1 flex min-h-[42px] w-full items-center justify-between rounded-xl border border-border bg-background px-3 py-2 text-sm"
+                  className="tap-press mt-1 flex min-h-[48px] w-full items-center justify-between rounded-xl border border-border bg-muted/50 px-4 py-3 text-sm transition hover:border-foreground/20 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/40"
                 >
                   <span className={selectedClaimType ? 'text-foreground' : 'text-muted-foreground'}>
                     {selectedClaimType?.name ?? 'Select claim type'}
@@ -354,7 +356,7 @@ export function CreateMarkModal() {
                     setDomain(e.target.value as (typeof DOMAINS)[number]);
                     setDomainTouched(true);
                   }}
-                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                  className="mt-1 min-h-[48px] w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-foreground transition focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 >
                   {DOMAINS.map((d) => (
                     <option key={d} value={d}>{d}</option>
@@ -370,7 +372,7 @@ export function CreateMarkModal() {
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
                   placeholder="What&apos;s yours?"
-                  className="mt-1 w-full rounded border border-gray-300 bg-white px-3 py-2 text-black placeholder-gray-500 dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                  className="mt-1 w-full rounded-xl border border-border bg-muted/50 px-4 py-3 text-foreground placeholder:text-muted-foreground focus:border-primary/40 focus:outline-none focus:ring-2 focus:ring-primary/20"
                 />
                 <p className="mt-1 text-xs text-muted-foreground">
                   Example: &quot;Silent Hustle&quot; - a phrase you coined
@@ -487,11 +489,11 @@ export function CreateMarkModal() {
                 Save as my default
               </label>
 
-              <div className="flex justify-end">
+              <div className="flex justify-end pt-2">
                 <button
                   type="submit"
                   disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
-                  className="rounded border border-black bg-black px-4 py-2 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50 dark:border-white dark:bg-white dark:text-black dark:hover:bg-gray-200"
+                  className="tap-press min-h-[48px] rounded-xl bg-primary px-6 py-3 font-semibold text-primary-foreground shadow-md transition hover:opacity-90 disabled:opacity-50"
                 >
                   {submitting ? 'Posting…' : 'Post'}
                 </button>

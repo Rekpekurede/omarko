@@ -97,7 +97,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   return (
     <PageContainer className="space-y-4">
       <FeedIntroBanner />
-      <h1 className="text-2xl font-semibold text-foreground">Marks</h1>
+      <h1 className="font-display text-2xl font-bold tracking-tight text-foreground sm:text-3xl">Marks</h1>
       {error && (
         <div className="rounded-2xl border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error.message}

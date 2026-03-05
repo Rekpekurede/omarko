@@ -7,6 +7,7 @@ import { MarkStatusLabel } from './MarkStatusLabel';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
 import { Media } from './Media';
+import { ClaimTypeBadge } from './ClaimTypeBadge';
 import type { Mark } from '@/lib/types';
 import { DOMAINS } from '@/lib/types';
 
@@ -312,7 +313,7 @@ export function MarkCard({
   const mediaPoster = firstMedia?.poster_signed_url ?? null;
 
   return (
-    <article className="w-full rounded-xl border border-border bg-card p-5 shadow-sm transition-all hover:border-foreground/20">
+    <article className="tap-press w-full rounded-2xl border border-border/80 bg-card/90 p-5 shadow-card backdrop-blur-sm transition-all hover:border-foreground/15 dark:border-primary/10 dark:bg-card-glass dark:shadow-glow-sm dark:hover:border-primary/20">
       <div className="flex gap-3">
         <div className="shrink-0 pt-0.5">
           <Avatar username={username} avatarUrl={avatarUrl} size="md" className="h-10 w-10 rounded-full" />
@@ -375,13 +376,9 @@ export function MarkCard({
               </div>
             )}
           </div>
-          <div className="inline-flex w-fit items-center rounded-full border border-border bg-muted/45 px-3 py-1.5">
-            <p className="text-xs font-semibold tracking-wide text-muted-foreground">
-              {claimTypeName} · {displayDomain}
-            </p>
-          </div>
+          <ClaimTypeBadge claimType={claimTypeName} domain={displayDomain} />
           {mark.content && (
-            <p className="text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
+            <p className="font-display mt-1 text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
           )}
           {mediaKind === 'image' && mediaUrl && (
             <Media
@@ -420,8 +417,8 @@ export function MarkCard({
           )}
         </div>
       </div>
-      <div className="mt-3 border-t border-border pt-3">
-        <div className="grid grid-cols-6 items-center gap-2 text-sm">
+      <div className="mt-4 border-t border-border/80 pt-4">
+        <div className="grid grid-cols-6 items-center gap-1 text-sm">
           <div className="relative min-w-0">
             {activeTooltip === 'support' && (
               <button
@@ -440,12 +437,14 @@ export function MarkCard({
                 handleVote('SUPPORT');
               }}
               disabled={!canVote || isWithdrawn || pending}
-              className={`mx-auto inline-flex min-h-[36px] items-center gap-1 rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:opacity-50 active:scale-95 ${
-                vote === 'SUPPORT' ? 'text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+              className={`tap-press mx-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 disabled:opacity-50 ${
+                vote === 'SUPPORT'
+                  ? 'bg-primary/15 text-primary dark:bg-primary/20'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
               }`}
             >
               <span>👍</span>
-              <span>{supportVotes}</span>
+              <span className="tabular-nums">{supportVotes}</span>
             </button>
           </div>
 
@@ -467,12 +466,14 @@ export function MarkCard({
                 router.push(`/mark/${mark.id}?tab=challenges`);
               }}
               disabled={isWithdrawn || !showChallengeButton}
-              className={`mx-auto inline-flex min-h-[36px] items-center gap-1 rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:opacity-50 active:scale-95 ${
-                isChallengeActive ? 'text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+              className={`tap-press mx-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-500/50 disabled:opacity-50 ${
+                isChallengeActive
+                  ? 'bg-orange-500/15 text-orange-600 dark:bg-orange-500/20 dark:text-orange-400'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
               }`}
             >
               <span>⚔</span>
-              <span>{mark.dispute_count ?? 0}</span>
+              <span className="tabular-nums">{mark.dispute_count ?? 0}</span>
               <span className="hidden sm:inline">
                 {(mark.dispute_count ?? 0) === 1 ? 'Challenge' : 'Challenges'}
               </span>
@@ -484,9 +485,13 @@ export function MarkCard({
               type="button"
               aria-label="Sign of influence"
               onClick={() => router.push(`/mark/${mark.id}?tab=soi`)}
-              className="inline-flex min-h-[36px] shrink-0 items-center gap-0.5 rounded-full px-1.5 py-1 text-muted-foreground transition hover:bg-accent/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 active:scale-95"
+              className={`tap-press inline-flex min-h-[44px] shrink-0 items-center gap-1 rounded-xl px-2.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 ${
+                (mark.soi_count ?? 0) > 0
+                  ? 'bg-primary/10 font-semibold text-primary dark:bg-primary/15'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+              }`}
             >
-              <span className="whitespace-nowrap font-medium">SOI</span>
+              <span className="whitespace-nowrap">SOI</span>
               {(mark.soi_count ?? 0) > 0 && <span className="tabular-nums">{(mark.soi_count ?? 0)}</span>}
             </button>
           </div>
@@ -509,12 +514,14 @@ export function MarkCard({
                 handleVote('OPPOSE');
               }}
               disabled={!canVote || isWithdrawn || pending || isOwnMark}
-              className={`mx-auto inline-flex min-h-[36px] items-center gap-1 rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:opacity-50 active:scale-95 ${
-                vote === 'OPPOSE' ? 'text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+              className={`tap-press mx-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-500/50 disabled:opacity-50 ${
+                vote === 'OPPOSE'
+                  ? 'bg-red-500/15 text-red-600 dark:bg-red-500/20 dark:text-red-400'
+                  : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
               }`}
             >
               <span>👎</span>
-              <span>{opposeVotes}</span>
+              <span className="tabular-nums">{opposeVotes}</span>
             </button>
           </div>
 
@@ -535,27 +542,27 @@ export function MarkCard({
                 maybeShowFirstTimeTooltip('comment');
                 router.push(`/mark/${mark.id}?tab=comments&focus=1`);
               }}
-              className="mx-auto inline-flex min-h-[36px] items-center gap-1 rounded-full px-2 py-1 text-muted-foreground transition hover:bg-accent/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 active:scale-95"
+              className="tap-press mx-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-muted-foreground transition hover:bg-accent/60 hover:text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30"
             >
               <span>💬</span>
-              <span>{commentsCount}</span>
+              <span className="tabular-nums">{commentsCount}</span>
               <span className="hidden sm:inline">{commentsCount === 1 ? 'Comment' : 'Comments'}</span>
             </button>
           </div>
 
           <div className="relative min-w-0 flex justify-center">
-          <button
-            type="button"
-            aria-label={saved ? 'Unsave' : 'Save'}
-            onClick={handleToggleBookmark}
-            disabled={!showBookmark || bookmarkPending}
-            className={`mx-auto inline-flex min-h-[36px] items-center gap-1 rounded-full px-2 py-1 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:opacity-50 active:scale-95 ${
-              saved ? 'text-foreground' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
-            }`}
-          >
-            <span>{saved ? '★' : '☆'}</span>
-            <span className="hidden sm:inline">{saved ? 'Saved' : 'Save'}</span>
-          </button>
+            <button
+              type="button"
+              aria-label={saved ? 'Unsave' : 'Save'}
+              onClick={handleToggleBookmark}
+              disabled={!showBookmark || bookmarkPending}
+              className={`tap-press mx-auto inline-flex min-h-[44px] min-w-[44px] items-center justify-center gap-1.5 rounded-xl px-3 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 disabled:opacity-50 ${
+                saved ? 'text-primary' : 'text-muted-foreground hover:bg-accent/60 hover:text-foreground'
+              }`}
+            >
+              <span>{saved ? '★' : '☆'}</span>
+              <span className="hidden sm:inline">{saved ? 'Saved' : 'Save'}</span>
+            </button>
           </div>
         </div>
         {commentsCount > 0 && (
