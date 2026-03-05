@@ -8,6 +8,7 @@ import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
 import { Media } from './Media';
 import { ClaimTypeBadge } from './ClaimTypeBadge';
+import { SOIModal } from './SOIModal';
 import type { Mark } from '@/lib/types';
 import { DOMAINS } from '@/lib/types';
 
@@ -97,6 +98,7 @@ export function MarkCard({
   const [editingClaimType, setEditingClaimType] = useState(getClaimTypeName(mark));
   const [editingDomain, setEditingDomain] = useState(mark.domain ?? 'General');
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [soiModalOpen, setSoiModalOpen] = useState(false);
   const [activeTooltip, setActiveTooltip] = useState<'support' | 'oppose' | 'challenge' | 'comment' | null>(null);
   const tooltipTimerRef = useRef<number | null>(null);
   const menuRef = useRef<HTMLDivElement | null>(null);
@@ -104,9 +106,12 @@ export function MarkCard({
   const isChallengeActive = mark.status === 'CHALLENGED';
 
   useEffect(() => {
-    if (!lightboxOpen) return;
+    if (!lightboxOpen && !soiModalOpen) return;
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') setLightboxOpen(false);
+      if (e.key === 'Escape') {
+        setLightboxOpen(false);
+        setSoiModalOpen(false);
+      }
     };
     document.addEventListener('keydown', onKey);
     const prev = document.body.style.overflow;
@@ -115,7 +120,7 @@ export function MarkCard({
       document.removeEventListener('keydown', onKey);
       document.body.style.overflow = prev;
     };
-  }, [lightboxOpen]);
+  }, [lightboxOpen, soiModalOpen]);
 
   useEffect(() => {
     return () => {
@@ -309,11 +314,15 @@ export function MarkCard({
   const claimTypeName = displayClaimType;
   const firstMedia = mark.media?.[0] ?? null;
   const mediaKind = firstMedia?.kind ?? (mark.image_url ? 'image' : null);
-  const mediaUrl = firstMedia?.signed_url ?? mark.image_url ?? null;
+  const rawMediaUrl = firstMedia?.signed_url ?? mark.image_url ?? null;
+  const mediaUrl =
+    rawMediaUrl && !rawMediaUrl.startsWith('http') && (mark.image_url === rawMediaUrl || !firstMedia?.signed_url)
+      ? `${process.env.NEXT_PUBLIC_SUPABASE_URL ?? ''}/storage/v1/object/public/mark-media/${rawMediaUrl.replace(/^\//, '')}`
+      : rawMediaUrl;
   const mediaPoster = firstMedia?.poster_signed_url ?? null;
 
   return (
-    <article className="card-document tap-press w-full rounded-sm border border-border p-5 transition-colors hover:border-foreground/20 dark:border-primary/10 dark:backdrop-blur-sm">
+    <article className="card-document tap-press w-full rounded-sm border border-gray-200 p-5 shadow-sm transition-colors hover:border-foreground/20 dark:border-border dark:border-primary/10 dark:backdrop-blur-sm">
       <div className="flex gap-3">
         <div className="shrink-0 pt-0.5">
           <Avatar username={username} avatarUrl={avatarUrl} size="md" className="h-10 w-10 rounded-full" />
@@ -377,9 +386,6 @@ export function MarkCard({
             )}
           </div>
           <ClaimTypeBadge claimType={claimTypeName} domain={displayDomain} />
-          {mark.content && (
-            <p className="font-display mt-1 text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
-          )}
           {mediaKind === 'image' && mediaUrl && (
             <Media
               src={mediaUrl}
@@ -389,6 +395,9 @@ export function MarkCard({
               interactive
               onClick={() => setLightboxOpen(true)}
             />
+          )}
+          {mark.content && (
+            <p className="font-display mt-1 text-lg leading-relaxed text-foreground sm:text-xl">{mark.content}</p>
           )}
           {mediaKind === 'audio' && mediaUrl && (
             <div className="rounded-xl border border-border bg-muted/40 p-3">
@@ -407,7 +416,7 @@ export function MarkCard({
               <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: '16/9' }}>
                 {mediaPoster ? (
                   // eslint-disable-next-line @next/next/no-img-element
-                  <img src={mediaPoster} alt="" className="absolute inset-0 h-full w-full object-cover" />
+                  <img src={mediaPoster} alt="" className="absolute inset-0 h-full w-full object-cover" loading="lazy" />
                 ) : (
                   <div className="absolute inset-0 flex items-center justify-center bg-muted/30 text-4xl text-muted-foreground">▶</div>
                 )}
@@ -484,7 +493,7 @@ export function MarkCard({
             <button
               type="button"
               aria-label="Sign of influence"
-              onClick={() => router.push(`/mark/${mark.id}?tab=soi`)}
+              onClick={() => setSoiModalOpen(true)}
               className={`tap-press inline-flex min-h-[44px] shrink-0 items-center gap-1 rounded-xl px-2.5 py-2 transition focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-foreground/30 ${
                 (mark.soi_count ?? 0) > 0
                   ? 'bg-primary/10 font-semibold text-primary dark:bg-primary/15'
@@ -492,7 +501,7 @@ export function MarkCard({
               }`}
             >
               <span className="whitespace-nowrap">SOI</span>
-              {(mark.soi_count ?? 0) > 0 && <span className="tabular-nums">{(mark.soi_count ?? 0)}</span>}
+              <span className="tabular-nums">{mark.soi_count ?? 0}</span>
             </button>
           </div>
 
@@ -660,11 +669,17 @@ export function MarkCard({
               </video>
             ) : (
               // eslint-disable-next-line @next/next/no-img-element
-              <img src={mediaUrl} alt="" className="max-h-[85vh] w-full rounded-lg object-contain" />
+              <img src={mediaUrl} alt="" className="max-h-[85vh] w-full rounded-lg object-contain" loading="lazy" />
             )}
           </div>
         </div>
       )}
+      <SOIModal
+        markId={mark.id}
+        count={mark.soi_count ?? 0}
+        open={soiModalOpen}
+        onClose={() => setSoiModalOpen(false)}
+      />
     </article>
   );
 }

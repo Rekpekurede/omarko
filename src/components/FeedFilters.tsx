@@ -39,7 +39,7 @@ export function FeedFilters({
   };
 
   return (
-    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-border bg-card p-3">
+    <div className="flex flex-wrap items-center gap-3 rounded-xl border border-border bg-card p-4">
         <select
           aria-label="Filter by domain"
           value={currentDomain}
