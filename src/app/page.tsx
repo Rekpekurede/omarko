@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { FeedFilters } from '@/components/FeedFilters';
+import { FeedIntroBanner } from '@/components/FeedIntroBanner';
 import { FeedList } from '@/components/FeedList';
 import { FeedTabs } from '@/components/FeedTabs';
 import { FollowingFeedList } from '@/components/FollowingFeedList';
@@ -116,10 +117,11 @@ export default async function FeedPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div>
-      <h1 className="mb-4 text-2xl font-bold text-white">Feed</h1>
+    <div className="mx-auto max-w-feed w-full px-3 sm:px-4">
+      <FeedIntroBanner />
+      <h1 className="display-text mb-4 mt-8 text-2xl font-semibold text-text-primary">Marks</h1>
       {error && (
-        <div className="mb-4 rounded border border-red-200 bg-red-50 p-3 text-sm text-red-800">
+        <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
           {error.message}
         </div>
       )}

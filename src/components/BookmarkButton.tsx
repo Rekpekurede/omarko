@@ -30,11 +30,11 @@ export function BookmarkButton({ markId, bookmarked: initialBookmarked }: Bookma
       type="button"
       onClick={toggle}
       disabled={pending}
-      className="flex min-h-[40px] items-center justify-center rounded-xl border border-border bg-card px-3 py-2 text-xs font-medium text-muted-foreground transition hover:bg-accent/70 hover:text-foreground disabled:opacity-50"
+      className="flex min-h-[40px] cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-[0.8rem] font-medium text-text-muted transition-colors duration-150 hover:text-accent disabled:opacity-50"
       aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
       title={bookmarked ? 'Remove bookmark' : 'Bookmark for later'}
     >
-      {bookmarked ? '★ Saved' : '☆ Save'}
+      {bookmarked ? <span className="text-accent">★</span> : '☆'} {bookmarked ? 'Saved' : 'Save'}
     </button>
   );
 }

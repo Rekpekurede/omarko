@@ -30,7 +30,7 @@ export function SearchBar({ initialQuery = '' }: { initialQuery?: string }) {
         value={q}
         onChange={(e) => setQ(e.target.value)}
         placeholder="Search profiles and marks..."
-        className="h-10 w-full rounded-xl border border-border bg-card px-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+        className="h-10 w-full rounded-lg border border-border bg-bg-card px-3 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent"
         aria-label="Search"
       />
     </form>

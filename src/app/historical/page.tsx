@@ -99,12 +99,12 @@ export default async function HistoricalFiguresPage() {
               <Link
                 key={card.id}
                 href={`/historical/profile/${card.id}`}
-                className="rounded-xl border border-border bg-card p-4 transition-colors hover:border-[#C9A84C]/50 hover:bg-[#C9A84C]/5 dark:hover:bg-[#C9A84C]/10"
+                className="rounded-xl border border-border bg-bg-card p-4 transition-colors duration-150 hover:border-accent/50 hover:bg-accent-glow"
               >
                 <p className="font-semibold text-foreground">{card.name}</p>
                 {card.era && <p className="text-sm text-muted-foreground">{card.era}</p>}
                 {card.domain && <p className="text-sm text-muted-foreground">{card.domain}</p>}
-                <p className="mt-2 text-sm font-medium text-[#C9A84C]">
+                <p className="mt-2 text-sm font-medium text-accent">
                   {card.count} Mark{card.count !== 1 ? 's' : ''}
                 </p>
               </Link>

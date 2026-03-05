@@ -1,103 +1,93 @@
-@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;0,700;1,400&family=DM+Mono:wght@400;500&display=swap');
-
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 /*
-  Editorial archive × premium fintech.
-  Dark: #090909, cards #0D1117, gold #C9A84C, text #F0F0F0 / muted #888888.
-  Light: parchment #F5F2EC, cards #FDFAF4, text #1A1408, muted #888888, borders #E0D4A8.
+  Premium social platform — Linear × Are.na.
+  Dark (default): --bg-primary #08080C, accent #C9A84C.
+  Light: data-theme="light" — warm neutrals.
 */
 :root {
-  --background: #F5F2EC;
-  --foreground: #1A1408;
-  --card: #FDFAF4;
-  --card-glass: rgba(253, 250, 244, 0.92);
-  --border: #E0D4A8;
-  --muted: #EDE8DC;
-  --muted-foreground: #888888;
-  --accent: #E0D4A8;
-  --primary: #C9A84C;
-  --primary-foreground: #1A1408;
-  --primary-glow: rgba(201, 168, 76, 0.28);
-  --shadow-card: 0 1px 2px 0 rgba(26, 20, 8, 0.05), 0 1px 0 0 var(--border);
-  --paper-texture: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
-  --tab-container: #F5F2EC;
-  --drawer-bg: #F5F2EC;
-  --drawer-menu-hover: #EDE8DC;
+  --bg-primary: #08080C;
+  --bg-secondary: #0F0F15;
+  --bg-card: #12121A;
+  --bg-card-hover: #16161F;
+  --border: #1E1E2E;
+  --border-subtle: #161622;
+  --text-primary: #F2F0EB;
+  --text-secondary: #8B8A99;
+  --text-muted: #4A4A5A;
+  --accent: #C9A84C;
+  --accent-dim: #8B6B2A;
+  --accent-glow: rgba(201, 168, 76, 0.12);
 }
 
-.dark {
-  --background: #090909;
-  --foreground: #F0F0F0;
-  --card: #0D1117;
-  --card-glass: rgba(13, 17, 23, 0.92);
-  --border: #1E1E1E;
-  --muted: #1A1A1A;
-  --muted-foreground: #888888;
-  --accent: #222222;
-  --primary: #C9A84C;
-  --primary-foreground: #1A1408;
-  --primary-glow: rgba(201, 168, 76, 0.18);
-  --shadow-card: 0 0 0 1px rgba(201, 168, 76, 0.08), 0 4px 24px -4px rgba(0, 0, 0, 0.4);
-  --paper-texture: none;
-  --tab-container: #111111;
-  --drawer-bg: #0A0A0F;
-  --drawer-menu-hover: #1A1408;
+[data-theme="light"] {
+  --bg-primary: #F7F4EE;
+  --bg-secondary: #F0EDE6;
+  --bg-card: #FDFAF5;
+  --bg-card-hover: #F5F2EB;
+  --border: #E2D9C8;
+  --border-subtle: #EDE8DE;
+  --text-primary: #16130D;
+  --text-secondary: #6B6456;
+  --text-muted: #A89880;
+  --accent: #A8732A;
+  --accent-dim: #7A5220;
+  --accent-glow: rgba(168, 115, 42, 0.10);
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {
-  color: var(--foreground);
-  background: var(--background);
-  font-family: 'Cormorant Garamond', Georgia, serif;
-  font-size: 1.1rem;
+  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--bg-primary);
+  color: var(--text-primary);
 }
 
-.font-display {
-  font-family: 'Cormorant Garamond', Georgia, serif;
+h1, h2, h3, .mark-text, .display-text {
+  font-family: var(--font-display), Georgia, serif;
 }
 
-.font-mono,
-.badge,
-.tab-label,
-.timestamp,
-.engagement-count {
-  font-family: 'DM Mono', monospace;
+/* Mark card — crafted feed card */
+.mark-card {
+  background: var(--bg-card);
+  border: 1px solid var(--border-subtle);
+  border-radius: 16px;
+  padding: 20px;
+  transition: border-color 0.2s ease, background 0.2s ease;
+  margin-bottom: 12px;
+}
+.mark-card:hover {
+  background: var(--bg-card-hover);
+  border-color: var(--border);
 }
 
-/* Cards: filed document — ruled border, subtle paper (light), frosted (dark) */
-.card-document {
-  background-image: var(--paper-texture);
-  background-color: var(--card);
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow-card);
-}
-.dark .card-document {
-  background-image: none;
-  background-color: var(--card-glass);
-  -webkit-backdrop-filter: blur(12px);
-  backdrop-filter: blur(12px);
+/* Badges — precision classification labels */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 4px;
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  font-family: var(--font-body);
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
   }
-
   .animate-fade-in {
     animation: fade-in 140ms ease-out;
   }
-
   .animate-scale-in {
     animation: scale-in 160ms ease-out;
   }
-
-  /* Breathing pulse: idea coming to life — gold dark, deep amber light */
-  .animate-breathing-glow {
-    animation: breathing-glow 4s ease-in-out infinite;
-  }
-
   .tap-press {
     @apply transition-transform duration-150 active:scale-95;
   }
@@ -109,17 +99,6 @@ body {
 }
 
 @keyframes scale-in {
-  from {
-    opacity: 0.94;
-    transform: scale(0.98);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
-}
-
-@keyframes breathing-glow {
-  0%, 100% { opacity: 0.5; transform: scale(1); filter: brightness(1); }
-  50% { opacity: 0.9; transform: scale(1.02); filter: brightness(1.08); }
+  from { opacity: 0.94; transform: scale(0.98); }
+  to { opacity: 1; transform: scale(1); }
 }

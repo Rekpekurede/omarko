@@ -13,7 +13,7 @@ export function MarkStatusLabel({ status }: { status: MarkStatus }) {
   if (!label) return null;
 
   return (
-    <span className="text-xs text-muted-foreground">
+    <span className="text-xs text-text-muted">
       {label}
     </span>
   );

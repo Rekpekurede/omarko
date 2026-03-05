@@ -1,13 +1,26 @@
 import type { Metadata, Viewport } from "next";
+import { Playfair_Display, Inter } from "next/font/google";
 import "./globals.css";
+import { AppShell } from "@/components/AppShell";
 import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
-import { MobileBottomNav } from "@/components/MobileBottomNav";
 import { createClient } from "@/lib/supabase/server";
 
-const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.classList.toggle('dark',d);})();`;
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "600", "700"],
+  variable: "--font-display",
+});
+
+const inter = Inter({
+  subsets: ["latin"],
+  weight: ["400", "500", "600"],
+  variable: "--font-body",
+});
+
+const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');})();`;
 
 export const metadata: Metadata = {
   title: { default: "Omarko", template: "%s | Omarko" },
@@ -44,28 +57,30 @@ export default async function RootLayout({
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
   let username: string | null = null;
+  let avatarUrl: string | null = null;
   if (user) {
     const { data: profile } = await supabase
       .from('profiles')
-      .select('username')
+      .select('username, avatar_url')
       .eq('id', user.id)
       .maybeSingle();
     username = profile?.username ?? null;
+    avatarUrl = profile?.avatar_url ?? null;
   }
   const isSignedIn = !!user;
 
   return (
-    <html lang="en" suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>
-      <body className="min-h-screen bg-background text-foreground antialiased">
+      <body className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased">
         <ThemeProvider>
           <CreateMarkModalProvider>
-            <Header brandFontClass="font-display" />
+            <AppShell header={<Header />} username={username} avatarUrl={avatarUrl} isSignedIn={isSignedIn}>
+              {children}
+            </AppShell>
             <CreateMarkModal />
-            <main className="pb-24 pt-4 sm:pb-8 sm:pt-6">{children}</main>
-            <MobileBottomNav isSignedIn={isSignedIn} username={username} />
           </CreateMarkModalProvider>
         </ThemeProvider>
       </body>

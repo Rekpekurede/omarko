@@ -17,23 +17,23 @@ export function FeedTabs() {
   const followingHref = `/?${pFollowing.toString()}`;
 
   return (
-    <div className="mb-4 flex gap-0 rounded-xl border border-border p-1 bg-[var(--tab-container)]">
+    <div className="mb-4 flex gap-0 rounded-xl bg-bg-secondary p-1">
       <Link
         href={forYouHref}
-        className={`font-mono min-h-[44px] flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-bold uppercase tracking-[0.1em] transition touch-manipulation ${
+        className={`font-body min-h-[44px] flex-1 rounded-lg px-4 py-2.5 text-center text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-150 touch-manipulation ${
           tab === 'for_you'
-            ? 'bg-[#C9A84C] text-[#1A1408]'
-            : 'bg-transparent text-[#888888] hover:text-[var(--foreground)]'
+            ? 'bg-accent text-bg-primary shadow-sm'
+            : 'bg-transparent text-text-muted hover:text-text-secondary'
         }`}
       >
         FOR YOU
       </Link>
       <Link
         href={followingHref}
-        className={`font-mono min-h-[44px] flex-1 rounded-lg px-4 py-2.5 text-center text-sm font-bold uppercase tracking-[0.1em] transition touch-manipulation ${
+        className={`font-body min-h-[44px] flex-1 rounded-lg px-4 py-2.5 text-center text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-150 touch-manipulation ${
           tab === 'following'
-            ? 'bg-[#C9A84C] text-[#1A1408]'
-            : 'bg-transparent text-[#888888] hover:text-[var(--foreground)]'
+            ? 'bg-accent text-bg-primary shadow-sm'
+            : 'bg-transparent text-text-muted hover:text-text-secondary'
         }`}
       >
         FOLLOWING

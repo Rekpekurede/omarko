@@ -10,34 +10,26 @@ const config: Config = {
   theme: {
     extend: {
       colors: {
-        background: "var(--background)",
-        foreground: "var(--foreground)",
-        card: "var(--card)",
+        "bg-primary": "var(--bg-primary)",
+        "bg-secondary": "var(--bg-secondary)",
+        "bg-card": "var(--bg-card)",
+        "bg-card-hover": "var(--bg-card-hover)",
         border: "var(--border)",
-        muted: "var(--muted)",
-        "muted-foreground": "var(--muted-foreground)",
+        "border-subtle": "var(--border-subtle)",
+        "text-primary": "var(--text-primary)",
+        "text-secondary": "var(--text-secondary)",
+        "text-muted": "var(--text-muted)",
         accent: "var(--accent)",
-        primary: "var(--primary)",
-        "primary-foreground": "var(--primary-foreground)",
+        "accent-dim": "var(--accent-dim)",
+        "accent-glow": "var(--accent-glow)",
       },
       fontFamily: {
-        sans: ["'Cormorant Garamond'", "Georgia", "serif"],
-        display: ["'Cormorant Garamond'", "Georgia", "serif"],
-        mono: ["'DM Mono'", "ui-monospace", "monospace"],
+        sans: ["var(--font-body)", "system-ui", "sans-serif"],
+        body: ["var(--font-body)", "system-ui", "sans-serif"],
+        display: ["var(--font-display)", "Georgia", "serif"],
       },
-      boxShadow: {
-        card: "var(--shadow-card)",
-        "glow-sm": "0 0 24px var(--primary-glow)",
-        "glow-md": "0 0 40px var(--primary-glow)",
-      },
-      animation: {
-        "breathing-glow": "breathing-glow 4s ease-in-out infinite",
-      },
-      keyframes: {
-        "breathing-glow": {
-          "0%, 100%": { opacity: "0.5", transform: "scale(1)" },
-          "50%": { opacity: "0.9", transform: "scale(1.02)" },
-        },
+      maxWidth: {
+        feed: "680px",
       },
     },
   },

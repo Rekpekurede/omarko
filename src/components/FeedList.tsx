@@ -64,7 +64,7 @@ export function FeedList({
 
   return (
     <>
-      <ul className="mt-4 space-y-4">
+      <ul className="mt-4 space-y-3">
         {marks.map((mark) => (
           <li key={mark.id}>
             <MarkCard
@@ -92,7 +92,7 @@ export function FeedList({
         ))}
       </ul>
       {marks.length === 0 && (
-        <p className="py-8 text-center text-gray-500">No marks yet.</p>
+        <p className="py-8 text-center text-text-muted">No marks yet.</p>
       )}
       {nextCursor && (
         <div className="mt-4 flex justify-center">
@@ -100,7 +100,7 @@ export function FeedList({
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="min-h-[44px] touch-manipulation rounded border border-black bg-white px-4 py-2 text-sm font-medium text-black hover:bg-gray-100 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-white dark:hover:bg-gray-700"
+            className="min-h-[44px] cursor-pointer touch-manipulation rounded-lg border border-border bg-bg-card px-4 py-2 text-sm font-medium text-text-primary transition-colors duration-150 hover:bg-bg-card-hover disabled:opacity-50"
           >
             {loading ? 'Loading…' : 'Load more'}
           </button>

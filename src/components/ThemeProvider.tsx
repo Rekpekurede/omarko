@@ -20,7 +20,7 @@ function getStoredTheme(): Theme {
 
 function applyTheme(theme: Theme) {
   const dark = theme === 'dark' || (theme === 'system' && getSystemDark());
-  document.documentElement.classList.toggle('dark', dark);
+  document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 }
 
 interface ThemeContextValue {
