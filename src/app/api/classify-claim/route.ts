@@ -11,7 +11,7 @@ function pickDomain(input: string): (typeof DOMAINS)[number] {
   const lower = input.toLowerCase();
   if (/\b(recipe|ingredients|cook|cuisine|dish|meal|flavor|kitchen)\b/.test(lower)) return 'Food';
   if (/\b(song|music|album|beat|lyrics|melody)\b/.test(lower)) return 'Music';
-  if (/\b(painting|art|sketch|gallery|illustration|design)\b/.test(lower)) return 'VisualArt';
+  if (/\b(painting|art|sketch|gallery|illustration|design)\b/.test(lower)) return 'Visual Art';
   if (/\b(code|software|app|ai|ml|model|algorithm|startup|product)\b/.test(lower)) return 'Technology';
   if (/\b(science|experiment|research|hypothesis|data)\b/.test(lower)) return 'Science';
   if (/\b(church|faith|ethics|morality|philosophy|belief)\b/.test(lower)) return 'Philosophy';

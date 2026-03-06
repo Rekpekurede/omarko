@@ -127,6 +127,11 @@
   color: #7c5fd6;
   border-color: rgba(167, 139, 250, 0.35);
 }
+[data-theme="light"] .mark-card .badge-domain[data-domain="Visual Art"] {
+  background: rgba(192, 132, 252, 0.2);
+  color: #7c5fd6;
+  border-color: rgba(192, 132, 252, 0.35);
+}
 
 /* Light: engagement row */
 [data-theme="light"] .engagement-row {

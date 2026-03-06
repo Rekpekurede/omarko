@@ -325,6 +325,7 @@ export function CreateMarkModal() {
                   {TOP_CLAIM_TYPES.map((name) => {
                     const opt = claimTypeOptions.find((o) => o.name === name);
                     if (!opt) return null;
+                    const isSelected = selectedClaimType?.id === opt.id;
                     return (
                       <button
                         key={opt.id}
@@ -333,11 +334,12 @@ export function CreateMarkModal() {
                           setSelectedClaimType(opt);
                           setClaimTypeTouched(true);
                         }}
-                        className={`shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors ${
-                          selectedClaimType?.id === opt.id
-                            ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg-primary)]'
-                            : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
-                        }`}
+                        className="shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors"
+                        style={
+                          isSelected
+                            ? { background: '#C9A84C', color: '#08080C', borderColor: '#C9A84C', fontWeight: 600 }
+                            : { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
+                        }
                       >
                         {opt.name}
                       </button>
@@ -346,7 +348,8 @@ export function CreateMarkModal() {
                   {selectedClaimType && !TOP_CLAIM_TYPES.includes(selectedClaimType.name as (typeof TOP_CLAIM_TYPES)[number]) && (
                     <button
                       type="button"
-                      className="shrink-0 cursor-pointer rounded-[20px] border border-[var(--accent)] bg-[var(--accent)] px-3.5 py-1.5 font-body text-[0.75rem] font-semibold text-[var(--bg-primary)] transition-colors"
+                      className="shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors"
+                      style={{ background: '#C9A84C', color: '#08080C', borderColor: '#C9A84C', fontWeight: 600 }}
                     >
                       {selectedClaimType.name}
                     </button>
@@ -391,13 +394,24 @@ export function CreateMarkModal() {
                 )}
               </div>
 
-              {/* Domain pills */}
+              {/* Domain pills — scrollable with visible indicator */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
                   DOMAIN
                 </label>
-                <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
-                  {DOMAINS.map((d) => (
+                <div style={{ position: 'relative' }}>
+                  <div
+                    style={{
+                      display: 'flex',
+                      gap: '8px',
+                      overflowX: 'auto',
+                      paddingBottom: '8px',
+                      scrollbarWidth: 'thin',
+                      scrollbarColor: 'var(--accent) transparent',
+                      WebkitOverflowScrolling: 'touch',
+                    }}
+                  >
+                    {DOMAINS.map((d) => (
                       <button
                         key={d}
                         type="button"
@@ -405,15 +419,35 @@ export function CreateMarkModal() {
                           setDomain(d as (typeof DOMAINS)[number]);
                           setDomainTouched(true);
                         }}
-                        className={`shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors ${
-                          domain === d
-                            ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg-primary)]'
-                            : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
-                        }`}
+                        style={{
+                          flexShrink: 0,
+                          padding: '6px 14px',
+                          borderRadius: '20px',
+                          border: domain === d ? '1px solid #C9A84C' : '1px solid var(--border)',
+                          background: domain === d ? '#C9A84C' : 'transparent',
+                          color: domain === d ? '#08080C' : 'var(--text-secondary)',
+                          fontSize: '0.75rem',
+                          fontWeight: domain === d ? 600 : 400,
+                          cursor: 'pointer',
+                          whiteSpace: 'nowrap',
+                        }}
                       >
                         {d}
                       </button>
                     ))}
+                  </div>
+                  <div
+                    style={{
+                      position: 'absolute',
+                      right: 0,
+                      top: 0,
+                      bottom: '8px',
+                      width: '40px',
+                      background: 'linear-gradient(to right, transparent, var(--bg-secondary))',
+                      pointerEvents: 'none',
+                    }}
+                    aria-hidden
+                  />
                 </div>
               </div>
 

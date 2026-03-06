@@ -19,6 +19,7 @@ const DOMAIN_BADGE_CLASS: Record<string, string> = {
   Sport: 'bg-[rgba(74,222,128,0.12)] text-[#86EFAC] border border-[rgba(74,222,128,0.2)]',
   General: 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]',
   Philosophy: 'bg-[rgba(167,139,250,0.12)] text-[#C4B5FD] border border-[rgba(167,139,250,0.2)]',
+  'Visual Art': 'bg-[rgba(192,132,252,0.12)] text-[#D8B4FE] border border-[rgba(192,132,252,0.2)]',
 };
 const DOMAIN_DEFAULT = 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]';
 
@@ -74,6 +75,10 @@ export function MarkCard({
   const isOwner = !!currentUserId && currentUserId === mark.user_id;
   const challengeCount = mark.dispute_count ?? 0;
   const hasChallenges = challengeCount > 0;
+  const ownerForChallenge = isHistorical ? historicalName : (profile?.username ?? null);
+  const challengeTooltipText = ownerForChallenge
+    ? `You don't believe this was @${ownerForChallenge}`
+    : "You don't believe this claim belongs to this user";
 
   const [supportVotes, setSupportVotes] = useState(mark.support_votes ?? 0);
   const [opposeVotes, setOpposeVotes] = useState(mark.oppose_votes ?? 0);
@@ -275,21 +280,21 @@ export function MarkCard({
         </TooltipGuide>
         {showChallenge && !isWithdrawn && (
           isHistorical ? (
-            <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
+            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
               <span className="flex items-center gap-1 cursor-default" title="Challenges on historical marks are reviewed by designated custodians.">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>
               </span>
             </TooltipGuide>
           ) : isOwner ? (
-            <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
+            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
               <Link href={`/mark/${mark.id}`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>
               </Link>
             </TooltipGuide>
           ) : (
-            <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
+            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
               <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>

@@ -115,7 +115,10 @@ export function ClaimTypePickerSheet({ isOpen, onClose, onSelect, selectedId }: 
               style={{
                 border: '1px solid var(--border)',
                 background: 'var(--bg-card)',
-                maxHeight: '200px',
+                maxHeight: '280px',
+                overflowY: 'auto',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'var(--border) var(--bg-card)',
               }}
             >
               <ul className="py-1">
