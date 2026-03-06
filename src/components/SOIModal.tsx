@@ -2,13 +2,12 @@
 /* eslint-disable @next/next/no-img-element -- PWA/offline: img with loading=lazy used so SOI media works from cache without next/image optimizations */
 
 import { useEffect, useState } from 'react';
-
-const STORAGE_BUCKET = 'mark-media';
+import { MARK_MEDIA_BUCKET } from '@/lib/storage';
 
 function toPublicUrl(path: string): string {
   if (path.startsWith('http://') || path.startsWith('https://')) return path;
   const base = process.env.NEXT_PUBLIC_SUPABASE_URL ?? '';
-  return `${base}/storage/v1/object/public/${STORAGE_BUCKET}/${path.replace(/^\//, '')}`;
+  return `${base}/storage/v1/object/public/${MARK_MEDIA_BUCKET}/${path.replace(/^\//, '')}`;
 }
 
 interface SoiRow {

@@ -1,7 +1,12 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { MARK_IMAGES_BUCKET, markImagePath, markMediaPath } from '@/lib/storage';
+import { MARK_MEDIA_BUCKET, markImagePath, markMediaPath } from '@/lib/storage';
 import { randomUUID } from 'crypto';
+
+/** Normalize path: no leading/trailing slashes so RLS split_part(name, '/', 1) = auth.uid() works. */
+function normalizeStoragePath(p: string): string {
+  return p.replace(/^\/+|\/+$/g, '');
+}
 
 const LIMITS = {
   image: 8 * 1024 * 1024,
@@ -33,20 +38,24 @@ async function uploadOnly(
   }
   const ext = file.name.split('.').pop()?.toLowerCase() || (kind === 'image' ? 'jpg' : 'bin');
   const filename = `${randomUUID()}.${ext}`;
-  const path = markImagePath(userId, filename);
+  const path = normalizeStoragePath(markImagePath(userId, filename));
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[upload-image] Bucket:', MARK_MEDIA_BUCKET, '| Path:', path, '| Kind:', kind);
+  }
 
   const { error } = await supabase.storage
-    .from(MARK_IMAGES_BUCKET)
+    .from(MARK_MEDIA_BUCKET)
     .upload(path, file, { upsert: false, contentType: file.type });
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[upload-image] Storage upload failed:', error.message);
+      console.error('[upload-image] Storage upload failed. Bucket:', MARK_MEDIA_BUCKET, 'Path:', path, 'Error:', error.message);
     }
     if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
       return NextResponse.json(
         {
-          error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
+          error: `Storage bucket "${MARK_MEDIA_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
           code: 'BUCKET_NOT_FOUND',
         },
         { status: 500 }
@@ -61,7 +70,7 @@ async function uploadOnly(
 
   if (kind === 'image') {
     const { data: { publicUrl } } = supabase.storage
-      .from(MARK_IMAGES_BUCKET)
+      .from(MARK_MEDIA_BUCKET)
       .getPublicUrl(path);
     if (process.env.NODE_ENV === 'development') {
       console.log('[upload-image] Upload-only image saved, publicUrl:', publicUrl);
@@ -131,20 +140,24 @@ export async function POST(request: Request) {
 
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
   const filename = `${randomUUID()}.${ext}`;
-  const path = markMediaPath(user.id, markId, filename);
+  const path = normalizeStoragePath(markMediaPath(user.id, markId, filename));
+
+  if (process.env.NODE_ENV === 'development') {
+    console.log('[upload-image] Bucket:', MARK_MEDIA_BUCKET, '| Path:', path, '| MarkId:', markId, '| Kind:', kind);
+  }
 
   const { error } = await supabase.storage
-    .from(MARK_IMAGES_BUCKET)
+    .from(MARK_MEDIA_BUCKET)
     .upload(path, file, { upsert: false, contentType: file.type });
 
   if (error) {
     if (process.env.NODE_ENV === 'development') {
-      console.error('[upload-image] Storage upload failed:', error.message);
+      console.error('[upload-image] Storage upload failed. Bucket:', MARK_MEDIA_BUCKET, 'Path:', path, 'Error:', error.message);
     }
     if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
       return NextResponse.json(
         {
-          error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
+          error: `Storage bucket "${MARK_MEDIA_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
           code: 'BUCKET_NOT_FOUND',
         },
         { status: 500 }
@@ -178,10 +191,10 @@ export async function POST(request: Request) {
 
   if (kind === 'image') {
     const { data: { publicUrl } } = supabase.storage
-      .from(MARK_IMAGES_BUCKET)
+      .from(MARK_MEDIA_BUCKET)
       .getPublicUrl(path);
     if (process.env.NODE_ENV === 'development') {
-      console.log('[upload-image] Mark image saved, image_url:', publicUrl);
+      console.log('[upload-image] Mark image saved. Bucket:', MARK_MEDIA_BUCKET, 'image_url:', publicUrl);
     }
     const { error: updateErr } = await supabase
       .from('marks')

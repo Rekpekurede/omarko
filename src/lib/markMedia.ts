@@ -1,5 +1,5 @@
 import type { SupabaseClient } from '@supabase/supabase-js';
-import { MARK_IMAGES_BUCKET } from './storage';
+import { MARK_MEDIA_BUCKET } from './storage';
 
 export type MarkMediaRow = {
   id: string;
@@ -45,10 +45,10 @@ export async function getSignedMediaForMarkIds(
 
   const [fileSignedRes, posterSignedRes] = await Promise.all([
     uniquePaths.length > 0
-      ? supabase.storage.from(MARK_IMAGES_BUCKET).createSignedUrls(uniquePaths, TTL_SECONDS)
+      ? supabase.storage.from(MARK_MEDIA_BUCKET).createSignedUrls(uniquePaths, TTL_SECONDS)
       : Promise.resolve({ data: [] as { path: string; signedUrl: string }[] }),
     uniquePosterPaths.length > 0
-      ? supabase.storage.from(MARK_IMAGES_BUCKET).createSignedUrls(uniquePosterPaths, TTL_SECONDS)
+      ? supabase.storage.from(MARK_MEDIA_BUCKET).createSignedUrls(uniquePosterPaths, TTL_SECONDS)
       : Promise.resolve({ data: [] as { path: string; signedUrl: string }[] }),
   ]);
 

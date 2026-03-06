@@ -3,6 +3,7 @@ export const CLAIM_TYPES = [
   'Creation',
   'Prediction',
   'Discovery',
+  'Event',
   'Innovation',
   'Strategy',
   'Record',

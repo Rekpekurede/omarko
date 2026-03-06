@@ -71,6 +71,7 @@ export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
   Quote: 'Words you said that others have repeated',
   Prediction: 'A future outcome you called before it happened',
   Discovery: 'Something you found or identified first',
+  Event: 'A gathering, show, or happening you created or led',
   Innovation: 'An improvement on something that already existed',
   Concept: 'An original idea or framework you developed',
   Method: 'A process or technique you invented',

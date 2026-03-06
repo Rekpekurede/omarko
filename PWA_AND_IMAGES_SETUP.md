@@ -14,19 +14,19 @@ Run the SQL in Supabase SQL Editor (Dashboard → SQL Editor):
 1. **Create Storage Buckets**
    - Go to Storage → New bucket
    - Create `avatars` (public) – for profile avatars
-   - Create `mark-images` (public) – for mark images
+   - Create `mark-media` (public) – for mark attachments (images/audio/video)
 
-2. **Run the migration** to add `image_url` to marks and storage policies.
+2. **Run the migrations** to add `image_url` to marks and storage policies (027, 032).
 
 ### Bucket Policies
 
-The migration adds RLS policies for:
-- **avatars**: Authenticated users can upload; public read
-- **mark-images**: Authenticated users upload to `{user_id}/` folder; public read; owners can delete
+The app uses a single bucket **mark-media** for all mark attachments. Run `032_mark_media_storage_policies_public_read.sql` for:
+- **mark-media**: Public read; authenticated upload to `{user_id}/` or `{user_id}/{mark_id}/`; owner update/delete
+- **avatars**: Authenticated users can upload; public read (see 011 / omarko_image_marks)
 
 ## Image Marks
 
-- Create flow: Add optional image via "Add image"; uploads to `mark-images` before creating mark
+- Create flow: Add optional image via "Add image"; uploads to **mark-media** before creating mark
 - At least one of text or image required
 - Domain and Claim Type remain required
 

@@ -50,6 +50,8 @@ function pickClaimType(input: string): { claimType: ClaimType; confidence: Confi
     return { claimType: 'Record', confidence: 'high' };
   if (/\b(i observed|my observation|this observation|i noticed|my observation of)\b/.test(lower))
     return { claimType: 'Observation', confidence: 'high' };
+  if (/\b(i organized|i hosted|my event|event i (created|organized|hosted|ran))\b/.test(lower))
+    return { claimType: 'Event', confidence: 'high' };
 
   // Medium matches
   if (/\b(will|going to|forecast|predict|by 20\d{2}|soon)\b/.test(lower))
@@ -80,6 +82,8 @@ function pickClaimType(input: string): { claimType: ClaimType; confidence: Confi
     return { claimType: 'Movement', confidence: 'medium' };
   if (/\b(story|narrative|script|fiction)\b/.test(lower))
     return { claimType: 'Story', confidence: 'medium' };
+  if (/\b(event|organized|hosted|conference|festival|gathering|show i put on)\b/.test(lower))
+    return { claimType: 'Event', confidence: 'medium' };
 
   // Fallback -> low confidence (UI will not show)
   return { claimType: 'Concept', confidence: 'low' };
