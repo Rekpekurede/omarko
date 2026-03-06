@@ -12,21 +12,49 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { text?: string; evidenceUrl?: string; claimedOriginalDate?: string };
+  let body: { text?: string; evidenceUrl?: string; claimedOriginalDate?: string | boolean | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const text = body.text?.trim();
+  const text = (typeof body.text === 'string' ? body.text : '').trim();
   if (!text) {
     return NextResponse.json({ error: 'Challenge text is required' }, { status: 400 });
   }
 
-  const evidenceUrl = body.evidenceUrl?.trim() || null;
-  const claimedOriginalDate = body.claimedOriginalDate?.trim() || null;
+  const evidenceUrl = typeof body.evidenceUrl === 'string' ? body.evidenceUrl.trim() || null : null;
   const isEvidenceBacked = !!evidenceUrl;
+
+  const rawDate = body.claimedOriginalDate;
+  const claimedOriginalDate =
+    typeof rawDate === 'string' && rawDate.trim() !== ''
+      ? rawDate.trim()
+      : null;
+  const isValidDate =
+    claimedOriginalDate != null &&
+    /^\d{4}-\d{2}-\d{2}$/.test(claimedOriginalDate);
+
+  const insertPayload: {
+    mark_id: string;
+    challenger_id: string;
+    evidence_text: string;
+    evidence_url: string | null;
+    claimed_original_date?: string;
+    is_evidence_backed: boolean;
+    outcome: string;
+  } = {
+    mark_id: markId,
+    challenger_id: user.id,
+    evidence_text: text,
+    evidence_url: evidenceUrl,
+    is_evidence_backed: isEvidenceBacked,
+    outcome: 'PENDING',
+  };
+  if (isValidDate) {
+    insertPayload.claimed_original_date = claimedOriginalDate as string;
+  }
 
   const { data: markRow } = await supabase
     .from('marks')
@@ -43,15 +71,7 @@ export async function POST(
 
   const { data: challenge, error: insertError } = await supabase
     .from('challenges')
-    .insert({
-      mark_id: markId,
-      challenger_id: user.id,
-      evidence_text: text,
-      evidence_url: evidenceUrl,
-      claimed_original_date: claimedOriginalDate || null,
-      is_evidence_backed: isEvidenceBacked,
-      outcome: 'PENDING',
-    })
+    .insert(insertPayload)
     .select('id, mark_id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username)')
     .single();
 

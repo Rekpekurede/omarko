@@ -28,19 +28,30 @@ export async function PATCH(
     return NextResponse.json({ error: 'Resolved challenges cannot be edited' }, { status: 400 });
   }
 
-  let body: { evidenceUrl?: string; claimedOriginalDate?: string };
+  let body: { evidenceUrl?: string | boolean | null; claimedOriginalDate?: string | boolean | null };
   try {
     body = await request.json();
   } catch {
     return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
   }
 
-  const evidenceUrl = body.evidenceUrl !== undefined ? (body.evidenceUrl?.trim() || null) : undefined;
-  const claimedOriginalDate = body.claimedOriginalDate !== undefined ? (body.claimedOriginalDate?.trim() || null) : undefined;
+  const evidenceUrl =
+    typeof body.evidenceUrl === 'string'
+      ? (body.evidenceUrl.trim() || null)
+      : body.evidenceUrl !== undefined
+        ? null
+        : undefined;
+  const rawDate = body.claimedOriginalDate;
+  const claimedOriginalDateNormalized =
+    typeof rawDate === 'string' && rawDate.trim() !== ''
+      ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
+      : rawDate !== undefined
+        ? null
+        : undefined;
 
   const updates: { evidence_url?: string | null; claimed_original_date?: string | null; is_evidence_backed?: boolean } = {};
   if (evidenceUrl !== undefined) updates.evidence_url = evidenceUrl;
-  if (claimedOriginalDate !== undefined) updates.claimed_original_date = claimedOriginalDate;
+  if (claimedOriginalDateNormalized !== undefined) updates.claimed_original_date = claimedOriginalDateNormalized;
 
   const wasEvidenceBacked = challengeRow.is_evidence_backed;
   const addingEvidence = !!evidenceUrl && !challengeRow.evidence_url;
