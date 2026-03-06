@@ -6,9 +6,11 @@ import { useState } from 'react';
 interface BookmarkButtonProps {
   markId: string;
   bookmarked: boolean;
+  /** When true, show only the star icon (no "Save"/"Saved" text). Used in card engagement row. */
+  iconOnly?: boolean;
 }
 
-export function BookmarkButton({ markId, bookmarked: initialBookmarked }: BookmarkButtonProps) {
+export function BookmarkButton({ markId, bookmarked: initialBookmarked, iconOnly = false }: BookmarkButtonProps) {
   const router = useRouter();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [pending, setPending] = useState(false);
@@ -34,7 +36,8 @@ export function BookmarkButton({ markId, bookmarked: initialBookmarked }: Bookma
       aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
       title={bookmarked ? 'Remove bookmark' : 'Bookmark for later'}
     >
-      {bookmarked ? <span className="text-accent">★</span> : '☆'} {bookmarked ? 'Saved' : 'Save'}
+      {bookmarked ? <span className="text-accent">★</span> : '☆'}
+      {!iconOnly && <span className="ml-1">{bookmarked ? 'Saved' : 'Save'}</span>}
     </button>
   );
 }
