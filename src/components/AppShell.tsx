@@ -17,7 +17,7 @@ export function AppShell({ header, username, avatarUrl, isSignedIn, children }: 
     <DrawerProvider>
       {header}
       <SideDrawer username={username} avatarUrl={avatarUrl} />
-      <main className="pb-24 pt-4 sm:pb-8 sm:pt-6">{children}</main>
+      <main className="pb-24 pt-8 sm:pb-8 sm:pt-8">{children}</main>
       <MobileBottomNav isSignedIn={isSignedIn} username={username} />
     </DrawerProvider>
   );

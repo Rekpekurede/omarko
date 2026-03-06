@@ -78,6 +78,7 @@ export function MarkCard({
   const [opposeVotes, setOpposeVotes] = useState(mark.oppose_votes ?? 0);
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [pending, setPending] = useState(false);
+  const [witnessGlow, setWitnessGlow] = useState(false);
 
   useEffect(() => {
     if (!menuOpen) return;
@@ -104,7 +105,13 @@ export function MarkCard({
       setOpposeVotes(data.oppose_votes ?? opposeVotes);
       setVote(data.userVote ?? null);
       onVoteUpdate?.(data);
-      if (data.userVote) onVoteSuccess?.(mark.id, data.userVote);
+      if (data.userVote) {
+        onVoteSuccess?.(mark.id, data.userVote);
+        if (data.userVote === 'SUPPORT') {
+          setWitnessGlow(true);
+          setTimeout(() => setWitnessGlow(false), 1200);
+        }
+      }
     }
   };
 
@@ -112,38 +119,39 @@ export function MarkCard({
   const soiCount = mark.soi_count ?? 0;
   const domainBadgeClass = (mark.domain && DOMAIN_BADGE_CLASS[mark.domain]) ? DOMAIN_BADGE_CLASS[mark.domain] : DOMAIN_DEFAULT;
 
+  const contentLength = (mark.content ?? '').length;
+  const isShortClaim = contentLength > 0 && contentLength <= 80;
+
   return (
-    <article className="mark-card relative z-0">
-      <div className="flex items-start justify-between gap-2">
-        <div className="flex min-w-0 flex-1 items-center gap-2">
+    <article className={`mark-card relative z-0 ${witnessGlow ? 'witness-glow' : ''}`}>
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex min-w-0 flex-1 items-center gap-4">
           {isHistorical ? (
             <>
-              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer">
-                <Avatar username={historicalName} avatarUrl={null} size="card" />
+              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
+                <Avatar username={historicalName} avatarUrl={null} size="card" variant="certificate" />
               </Link>
-              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[0.875rem] font-semibold text-text-primary hover:underline cursor-pointer">
+              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[0.875rem] font-semibold text-text-secondary hover:text-text-primary hover:underline cursor-pointer transition-colors duration-200">
                 {historicalName}
               </Link>
-              <span className="badge border border-accent-dim text-accent bg-transparent">
+              <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent">
                 HISTORICAL FIGURE
               </span>
             </>
           ) : (
             <>
-              <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer">
-                <Avatar username={username} avatarUrl={avatarUrl} size="card" />
+              <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
+                <Avatar username={username} avatarUrl={avatarUrl} size="card" variant="certificate" />
               </Link>
-              <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.875rem] font-semibold text-text-primary hover:underline cursor-pointer">
+              <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.875rem] font-semibold text-text-secondary hover:text-text-primary hover:underline cursor-pointer transition-colors duration-200">
                 @{username}
               </Link>
             </>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-2">
-          <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-text-muted" />
-          {(mark.status !== 'ACTIVE' || isWithdrawn) && (
-            <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
-          )}
+        <div className="flex shrink-0 items-center gap-4">
+          <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-text-muted tabular-nums" />
+          <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
           {isOwner && !isHistorical && (
             <div className="relative" ref={menuRef}>
               <button
@@ -199,9 +207,9 @@ export function MarkCard({
         </div>
       </div>
 
-      <div className="mt-2.5 flex flex-wrap items-center gap-2">
+      <div className="mt-4 flex flex-wrap items-center gap-2">
         {mark.claim_type && (
-          <span className="badge border border-accent-dim text-accent bg-transparent">
+          <span className="badge border border-[rgba(255,215,0,0.3)] bg-transparent text-[var(--text-muted)]">
             {mark.claim_type}
           </span>
         )}
@@ -213,22 +221,22 @@ export function MarkCard({
       </div>
 
       {mark.content && (
-        <p className="mark-text mt-3 text-[1.05rem] font-normal leading-[1.7] text-text-primary line-clamp-3">
+        <p className={`mark-text mt-4 text-text-primary line-clamp-3 ${isShortClaim ? 'text-[1.375rem]' : 'text-[1.25rem]'}`}>
           {mark.content}
         </p>
       )}
       {mark.image_url && (
-        <Link href={`/mark/${mark.id}`} className="mt-3 block w-full cursor-pointer">
-          <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-xl bg-border-subtle">
+        <Link href={`/mark/${mark.id}`} className="mt-6 block w-full cursor-pointer group">
+          <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-[12px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02]">
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img src={mark.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
           </div>
         </Link>
       )}
 
-      <div className="my-4 border-t border-border-subtle" />
+      <div className="my-6 border-t border-border-subtle" />
 
-      <div className="flex flex-nowrap items-center gap-5 text-[0.8rem] text-text-muted">
+      <div className="flex flex-nowrap items-center gap-8 text-[0.8rem] text-text-muted">
         <TooltipGuide
           tooltipKey="support"
           tooltipText="Support this Mark — you believe this claim is valid"
@@ -239,7 +247,7 @@ export function MarkCard({
             type="button"
             onClick={() => handleVote('support')}
             disabled={!canVote || isWithdrawn || pending}
-            className={`flex items-center gap-1.5 cursor-pointer touch-manipulation transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`tap-press flex items-center gap-2 cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
               vote === 'SUPPORT' ? 'text-accent' : 'hover:text-accent'
             }`}
             aria-label="Support"
@@ -251,21 +259,21 @@ export function MarkCard({
         {showChallenge && !isWithdrawn && (
           isHistorical ? (
             <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
-              <span className="flex items-center gap-1.5 cursor-default" title="Challenges on historical marks are reviewed by designated custodians.">
+              <span className="flex items-center gap-2 cursor-default" title="Challenges on historical marks are reviewed by designated custodians.">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>
               </span>
             </TooltipGuide>
           ) : isOwner ? (
             <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
-              <Link href={`/mark/${mark.id}`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer">
+              <Link href={`/mark/${mark.id}`} className="tap-press flex items-center gap-2 hover:text-accent transition-colors duration-150 cursor-pointer">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>
               </Link>
             </TooltipGuide>
           ) : (
             <TooltipGuide tooltipKey="challenge" tooltipText="Challenge this Mark — you believe this claim needs scrutiny">
-              <Link href={`/mark/${mark.id}?tab=challenges`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer">
+              <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex items-center gap-2 hover:text-accent transition-colors duration-150 cursor-pointer">
                 <span aria-hidden>✖</span>
                 <span>{challengeCount}</span>
               </Link>
@@ -273,13 +281,13 @@ export function MarkCard({
           )
         )}
         {!showChallenge && (
-          <span className="flex items-center gap-1.5">
+          <span className="flex items-center gap-2">
             <span aria-hidden>✖</span>
             <span>{challengeCount}</span>
           </span>
         )}
         <TooltipGuide tooltipKey="soi" tooltipText="Sign of Influence — add evidence that this idea has spread">
-          <Link href={`/mark/${mark.id}?tab=soi`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer font-body font-semibold text-[0.7rem] tracking-[0.06em]">
+          <Link href={`/mark/${mark.id}?tab=soi`} className="tap-press flex items-center gap-2 hover:text-accent transition-colors duration-150 cursor-pointer font-body font-semibold text-[0.7rem] tracking-[0.06em]">
             <span aria-hidden>SOI</span>
             <span>{soiCount}</span>
           </Link>
@@ -294,7 +302,7 @@ export function MarkCard({
             type="button"
             onClick={() => handleVote('oppose')}
             disabled={!canVote || isWithdrawn || pending}
-            className={`flex items-center gap-1.5 cursor-pointer touch-manipulation transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
+            className={`tap-press flex items-center gap-2 cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
               vote === 'OPPOSE' ? 'text-red-400' : 'hover:text-accent'
             }`}
             aria-label="Oppose"
@@ -304,7 +312,7 @@ export function MarkCard({
           </button>
         </TooltipGuide>
         <TooltipGuide tooltipKey="comment" tooltipText="Comment on this Mark">
-          <Link href={`/mark/${mark.id}?tab=comments`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer">
+          <Link href={`/mark/${mark.id}?tab=comments`} className="tap-press flex items-center gap-2 hover:text-accent transition-colors duration-150 cursor-pointer">
             <span aria-hidden>💬</span>
             <span>{commentsCount}</span>
           </Link>

@@ -17,8 +17,8 @@ export async function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-bg-secondary/95 backdrop-blur-[12px]">
-      <div className="mx-auto flex w-full max-w-feed items-center gap-2 px-3 py-2 sm:px-4">
+    <header className="sticky top-0 z-10 border-b border-border bg-black/70 backdrop-blur-xl">
+      <div className="mx-auto flex w-full max-w-feed items-center gap-4 px-4 py-4 sm:px-4">
         <NavDrawer />
         <Link
           href="/"
@@ -37,7 +37,7 @@ export async function Header() {
               className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
               aria-label="Bookmarks"
             >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M6 3h12v18l-6-4-6 4V3z" />
               </svg>
             </Link>
@@ -47,7 +47,7 @@ export async function Header() {
             className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
             aria-label="Search"
           >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8" />
               <path d="m21 21-4.3-4.3" />
             </svg>

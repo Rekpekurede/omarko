@@ -24,7 +24,9 @@ export function MarkStatusLabel({
       </span>
     );
   }
-  if (status === 'ACTIVE') return null;
+  if (status === 'ACTIVE') {
+    return <span className="provenance-pulse" aria-label="Active claim" />;
+  }
   const config = BADGE_CONFIG[status];
   if (!config) return null;
   return <span className={`badge ${config.className}`}>{config.label}</span>;

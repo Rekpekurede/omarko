@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Inter } from "next/font/google";
+import { Playfair_Display, Noto_Sans } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 import { Header } from "@/components/Header";
@@ -14,9 +14,9 @@ const playfair = Playfair_Display({
   variable: "--font-display",
 });
 
-const inter = Inter({
+const notoSans = Noto_Sans({
   subsets: ["latin"],
-  weight: ["400", "500", "600"],
+  weight: ["400", "500", "600", "700"],
   variable: "--font-body",
 });
 
@@ -70,7 +70,7 @@ export default async function RootLayout({
   const isSignedIn = !!user;
 
   return (
-    <html lang="en" className={`${playfair.variable} ${inter.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${notoSans.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
       </head>

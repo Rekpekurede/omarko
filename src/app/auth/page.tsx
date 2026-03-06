@@ -23,17 +23,24 @@ export default async function AuthPage({ searchParams }: PageProps) {
             OMarko
           </Link>
           <h1 className="mt-8 font-display text-[2rem] font-semibold leading-tight text-[var(--text-primary)] md:mt-12 md:text-[3rem] md:font-semibold">
-            Your ideas deserve
-            <br />
-            to be on record.
+            Everything comes from someone.
           </h1>
-          <p className="mt-4 font-body text-base text-[var(--text-secondary)] md:mt-4">
-            OMarko is where you declare what you created,
-            <br />
-            what you predicted, and what you thought of first.
-            <br />
-            Post a Mark. Watch your influence spread.
+          <p className="mt-2 font-display text-[2rem] font-semibold leading-tight text-[var(--text-primary)] md:text-[3rem]">
+            Omarko records who.
           </p>
+          <div className="mt-4 font-body text-base text-[var(--text-secondary)] md:mt-4">
+            <p>The world is full of things that began somewhere.</p>
+            <p className="mt-2">A phrase.</p>
+            <p>A prediction.</p>
+            <p>A creation.</p>
+            <p>A strategy.</p>
+            <p className="mb-2">A discovery.</p>
+            <p>But over time the origin is forgotten.</p>
+            <p className="mt-2">
+              Omarko is where people record what came from them —
+              so the world can later discover who started it.
+            </p>
+          </div>
           {/* Callouts — hidden on mobile */}
           <div className="mt-8 hidden space-y-6 md:mt-8 md:block">
             <div className="flex gap-4">
@@ -41,7 +48,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
               <div>
                 <p className="font-body font-semibold text-[var(--text-primary)]">Post a Mark</p>
                 <p className="font-body text-[0.85rem] text-[var(--text-secondary)]">
-                  Claim authorship of your idea, invention, phrase, or prediction.
+                  Record something that came from you.
                 </p>
               </div>
             </div>
@@ -50,25 +57,23 @@ export default async function AuthPage({ searchParams }: PageProps) {
               <div>
                 <p className="font-body font-semibold text-[var(--text-primary)]">Signs of Influence</p>
                 <p className="font-body text-[0.85rem] text-[var(--text-secondary)]">
-                  Submit evidence that your Mark has spread into the world.
+                  Attach evidence showing where something later appeared in the world.
                 </p>
               </div>
             </div>
             <div className="flex gap-4">
               <span className="text-xl text-[var(--accent)]" aria-hidden>✖</span>
               <div>
-                <p className="font-body font-semibold text-[var(--text-primary)]">Challenge & Concede</p>
+                <p className="font-body font-semibold text-[var(--text-primary)]">Challenge Claims</p>
                 <p className="font-body text-[0.85rem] text-[var(--text-secondary)]">
-                  The community keeps claims honest — evidence always wins.
+                  If someone believes a claim came from somewhere else, they can challenge it with evidence.
                 </p>
               </div>
             </div>
           </div>
         </div>
         <p className="mt-8 font-display text-[0.9rem] italic text-[var(--text-muted)] md:mt-12">
-          &ldquo;Instead of arguing about who came first —
-          <br />
-          the world will simply look it up.&rdquo;
+          &ldquo;Instead of arguing about where something began, the world will simply look it up.&rdquo;
         </p>
       </div>
 

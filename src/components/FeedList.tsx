@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { MarkCard } from './MarkCard';
+import { MarkCardSkeleton } from './MarkCardSkeleton';
 import type { Mark } from '@/lib/types';
 import type { FeedSource } from '@/app/page';
 
@@ -64,9 +65,9 @@ export function FeedList({
 
   return (
     <>
-      <ul className="mt-4 space-y-3">
+      <ul className="mt-8 space-y-8">
         {marks.map((mark) => (
-          <li key={mark.id}>
+          <li key={mark.id} className="animate-feed-in">
             <MarkCard
               mark={mark}
               bookmarked={allBookmarkIds.includes(mark.id)}
@@ -92,16 +93,22 @@ export function FeedList({
           </li>
         ))}
       </ul>
-      {marks.length === 0 && (
-        <p className="py-8 text-center text-text-muted">No marks yet.</p>
+      {loading && (
+        <div className="space-y-8">
+          <MarkCardSkeleton />
+          <MarkCardSkeleton />
+        </div>
+      )}
+      {marks.length === 0 && !loading && (
+        <p className="py-16 text-center text-text-muted">No marks yet.</p>
       )}
       {nextCursor && (
-        <div className="mt-4 flex justify-center">
+        <div className="mt-10 flex justify-center">
           <button
             type="button"
             onClick={loadMore}
             disabled={loading}
-            className="min-h-[44px] cursor-pointer touch-manipulation rounded-lg border border-border bg-bg-card px-4 py-2 text-sm font-medium text-text-primary transition-colors duration-150 hover:bg-bg-card-hover disabled:opacity-50"
+            className="btn-primary tap-press min-h-[48px] cursor-pointer rounded-[10px] px-8 py-3 text-sm font-semibold text-[#0a0a0a] disabled:opacity-50 disabled:transform-none"
           >
             {loading ? 'Loading…' : 'Load more'}
           </button>

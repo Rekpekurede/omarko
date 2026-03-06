@@ -60,14 +60,14 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
 
   return (
     <>
-      <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] pt-3 sm:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-1 rounded-sm border border-border bg-card/90 px-3 py-2.5 shadow-card backdrop-blur-xl dark:border-primary/10 dark:bg-card-glass dark:shadow-card">
+      <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] pt-4 sm:hidden">
+        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 rounded-2xl border border-border bg-black/70 px-4 py-4 shadow-xl backdrop-blur-xl">
           <NavItem
             href="/"
             label="Home"
             active={isActive(pathname, '/')}
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <path d="M3 10.5 12 3l9 7.5" />
                 <path d="M5 9.5V21h14V9.5" />
               </svg>
@@ -78,7 +78,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
             label="Search"
             active={isActive(pathname, '/search')}
             icon={
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                 <circle cx="11" cy="11" r="7" />
                 <path d="m20 20-3.8-3.8" />
               </svg>
@@ -91,7 +91,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
                 active={false}
                 onClick={openCreateModal}
                 icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M12 5v14" />
                     <path d="M5 12h14" />
                   </svg>
@@ -102,7 +102,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
                 label="Notifications"
                 active={isActive(pathname, '/notifications')}
                 icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />
                     <path d="M10 20a2 2 0 0 0 4 0" />
                   </svg>
@@ -113,7 +113,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
                 label="Profile"
                 active={isActive(pathname, '/profile')}
                 icon={
-                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <circle cx="12" cy="8" r="4" />
                     <path d="M4 21a8 8 0 0 1 16 0" />
                   </svg>
@@ -126,7 +126,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
               label="Sign in"
               active={isActive(pathname, '/auth')}
               icon={
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                   <path d="M5 12h12" />
                   <path d="m13 6 6 6-6 6" />
                 </svg>

@@ -38,7 +38,7 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
   return (
     <>
       <div
-        className={`fixed inset-0 z-40 bg-black/60 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
+        className={`fixed inset-0 z-40 bg-black/80 backdrop-blur-sm transition-opacity duration-300 ${open ? 'opacity-100' : 'pointer-events-none opacity-0'}`}
         aria-hidden
         onClick={onClose}
       />
@@ -46,9 +46,10 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
         role="dialog"
         aria-modal="true"
         aria-label="Navigation menu"
-        className={`fixed inset-y-0 left-0 z-50 h-screen w-[280px] border-r border-border bg-bg-secondary shadow-xl transition-transform duration-300 ease-in-out ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        className={`fixed inset-y-0 left-0 z-50 h-screen w-[280px] border-r border-border bg-bg-secondary shadow-2xl transition-transform duration-300 ease-out ${open ? 'translate-x-0' : '-translate-x-full'}`}
+        style={{ transitionTimingFunction: 'cubic-bezier(0.32, 0.72, 0, 1)' }}
       >
-        <div className="flex h-full flex-col p-4 pt-6">
+        <div className="flex h-full flex-col p-6 pt-8">
           <div className="flex items-center justify-between pr-1">
             <div className="flex min-w-0 flex-1 items-center gap-3">
               <Avatar
@@ -72,7 +73,7 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
 
           <div className="my-4 h-px w-full border-b border-border" aria-hidden />
 
-          <nav className="flex flex-col gap-0.5">
+          <nav className="flex flex-col gap-1">
             {menuItems.map((item) => {
               const href = item.useUsername
                 ? (username ? `/profile/${encodeURIComponent(username)}` : '/auth')
@@ -82,7 +83,7 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
                   key={item.label}
                   href={href}
                   onClick={handleLinkClick}
-                  className="flex items-center gap-3 rounded-r-lg border-l-[3px] border-transparent py-3 px-5 text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary"
+                  className="tap-press flex items-center gap-4 rounded-r-lg border-l-[3px] border-transparent py-4 px-6 text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary"
                 >
                   <span className="text-xl" aria-hidden>{item.icon}</span>
                   <span>{item.label}</span>
@@ -93,7 +94,7 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
               <button
                 type="submit"
                 onClick={handleLinkClick}
-                className="flex w-full items-center gap-3 rounded-r-lg py-3 px-5 text-left text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary"
+                className="tap-press flex w-full items-center gap-4 rounded-r-lg py-4 px-6 text-left text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary"
               >
                 <span className="text-xl" aria-hidden>🚪</span>
                 <span>Sign out</span>
