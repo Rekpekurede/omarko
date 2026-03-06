@@ -34,9 +34,10 @@ export function ClaimTypePickerSheet({ isOpen, onClose, onSelect, selectedId }: 
           setError('Could not load claim types.');
           return;
         }
-        const raw = data.results ?? [];
-        const list = raw.filter((r: ClaimTypeOption) => CLAIM_TYPES.includes(r.name as ClaimType));
-        list.sort((a: ClaimTypeOption, b: ClaimTypeOption) => CLAIM_TYPES.indexOf(a.name as ClaimType) - CLAIM_TYPES.indexOf(b.name as ClaimType));
+        const raw = (data.results ?? []) as ClaimTypeOption[];
+        const byName = new Map(raw.filter((r) => CLAIM_TYPES.includes(r.name as ClaimType)).map((r) => [r.name, r]));
+        // Ensure all 18 claim types appear; use API id when available, else synthetic id (name) for lookup
+        const list: ClaimTypeOption[] = CLAIM_TYPES.map((name) => byName.get(name) ?? { id: name, name });
         setAllClaimTypes(list);
       })
       .catch(() => setError('Could not load claim types.'))

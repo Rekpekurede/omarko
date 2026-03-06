@@ -53,28 +53,12 @@ export const DOMAINS = [
   'Philosophy',
   'General',
 ] as const;
-export const CLAIM_TYPES = [
-  'Creation',
-  'Prediction',
-  'Discovery',
-  'Innovation',
-  'Strategy',
-  'Record',
-  'Implementation',
-  'Invite',
-  'Quote',
-  'Concept',
-  'Method',
-  'Theory',
-  'Phrase',
-  'Formula',
-  'Design',
-  'Movement',
-  'Trend',
-  'Story',
-] as const;
+
+export { CLAIM_TYPES, type ClaimType } from './constants';
+import type { ClaimType } from './constants';
+
 /** Top 6 claim types shown as pills in the create modal. */
-export const TOP_CLAIM_TYPES: (typeof CLAIM_TYPES)[number][] = [
+export const TOP_CLAIM_TYPES: ClaimType[] = [
   'Creation',
   'Quote',
   'Prediction',
@@ -82,7 +66,7 @@ export const TOP_CLAIM_TYPES: (typeof CLAIM_TYPES)[number][] = [
   'Innovation',
   'Concept',
 ];
-export const CLAIM_TYPE_DESCRIPTIONS: Record<(typeof CLAIM_TYPES)[number], string> = {
+export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
   Creation: 'Something you made — art, product, writing, software',
   Quote: 'Words you said that others have repeated',
   Prediction: 'A future outcome you called before it happened',
@@ -103,7 +87,6 @@ export const CLAIM_TYPE_DESCRIPTIONS: Record<(typeof CLAIM_TYPES)[number], strin
   Invite: 'An open call or challenge you issued',
 };
 export type Domain = (typeof DOMAINS)[number];
-export type ClaimType = (typeof CLAIM_TYPES)[number];
 
 export type NotificationType = 'DISPUTE_CREATED' | 'MARK_SUPPLANTED' | 'MARK_CHAMPION' | 'MARK_WITHDRAWN' | 'COMMENT_CREATED';
 

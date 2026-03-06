@@ -25,7 +25,7 @@ export function CreateMarkModal() {
   const [saveAsDefault, setSaveAsDefault] = useState(false);
   const [isClaimTypePickerOpen, setIsClaimTypePickerOpen] = useState(false);
   const [aiLoading, setAiLoading] = useState(false);
-  const [aiSuggestion, setAiSuggestion] = useState<{ claimType: string; domain: string } | null>(null);
+  const [aiSuggestion, setAiSuggestion] = useState<{ claimType: string; domain: string; confidence: string } | null>(null);
   const [aiSuggestionDismissed, setAiSuggestionDismissed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -151,11 +151,13 @@ export function CreateMarkModal() {
     }
   };
 
+  // Only trigger 1.5s after user stops typing, when content is 15+ chars. Never on modal open, file upload, or short content.
   useEffect(() => {
     if (!isOpen) return;
     const text = content.trim();
-    if (!text && !attachmentFile) {
+    if (!text || text.length < 15) {
       setAiSuggestion(null);
+      setAiLoading(false);
       return;
     }
     const timer = window.setTimeout(async () => {
@@ -166,14 +168,14 @@ export function CreateMarkModal() {
         body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
-      if (res.ok && data.claimType && data.domain) {
-        setAiSuggestion({ claimType: data.claimType, domain: data.domain });
-      }
       setAiLoading(false);
-    }, 450);
+      if (res.ok && data.claimType && data.domain && (data.confidence === 'high' || data.confidence === 'medium')) {
+        setAiSuggestion({ claimType: data.claimType, domain: data.domain, confidence: data.confidence });
+      }
+    }, 1500);
 
     return () => window.clearTimeout(timer);
-  }, [isOpen, content, attachmentFile]);
+  }, [isOpen, content]);
 
   const applyAiSuggestion = async () => {
     if (!aiSuggestion) return;

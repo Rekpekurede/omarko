@@ -93,5 +93,21 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: `Media metadata save failed: ${mediaErr.message}` }, { status: 500 });
   }
 
+  // For images, set mark.image_url to the public URL so the feed can render it
+  if (kind === 'image') {
+    const { data: { publicUrl } } = supabase.storage
+      .from(MARK_IMAGES_BUCKET)
+      .getPublicUrl(path);
+    const { error: updateErr } = await supabase
+      .from('marks')
+      .update({ image_url: publicUrl })
+      .eq('id', markId)
+      .eq('user_id', user.id);
+    if (updateErr) {
+      return NextResponse.json({ error: `Failed to set mark image_url: ${updateErr.message}` }, { status: 500 });
+    }
+    return NextResponse.json({ path, kind, publicUrl });
+  }
+
   return NextResponse.json({ path, kind });
 }

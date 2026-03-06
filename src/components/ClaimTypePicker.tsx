@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
+import { TOP_CLAIM_TYPES } from '@/lib/types';
 
 type ClaimTypeOption = {
   id: string;
@@ -14,17 +15,6 @@ interface ClaimTypePickerProps {
   contentHint?: string;
   forceOpenToken?: number;
 }
-
-const CURATED_SUGGESTED_NAMES = [
-  'Creation',
-  'Discovery',
-  'Method',
-  'Prediction',
-  'Theory',
-  'Teaching',
-  'Stance',
-  'Opinion',
-];
 
 function getHeuristicSuggestion(text: string): string | null {
   const lower = text.toLowerCase();
@@ -54,7 +44,7 @@ export function ClaimTypePicker({ selected, onSelect, contentHint = '', forceOpe
 
   const suggestedSection = useMemo(() => {
     const byLowerName = new Map(filteredAll.map((item) => [item.name.toLowerCase(), item]));
-    return CURATED_SUGGESTED_NAMES
+    return TOP_CLAIM_TYPES
       .map((name) => byLowerName.get(name.toLowerCase()))
       .filter((item): item is ClaimTypeOption => !!item);
   }, [filteredAll]);
