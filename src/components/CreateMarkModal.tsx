@@ -160,6 +160,7 @@ export function CreateMarkModal() {
       setAiLoading(false);
       return;
     }
+    let active = true;
     const timer = window.setTimeout(async () => {
       setAiLoading(true);
       const res = await fetch('/api/classify-claim', {
@@ -168,13 +169,17 @@ export function CreateMarkModal() {
         body: JSON.stringify({ text }),
       });
       const data = await res.json().catch(() => ({}));
+      if (!active) return;
       setAiLoading(false);
       if (res.ok && data.claimType && data.domain && (data.confidence === 'high' || data.confidence === 'medium')) {
         setAiSuggestion({ claimType: data.claimType, domain: data.domain, confidence: data.confidence });
       }
     }, 1500);
 
-    return () => window.clearTimeout(timer);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
   }, [isOpen, content]);
 
   const applyAiSuggestion = async () => {
@@ -192,6 +197,12 @@ export function CreateMarkModal() {
       setSelectedClaimType(match);
       setClaimTypeTouched(true);
     }
+    setAiSuggestion(null);
+    setAiSuggestionDismissed(true);
+  };
+
+  const dismissAiSuggestion = () => {
+    setAiSuggestion(null);
     setAiSuggestionDismissed(true);
   };
 
@@ -364,36 +375,6 @@ export function CreateMarkModal() {
                     + See all claim types
                   </button>
                 </div>
-                {aiLoading && (
-                  <p className="text-xs text-[var(--text-muted)]">Analyzing content...</p>
-                )}
-                {!aiLoading && aiSuggestion && !aiSuggestionDismissed && (
-                  <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-3 text-sm">
-                    <p className="font-medium text-[var(--text-primary)]">AI suggestion</p>
-                    <p className="mt-1 text-[var(--text-secondary)]">Claim type: <span className="text-[var(--text-primary)]">{aiSuggestion.claimType}</span></p>
-                    <p className="text-[var(--text-secondary)]">Domain: <span className="text-[var(--text-primary)]">{aiSuggestion.domain}</span></p>
-                    <div className="mt-2 flex items-center gap-2">
-                      <button
-                        type="button"
-                        onClick={applyAiSuggestion}
-                        className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--accent)] hover:text-[var(--bg-primary)]"
-                      >
-                        Accept
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => {
-                          setClaimTypeTouched(true);
-                          setDomainTouched(true);
-                          setAiSuggestionDismissed(true);
-                        }}
-                        className="rounded-md px-2.5 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
-                      >
-                        Dismiss
-                      </button>
-                    </div>
-                  </div>
-                )}
               </div>
 
               {/* Domain pills — scrollable with visible indicator */}
@@ -467,6 +448,54 @@ export function CreateMarkModal() {
                   rows={4}
                 />
               </div>
+
+              {/* AI suggestion — below textarea, only when loading or high/medium suggestion, not dismissed */}
+              {(aiLoading || (aiSuggestion && !aiSuggestionDismissed)) && (
+                <div
+                  className="font-body flex items-center justify-between rounded-lg"
+                  style={{
+                    background: 'var(--accent-glow)',
+                    border: '1px solid var(--accent-dim)',
+                    padding: '10px 14px',
+                  }}
+                >
+                  {aiLoading ? (
+                    <span className="text-[0.82rem]" style={{ color: 'var(--accent)' }}>
+                      <span className="inline-block h-2 w-2 animate-pulse rounded-full bg-current" aria-hidden /> Analyzing...
+                    </span>
+                  ) : aiSuggestion ? (
+                    <>
+                      <span className="text-[0.82rem]" style={{ color: 'var(--text-secondary)' }}>
+                        ✦ Suggested: <span className="font-semibold" style={{ color: 'var(--accent)' }}>{aiSuggestion.claimType}</span>
+                        {' · '}
+                        <span className="font-semibold" style={{ color: 'var(--accent)' }}>{aiSuggestion.domain}</span>
+                      </span>
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={applyAiSuggestion}
+                          className="cursor-pointer rounded-md font-body text-[0.78rem] font-semibold"
+                          style={{
+                            background: 'var(--accent)',
+                            color: 'var(--bg-primary)',
+                            padding: '4px 12px',
+                          }}
+                        >
+                          Apply
+                        </button>
+                        <button
+                          type="button"
+                          onClick={dismissAiSuggestion}
+                          className="cursor-pointer font-body text-[0.78rem]"
+                          style={{ color: 'var(--text-muted)' }}
+                        >
+                          Dismiss
+                        </button>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+              )}
 
               {/* Attachment */}
               <div className="flex flex-col gap-2">
