@@ -6,8 +6,19 @@ import { useRouter } from 'next/navigation';
 import { DOMAINS, CLAIM_TYPES, TOP_CLAIM_TYPES, type ClaimType } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
 import { ClaimTypePickerSheet } from './ClaimTypePickerSheet';
+import { compressImage } from '@/lib/compressImage';
 
 const TOAST_MS = 1800;
+
+/** Map upload API errors to user-friendly messages. Always suggests posting without image if upload fails. */
+function uploadErrorMessage(raw: string): string {
+  const lower = raw.toLowerCase();
+  if (lower.includes('bucket') && lower.includes('not found')) return 'Image upload failed. Please try again. You can still post without an image.';
+  if (lower.includes('row-level security') || lower.includes('rls') || lower.includes('policy')) return 'You need to be signed in to upload images. You can still post without an image.';
+  if (lower.includes('entity too large') || lower.includes('too large') || lower.includes('exceeds')) return 'This image is too large. Please choose a smaller photo. You can still post without an image.';
+  if (lower.includes('network') || lower.includes('fetch') || lower.includes('connection')) return 'Upload failed — check your connection and try again. You can still post without an image.';
+  return 'Something went wrong with the upload. You can still post without an image.';
+}
 
 export function CreateMarkModal() {
   const router = useRouter();
@@ -28,6 +39,7 @@ export function CreateMarkModal() {
   const [aiSuggestion, setAiSuggestion] = useState<{ claimType: string; domain: string; confidence: string } | null>(null);
   const [aiSuggestionDismissed, setAiSuggestionDismissed] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+  const [isCompressing, setIsCompressing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [uploadNotice, setUploadNotice] = useState<string | null>(null);
   const [toast, setToast] = useState<string | null>(null);
@@ -84,6 +96,14 @@ export function CreateMarkModal() {
       .catch(() => {});
   }, [isOpen]);
 
+  useEffect(() => {
+    return () => {
+      if (attachmentPreviewUrl?.startsWith('blob:')) {
+        URL.revokeObjectURL(attachmentPreviewUrl);
+      }
+    };
+  }, [attachmentPreviewUrl]);
+
   const resetForm = () => {
     setContent('');
     setDomain(DOMAINS[0]);
@@ -95,6 +115,7 @@ export function CreateMarkModal() {
     if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
     setAttachmentPreviewUrl(null);
     setAttachmentMeta(null);
+    setIsCompressing(false);
     setError(null);
     setUploadNotice(null);
     setAiSuggestion(null);
@@ -110,32 +131,27 @@ export function CreateMarkModal() {
     closeCreateModal();
   };
 
-  const onAttachmentChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const kind = file.type.startsWith('image/')
+  const onAttachmentChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const rawFile = e.target.files?.[0];
+    if (!rawFile) return;
+    const kind = rawFile.type.startsWith('image/')
       ? 'image'
-      : file.type.startsWith('audio/')
+      : rawFile.type.startsWith('audio/')
         ? 'audio'
-        : file.type.startsWith('video/')
+        : rawFile.type.startsWith('video/')
           ? 'video'
           : null;
     if (!kind) {
       setError('Only image/audio/video attachments are allowed.');
       return;
     }
-    setAttachmentFile(file);
-    if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
-    const objectUrl = URL.createObjectURL(file);
-    setAttachmentPreviewUrl(objectUrl);
-    setAttachmentMeta({ kind });
 
-    if (kind === 'image') {
-      const img = new Image();
-      img.onload = () => setAttachmentMeta({ kind, width: img.naturalWidth, height: img.naturalHeight });
-      img.src = objectUrl;
-    }
-    if (kind === 'audio' || kind === 'video') {
+    if (kind !== 'image') {
+      setAttachmentFile(rawFile);
+      if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+      const objectUrl = URL.createObjectURL(rawFile);
+      setAttachmentPreviewUrl(objectUrl);
+      setAttachmentMeta({ kind });
       const media = document.createElement(kind);
       media.preload = 'metadata';
       media.onloadedmetadata = () => {
@@ -148,6 +164,37 @@ export function CreateMarkModal() {
         }
       };
       media.src = objectUrl;
+      return;
+    }
+
+    try {
+      setIsCompressing(true);
+      setError(null);
+      const { file: compressedFile } = await compressImage(rawFile);
+      if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+      const previewUrl = URL.createObjectURL(compressedFile);
+      setAttachmentPreviewUrl(previewUrl);
+      setAttachmentFile(compressedFile);
+      setAttachmentMeta({ kind: 'image' });
+      const img = new Image();
+      img.onload = () => {
+        setAttachmentMeta({ kind: 'image', width: img.naturalWidth, height: img.naturalHeight });
+      };
+      img.src = previewUrl;
+    } catch (err) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('Compression error:', err);
+      }
+      if (attachmentPreviewUrl) URL.revokeObjectURL(attachmentPreviewUrl);
+      const fallbackUrl = URL.createObjectURL(rawFile);
+      setAttachmentPreviewUrl(fallbackUrl);
+      setAttachmentFile(rawFile);
+      setAttachmentMeta({ kind: 'image' });
+      const img = new Image();
+      img.onload = () => setAttachmentMeta({ kind: 'image', width: img.naturalWidth, height: img.naturalHeight });
+      img.src = fallbackUrl;
+    } finally {
+      setIsCompressing(false);
     }
   };
 
@@ -240,11 +287,11 @@ export function CreateMarkModal() {
       });
       const uploadData = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok) {
-        const errMsg = uploadData.error ?? 'Image upload failed. Try again.';
+        const raw = uploadData.error ?? 'Image upload failed. Try again.';
         if (process.env.NODE_ENV === 'development') {
           console.error('[CreateMarkModal] Image upload failed', uploadRes.status, uploadData);
         }
-        setError(errMsg);
+        setError(uploadErrorMessage(raw));
         setSubmitting(false);
         return;
       }
@@ -259,7 +306,7 @@ export function CreateMarkModal() {
         height: uploadData.height,
       };
       if (!imageUrl) {
-        setError('Image upload did not return a URL.');
+        setError('Something went wrong with the upload. You can still post without an image.');
         setSubmitting(false);
         return;
       }
@@ -316,11 +363,11 @@ export function CreateMarkModal() {
       });
       const uploadData = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok) {
-        const errMsg = uploadData.error ?? 'Attachment upload failed.';
+        const raw = uploadData.error ?? 'Attachment upload failed.';
         if (process.env.NODE_ENV === 'development') {
           console.error('[CreateMarkModal] Audio/video upload failed', uploadRes.status, uploadData);
         }
-        setError(errMsg);
+        setError(uploadErrorMessage(raw));
         setSubmitting(false);
         return;
       }
@@ -574,11 +621,19 @@ export function CreateMarkModal() {
                   <button
                     type="button"
                     onClick={() => inputRef.current?.click()}
-                    className="cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 font-body text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-hover)]"
+                    disabled={isCompressing}
+                    className="cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 font-body text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-hover)] disabled:opacity-60 disabled:cursor-not-allowed"
                   >
                     Add attachment
                   </button>
-                  {attachmentPreviewUrl && attachmentMeta && (
+                  {isCompressing && (
+                    <div className="flex h-20 w-20 items-center justify-center rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-2">
+                      <span className="font-body text-[0.8rem]" style={{ color: 'var(--text-muted)' }}>
+                        Optimising image...
+                      </span>
+                    </div>
+                  )}
+                  {!isCompressing && attachmentPreviewUrl && attachmentMeta && (
                     <div className="relative">
                       {attachmentMeta.kind === 'image' && (
                         <div className="h-20 w-20 overflow-hidden rounded-lg border border-[var(--border)]">
@@ -676,14 +731,19 @@ export function CreateMarkModal() {
 
               <button
                 type="submit"
-                disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
-                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-3.5 font-body font-semibold text-[var(--bg-primary)] transition-colors hover:bg-[var(--accent-dim)] disabled:opacity-50"
+                disabled={submitting || isCompressing || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-3.5 font-body font-semibold text-[var(--bg-primary)] transition-colors hover:bg-[var(--accent-dim)] disabled:opacity-50 disabled:cursor-not-allowed"
+                style={{
+                  opacity: isCompressing ? 0.6 : undefined,
+                }}
               >
                 {submitting ? (
                   <>
                     <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-[var(--bg-primary)] border-t-transparent" aria-hidden />
                     Posting...
                   </>
+                ) : isCompressing ? (
+                  'Optimising...'
                 ) : (
                   'Post your Mark'
                 )}
