@@ -129,12 +129,50 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
       return;
     }
 
+    const isImageAttachment = imageFile && imageFile.type.startsWith('image/');
+    let imageUrl: string | null = null;
+    let uploadPayload: { path: string; kind: string; mime_type: string; size_bytes: number } | null = null;
+
+    if (isImageAttachment && imageFile) {
+      const uploadForm = new FormData();
+      uploadForm.append('file', imageFile);
+      const uploadRes = await fetch('/api/marks/upload-image', {
+        method: 'POST',
+        body: uploadForm,
+      });
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) {
+        const errMsg = uploadData.error ?? 'Image upload failed. Try again.';
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[CreateMarkForm] Image upload failed', uploadRes.status, uploadData);
+        }
+        setError(errMsg);
+        setIsSubmitting(false);
+        return;
+      }
+      imageUrl = uploadData.publicUrl ?? null;
+      uploadPayload = uploadData.path
+        ? {
+            path: uploadData.path,
+            kind: uploadData.kind ?? 'image',
+            mime_type: uploadData.mime_type ?? imageFile.type,
+            size_bytes: uploadData.size_bytes ?? imageFile.size,
+          }
+        : null;
+      if (!imageUrl) {
+        setError('Image upload did not return a URL.');
+        setIsSubmitting(false);
+        return;
+      }
+    }
+
     const body = {
       content: content || '',
       domain,
       claim_type_id: selectedClaimType.id,
       claim_type: selectedClaimType.name,
       has_attachment: !!imageFile,
+      ...(imageUrl ? { image_url: imageUrl } : {}),
     };
 
     const res = await fetch('/api/marks', {
@@ -145,23 +183,43 @@ export function CreateMarkForm({ username }: CreateMarkFormProps) {
     const data = await res.json().catch(() => ({}));
 
     if (!res.ok) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[CreateMarkForm] Mark create failed', res.status, data);
+      }
       setError(data.error ?? 'Failed to create mark');
       setIsSubmitting(false);
       return;
     }
-    if (imageFile && data.id) {
+    const markId = data.id as string | undefined;
+
+    if (markId && uploadPayload && uploadPayload.kind === 'image') {
+      const attachRes = await fetch(`/api/marks/${markId}/attach-media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(uploadPayload),
+      });
+      if (!attachRes.ok && process.env.NODE_ENV === 'development') {
+        const attachData = await attachRes.json().catch(() => ({}));
+        console.warn('[CreateMarkForm] attach-media failed', attachRes.status, attachData);
+      }
+    }
+
+    if (imageFile && markId && !isImageAttachment) {
       const uploadForm = new FormData();
       uploadForm.append('file', imageFile);
-      uploadForm.append('mark_id', data.id);
+      uploadForm.append('mark_id', markId);
       const uploadRes = await fetch('/api/marks/upload-image', {
         method: 'POST',
         body: uploadForm,
       });
       if (!uploadRes.ok) {
         const uploadData = await uploadRes.json().catch(() => ({}));
-        setUploadNotice(uploadData.error ?? 'Attachment upload failed after posting.');
+        setError(uploadData.error ?? 'Attachment upload failed.');
+        setIsSubmitting(false);
+        return;
       }
     }
+
     if (saveAsDefault && selectedClaimType) {
       await fetch('/api/profile/defaults', {
         method: 'PATCH',

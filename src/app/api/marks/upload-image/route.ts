@@ -1,6 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
-import { MARK_IMAGES_BUCKET, markMediaPath } from '@/lib/storage';
+import { MARK_IMAGES_BUCKET, markImagePath, markMediaPath } from '@/lib/storage';
 import { randomUUID } from 'crypto';
 
 const LIMITS = {
@@ -16,6 +16,78 @@ function detectKind(mime: string): 'image' | 'audio' | 'video' | null {
   return null;
 }
 
+/** Upload only (no mark_id): upload to storage and return publicUrl/path for use when creating the mark. Use for images so mark is created with image_url set. */
+async function uploadOnly(
+  supabase: Awaited<ReturnType<typeof createClient>>,
+  userId: string,
+  file: File,
+  formData: FormData
+): Promise<NextResponse> {
+  const kind = detectKind(file.type);
+  if (!kind) {
+    return NextResponse.json({ error: 'Only image/audio/video files are allowed' }, { status: 400 });
+  }
+  if (file.size > LIMITS[kind]) {
+    const maxMb = kind === 'image' ? 8 : kind === 'audio' ? 25 : 60;
+    return NextResponse.json({ error: `${kind} file exceeds ${maxMb}MB limit` }, { status: 400 });
+  }
+  const ext = file.name.split('.').pop()?.toLowerCase() || (kind === 'image' ? 'jpg' : 'bin');
+  const filename = `${randomUUID()}.${ext}`;
+  const path = markImagePath(userId, filename);
+
+  const { error } = await supabase.storage
+    .from(MARK_IMAGES_BUCKET)
+    .upload(path, file, { upsert: false, contentType: file.type });
+
+  if (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[upload-image] Storage upload failed:', error.message);
+    }
+    if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
+      return NextResponse.json(
+        {
+          error: `Storage bucket "${MARK_IMAGES_BUCKET}" not found. Create it in Supabase Storage and allow authenticated uploads. You can still post text-only.`,
+          code: 'BUCKET_NOT_FOUND',
+        },
+        { status: 500 }
+      );
+    }
+    return NextResponse.json({ error: `Attachment upload failed: ${error.message}` }, { status: 500 });
+  }
+
+  const durationMsRaw = formData.get('duration_ms') as string | null;
+  const widthRaw = formData.get('width') as string | null;
+  const heightRaw = formData.get('height') as string | null;
+
+  if (kind === 'image') {
+    const { data: { publicUrl } } = supabase.storage
+      .from(MARK_IMAGES_BUCKET)
+      .getPublicUrl(path);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[upload-image] Upload-only image saved, publicUrl:', publicUrl);
+    }
+    return NextResponse.json({
+      path,
+      kind,
+      publicUrl,
+      mime_type: file.type,
+      size_bytes: file.size,
+      duration_ms: durationMsRaw ? parseInt(durationMsRaw, 10) : null,
+      width: widthRaw ? parseInt(widthRaw, 10) : null,
+      height: heightRaw ? parseInt(heightRaw, 10) : null,
+    });
+  }
+  return NextResponse.json({
+    path,
+    kind,
+    mime_type: file.type,
+    size_bytes: file.size,
+    duration_ms: durationMsRaw ? parseInt(durationMsRaw, 10) : null,
+    width: widthRaw ? parseInt(widthRaw, 10) : null,
+    height: heightRaw ? parseInt(heightRaw, 10) : null,
+  });
+}
+
 export async function POST(request: Request) {
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
@@ -25,13 +97,19 @@ export async function POST(request: Request) {
 
   const formData = await request.formData();
   const file = formData.get('file') as File | null;
-  const markId = (formData.get('mark_id') as string | null)?.trim() ?? '';
+  const markIdRaw = (formData.get('mark_id') as string | null)?.trim() ?? '';
+  const hasMarkId = !!markIdRaw && /^[0-9a-f-]{36}$/i.test(markIdRaw);
+
   if (!file) {
     return NextResponse.json({ error: 'Missing attachment file' }, { status: 400 });
   }
-  if (!markId || !/^[0-9a-f-]{36}$/i.test(markId)) {
-    return NextResponse.json({ error: 'Valid mark_id is required' }, { status: 400 });
+
+  // Upload-only flow: no mark_id. Caller will create mark with image_url then optionally attach-media.
+  if (!hasMarkId) {
+    return uploadOnly(supabase, user.id, file, formData);
   }
+
+  const markId = markIdRaw;
   const { data: markRow } = await supabase
     .from('marks')
     .select('id, user_id')
@@ -52,7 +130,6 @@ export async function POST(request: Request) {
   }
 
   const ext = file.name.split('.').pop()?.toLowerCase() || 'jpg';
-
   const filename = `${randomUUID()}.${ext}`;
   const path = markMediaPath(user.id, markId, filename);
 
@@ -61,6 +138,9 @@ export async function POST(request: Request) {
     .upload(path, file, { upsert: false, contentType: file.type });
 
   if (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[upload-image] Storage upload failed:', error.message);
+    }
     if (error.message.toLowerCase().includes('bucket') && error.message.toLowerCase().includes('not found')) {
       return NextResponse.json(
         {
@@ -90,20 +170,28 @@ export async function POST(request: Request) {
     poster_path: null,
   });
   if (mediaErr) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[upload-image] mark_media insert failed:', mediaErr.message);
+    }
     return NextResponse.json({ error: `Media metadata save failed: ${mediaErr.message}` }, { status: 500 });
   }
 
-  // For images, set mark.image_url to the public URL so the feed can render it
   if (kind === 'image') {
     const { data: { publicUrl } } = supabase.storage
       .from(MARK_IMAGES_BUCKET)
       .getPublicUrl(path);
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[upload-image] Mark image saved, image_url:', publicUrl);
+    }
     const { error: updateErr } = await supabase
       .from('marks')
       .update({ image_url: publicUrl })
       .eq('id', markId)
       .eq('user_id', user.id);
     if (updateErr) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[upload-image] Failed to set mark image_url:', updateErr.message);
+      }
       return NextResponse.json({ error: `Failed to set mark image_url: ${updateErr.message}` }, { status: 500 });
     }
     return NextResponse.json({ path, kind, publicUrl });

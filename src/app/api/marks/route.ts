@@ -110,10 +110,16 @@ export async function POST(request: Request) {
   }
 
   if (error) {
+    if (process.env.NODE_ENV === 'development') {
+      console.error('[marks POST] Insert failed:', error.message);
+    }
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
   if (!data) {
     return NextResponse.json({ error: 'Failed to create mark' }, { status: 500 });
+  }
+  if (process.env.NODE_ENV === 'development' && imageUrl) {
+    console.log('[marks POST] Mark created with image_url:', imageUrl);
   }
   return NextResponse.json({ id: data.id });
 }

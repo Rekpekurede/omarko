@@ -223,6 +223,48 @@ export function CreateMarkModal() {
     }
 
     setSubmitting(true);
+    const isImageAttachment = attachmentFile && attachmentMeta?.kind === 'image';
+    let imageUrl: string | null = null;
+    let uploadPayload: { path: string; kind: string; mime_type: string; size_bytes: number; duration_ms?: number; width?: number; height?: number } | null = null;
+
+    // Image: upload first so the mark is created with image_url set (feed will show it).
+    if (isImageAttachment && attachmentFile) {
+      const uploadForm = new FormData();
+      uploadForm.append('file', attachmentFile);
+      if (attachmentMeta?.durationMs) uploadForm.append('duration_ms', String(attachmentMeta.durationMs));
+      if (attachmentMeta?.width) uploadForm.append('width', String(attachmentMeta.width));
+      if (attachmentMeta?.height) uploadForm.append('height', String(attachmentMeta.height));
+      const uploadRes = await fetch('/api/marks/upload-image', {
+        method: 'POST',
+        body: uploadForm,
+      });
+      const uploadData = await uploadRes.json().catch(() => ({}));
+      if (!uploadRes.ok) {
+        const errMsg = uploadData.error ?? 'Image upload failed. Try again.';
+        if (process.env.NODE_ENV === 'development') {
+          console.error('[CreateMarkModal] Image upload failed', uploadRes.status, uploadData);
+        }
+        setError(errMsg);
+        setSubmitting(false);
+        return;
+      }
+      imageUrl = uploadData.publicUrl ?? null;
+      uploadPayload = {
+        path: uploadData.path,
+        kind: uploadData.kind,
+        mime_type: uploadData.mime_type ?? attachmentFile.type,
+        size_bytes: uploadData.size_bytes ?? attachmentFile.size,
+        duration_ms: uploadData.duration_ms,
+        width: uploadData.width,
+        height: uploadData.height,
+      };
+      if (!imageUrl) {
+        setError('Image upload did not return a URL.');
+        setSubmitting(false);
+        return;
+      }
+    }
+
     const res = await fetch('/api/marks', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -233,16 +275,35 @@ export function CreateMarkModal() {
         claim_type: selectedClaimType?.name,
         category: 'General',
         has_attachment: !!attachmentFile,
+        image_url: imageUrl || undefined,
       }),
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
+      if (process.env.NODE_ENV === 'development') {
+        console.error('[CreateMarkModal] Mark create failed', res.status, data);
+      }
       setError(data.error ?? 'Failed to post');
       setSubmitting(false);
       return;
     }
     const markId = data.id as string | undefined;
-    if (attachmentFile && markId) {
+
+    // Attach media metadata for image (upload was already done; link path to this mark).
+    if (markId && uploadPayload && uploadPayload.kind === 'image') {
+      const attachRes = await fetch(`/api/marks/${markId}/attach-media`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(uploadPayload),
+      });
+      if (!attachRes.ok && process.env.NODE_ENV === 'development') {
+        const attachData = await attachRes.json().catch(() => ({}));
+        console.warn('[CreateMarkModal] attach-media failed (mark and image are ok)', attachRes.status, attachData);
+      }
+    }
+
+    // Audio/video: mark already created, upload file and link to mark.
+    if (attachmentFile && markId && !isImageAttachment) {
       const uploadForm = new FormData();
       uploadForm.append('file', attachmentFile);
       uploadForm.append('mark_id', markId);
@@ -255,11 +316,13 @@ export function CreateMarkModal() {
       });
       const uploadData = await uploadRes.json().catch(() => ({}));
       if (!uploadRes.ok) {
-        const errMsg = uploadData.error ?? 'Attachment upload failed after posting.';
+        const errMsg = uploadData.error ?? 'Attachment upload failed.';
         if (process.env.NODE_ENV === 'development') {
-          console.error('[CreateMarkModal] Upload failed', uploadRes.status, uploadData);
+          console.error('[CreateMarkModal] Audio/video upload failed', uploadRes.status, uploadData);
         }
-        setUploadNotice(errMsg);
+        setError(errMsg);
+        setSubmitting(false);
+        return;
       }
     }
 

@@ -84,8 +84,13 @@ export function MarkCard({
   const [opposeVotes, setOpposeVotes] = useState(mark.oppose_votes ?? 0);
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [pending, setPending] = useState(false);
+  const [imageLoadError, setImageLoadError] = useState(false);
   const [witnessGlow, setWitnessGlow] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+
+  useEffect(() => {
+    setImageLoadError(false);
+  }, [mark.id, mark.image_url]);
   const [lightboxUrl, setLightboxUrl] = useState('');
 
   useEffect(() => {
@@ -229,27 +234,44 @@ export function MarkCard({
         )}
       </div>
 
-      {mark.content && (
-        <p className="mark-text mt-4 text-text-primary line-clamp-3">
-          {mark.content}
-        </p>
-      )}
-      {mark.image_url && (
-        <button
-          type="button"
-          onClick={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            setLightboxUrl(mark.image_url ?? '');
-            setLightboxOpen(true);
-          }}
-          className="mt-6 block w-full cursor-zoom-in group text-left"
-        >
-          <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-[12px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src={mark.image_url} alt="" className="h-full w-full object-cover" loading="lazy" />
-          </div>
-        </button>
+      {(mark.image_url || mark.content) && (
+        <>
+          {mark.content && (
+            <p className="mark-text mt-4 text-text-primary line-clamp-3">
+              {mark.content}
+            </p>
+          )}
+          {mark.image_url && (
+            <button
+              type="button"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                if (imageLoadError) return;
+                setLightboxUrl(mark.image_url ?? '');
+                setLightboxOpen(true);
+              }}
+              className="mt-6 block w-full cursor-zoom-in group text-left"
+            >
+              <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-[12px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02]">
+                {imageLoadError ? (
+                  <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-[12px] bg-[var(--border-subtle)] text-[var(--text-muted)] font-body text-sm">
+                    Image unavailable
+                  </div>
+                ) : (
+                  /* eslint-disable-next-line @next/next/no-img-element */
+                  <img
+                    src={mark.image_url}
+                    alt=""
+                    className="h-full w-full object-cover"
+                    loading="lazy"
+                    onError={() => setImageLoadError(true)}
+                  />
+                )}
+              </div>
+            </button>
+          )}
+        </>
       )}
 
       <ImageLightbox
