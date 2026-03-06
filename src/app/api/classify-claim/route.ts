@@ -48,12 +48,16 @@ function pickClaimType(input: string): { claimType: ClaimType; confidence: Confi
     return { claimType: 'Strategy', confidence: 'high' };
   if (/\b(first|fastest|most|record|achievement)\b/.test(lower))
     return { claimType: 'Record', confidence: 'high' };
+  if (/\b(i observed|my observation|this observation|i noticed|my observation of)\b/.test(lower))
+    return { claimType: 'Observation', confidence: 'high' };
 
   // Medium matches
   if (/\b(will|going to|forecast|predict|by 20\d{2}|soon)\b/.test(lower))
     return { claimType: 'Prediction', confidence: 'medium' };
-  if (/\b(discovered|found|uncovered|noticed|observed)\b/.test(lower))
+  if (/\b(discovered|found|uncovered)\b/.test(lower))
     return { claimType: 'Discovery', confidence: 'medium' };
+  if (/\b(observed|observation|noticed|documented|witnessed)\b/.test(lower))
+    return { claimType: 'Observation', confidence: 'medium' };
   if (/\b(created|made|built|wrote|composed|design)\b/.test(lower))
     return { claimType: 'Creation', confidence: 'medium' };
   if (/\b(method|framework|process|steps|technique)\b/.test(lower))

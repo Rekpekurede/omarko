@@ -79,6 +79,7 @@ export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
   Formula: 'A mathematical, scientific, or strategic formula',
   Design: 'A visual, product, or structural design',
   Movement: 'A cultural, social, or artistic movement you started',
+  Observation: 'Something you noticed or documented about the world',
   Trend: 'A pattern you identified and named before others',
   Story: 'A narrative, script, or fictional work you authored',
   Strategy: 'A plan or approach you devised',
