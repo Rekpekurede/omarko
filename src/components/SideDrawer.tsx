@@ -3,6 +3,7 @@
 import { useCallback, useEffect } from 'react';
 import Link from 'next/link';
 import { useDrawer } from '@/context/DrawerContext';
+import { signOut } from '@/lib/actions';
 import { Avatar } from './Avatar';
 
 interface SideDrawerProps {
@@ -13,7 +14,6 @@ interface SideDrawerProps {
 const menuItems = [
   { label: 'Home', href: '/', icon: '🏠', useUsername: false },
   { label: 'Profile', href: '/profile/', icon: '👤', useUsername: true },
-  { label: 'Historical Figures', href: '/historical', icon: '🏛', useUsername: false },
   { label: 'Settings', href: '/settings', icon: '⚙️', useUsername: false },
 ] as const;
 
@@ -89,6 +89,16 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
                 </Link>
               );
             })}
+            <form action={signOut} className="border-l-[3px] border-transparent">
+              <button
+                type="submit"
+                onClick={handleLinkClick}
+                className="flex w-full items-center gap-3 rounded-r-lg py-3 px-5 text-left text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary"
+              >
+                <span className="text-xl" aria-hidden>🚪</span>
+                <span>Sign out</span>
+              </button>
+            </form>
           </nav>
         </div>
       </div>

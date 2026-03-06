@@ -1,4 +1,5 @@
 'use client';
+/* eslint-disable @next/next/no-img-element -- PWA/offline: img with loading=lazy used so SOI media works from cache without next/image optimizations */
 
 import { useEffect, useState } from 'react';
 

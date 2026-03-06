@@ -1,5 +1,6 @@
 'use client';
 
+/** Audit: removed dev-only console.log (comment posted). */
 import { useRouter } from 'next/navigation';
 import { useEffect, useRef, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
@@ -125,12 +126,6 @@ export function MarkDetailTabs({
       setCommentError(payload.error ?? 'Failed to post comment');
       setCommentSubmitting(false);
       return;
-    }
-    if (process.env.NODE_ENV !== 'production') {
-      console.log('[MarkDetailTabs] comment posted', {
-        markId,
-        comments_count: payload.comments_count,
-      });
     }
     setCommentContent('');
     router.refresh();

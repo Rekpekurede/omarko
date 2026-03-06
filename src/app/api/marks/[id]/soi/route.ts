@@ -19,16 +19,18 @@ export async function GET(
     return NextResponse.json({ error: 'Mark not found' }, { status: 404 });
   }
 
-  const { data: soi, error } = await supabase
-    .from('signs_of_influence')
-    .select('id, mark_id, url, created_at')
-    .eq('mark_id', markId)
-    .order('created_at', { ascending: true });
+  try {
+    const { data: soi, error } = await supabase
+      .from('signs_of_influence')
+      .select('id, mark_id, url, created_at')
+      .eq('mark_id', markId)
+      .order('created_at', { ascending: true });
 
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    if (error) return NextResponse.json({ soi: [] });
+    return NextResponse.json({ soi: soi ?? [] });
+  } catch {
+    return NextResponse.json({ soi: [] });
   }
-  return NextResponse.json({ soi: soi ?? [] });
 }
 
 /** POST: add a sign of influence (mark owner only) */

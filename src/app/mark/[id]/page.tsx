@@ -14,14 +14,14 @@ import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 
 interface PageProps {
   params: Promise<{ id: string }>;
-  searchParams: Promise<{ tab?: string }>;
+  searchParams: Promise<{ tab?: string; edit?: string }>;
 }
 
 export const revalidate = 0;
 
 export default async function MarkPage({ params, searchParams }: PageProps) {
   const { id } = await params;
-  const { tab } = await searchParams;
+  const { tab, edit } = await searchParams;
   const supabase = await createClient();
   const { data: { user } } = await supabase.auth.getUser();
 
@@ -116,11 +116,15 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const currentTab = tab === 'comments' ? 'comments' : tab === 'challenges' ? 'challenges' : tab === 'versions' ? 'versions' : tab === 'soi' ? 'soi' : 'overview';
 
   let soiCount = 0;
-  const { count: soiCountResult } = await supabase
-    .from('signs_of_influence')
-    .select('id', { count: 'exact', head: true })
-    .eq('mark_id', id);
-  soiCount = soiCountResult ?? 0;
+  try {
+    const { count: soiCountResult } = await supabase
+      .from('signs_of_influence')
+      .select('id', { count: 'exact', head: true })
+      .eq('mark_id', id);
+    soiCount = soiCountResult ?? 0;
+  } catch {
+    soiCount = 0;
+  }
 
   return (
     <PageContainer className="space-y-6">
@@ -173,6 +177,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
               media={media}
               markId={mark.id}
               canEdit={isOwner && !hasChallenges && !isWithdrawn}
+              initialEdit={tab === 'edit' || edit === '1'}
             />
             {versionCount > 0 && (
               <p className="mt-2">

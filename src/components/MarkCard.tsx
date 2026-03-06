@@ -1,7 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { MarkStatusLabel } from './MarkStatusLabel';
 import { BookmarkButton } from './BookmarkButton';
 import { Avatar } from './Avatar';
@@ -54,9 +55,13 @@ export function MarkCard({
   showBookmark = false,
   currentVote = null,
   canVote = false,
+  currentUserId = null,
   onVoteUpdate,
   onVoteSuccess,
 }: MarkCardProps) {
+  const router = useRouter();
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [menuOpen, setMenuOpen] = useState(false);
   const showChallenge = showDisputeButtonProp ?? showChallengeButton ?? true;
   const profile = getProfile(mark.profiles);
   const historicalName = getHistoricalName(mark.historical_profiles);
@@ -64,11 +69,23 @@ export function MarkCard({
   const username = profile?.username ?? 'unknown';
   const avatarUrl = profile?.avatar_url ?? null;
   const isWithdrawn = !!mark.withdrawn_at;
+  const isOwner = !!currentUserId && currentUserId === mark.user_id;
+  const challengeCount = mark.dispute_count ?? 0;
+  const hasChallenges = challengeCount > 0;
 
   const [supportVotes, setSupportVotes] = useState(mark.support_votes ?? 0);
   const [opposeVotes, setOpposeVotes] = useState(mark.oppose_votes ?? 0);
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
   const [pending, setPending] = useState(false);
+
+  useEffect(() => {
+    if (!menuOpen) return;
+    const close = (e: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false);
+    };
+    document.addEventListener('click', close);
+    return () => document.removeEventListener('click', close);
+  }, [menuOpen]);
 
   const handleVote = async (type: 'support' | 'oppose') => {
     if (!canVote || pending) return;
@@ -92,7 +109,6 @@ export function MarkCard({
 
   const commentsCount = mark.comments_count ?? 0;
   const soiCount = mark.soi_count ?? 0;
-  const challengeCount = mark.dispute_count ?? 0;
   const domainBadgeClass = (mark.domain && DOMAIN_BADGE_CLASS[mark.domain]) ? DOMAIN_BADGE_CLASS[mark.domain] : DOMAIN_DEFAULT;
 
   return (
@@ -124,13 +140,61 @@ export function MarkCard({
         </div>
         <div className="flex shrink-0 items-center gap-2">
           <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-text-muted" />
-          {mark.status !== 'ACTIVE' && <MarkStatusLabel status={mark.status} />}
-          {isWithdrawn && (
-            <span className="font-body text-[0.75rem] font-medium text-text-muted">Withdrawn</span>
+          {(mark.status !== 'ACTIVE' || isWithdrawn) && (
+            <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
           )}
-          <button type="button" className="cursor-pointer rounded p-1 text-text-muted transition-colors duration-150 hover:text-text-primary" aria-label="More options">
-            <span className="text-lg leading-none">⋯</span>
-          </button>
+          {isOwner && !isHistorical && (
+            <div className="relative" ref={menuRef}>
+              <button
+                type="button"
+                onClick={() => setMenuOpen((o) => !o)}
+                className="cursor-pointer rounded p-1 text-text-muted transition-colors duration-150 hover:text-text-primary"
+                aria-label="More options"
+                aria-expanded={menuOpen ? 'true' : 'false'}
+              >
+                <span className="text-lg leading-none">⋯</span>
+              </button>
+              {menuOpen && (
+                <div className="absolute right-0 top-full z-10 mt-1 min-w-[180px] rounded-lg border border-border bg-bg-card py-1 shadow-lg">
+                  <Link
+                    href={`/mark/${mark.id}?edit=1`}
+                    onClick={() => setMenuOpen(false)}
+                    className="block cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
+                  >
+                    Edit
+                  </Link>
+                  {!isWithdrawn && (
+                    <>
+                      <button
+                        type="button"
+                        onClick={async () => {
+                          setMenuOpen(false);
+                          const res = await fetch(`/api/marks/${mark.id}/withdraw`, { method: 'POST' });
+                          if (res.ok) router.refresh();
+                        }}
+                        className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
+                      >
+                        Withdraw Claim
+                      </button>
+                      {hasChallenges && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setMenuOpen(false);
+                            const res = await fetch(`/api/marks/${mark.id}/concede`, { method: 'POST' });
+                            if (res.ok) router.refresh();
+                          }}
+                          className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
+                        >
+                          Concede to Challenge
+                        </button>
+                      )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
+          )}
         </div>
       </div>
 
@@ -183,11 +247,17 @@ export function MarkCard({
               <span>{challengeCount}</span>
               <span>Challenge</span>
             </span>
-          ) : (
+          ) : isOwner ? (
             <Link href={`/mark/${mark.id}`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer">
               <span aria-hidden>✖</span>
               <span>{challengeCount}</span>
               <span>Challenge</span>
+            </Link>
+          ) : (
+            <Link href={`/mark/${mark.id}?tab=challenges`} className="flex items-center gap-1.5 hover:text-accent transition-colors duration-150 cursor-pointer">
+              <span aria-hidden>✖</span>
+              <span>{challengeCount}</span>
+              <span>Challenge this Mark</span>
             </Link>
           )
         )}

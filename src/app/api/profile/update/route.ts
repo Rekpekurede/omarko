@@ -1,3 +1,4 @@
+/** Audit: removed console.log (upsert response). */
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
 
@@ -70,12 +71,6 @@ export async function PATCH(request: Request) {
     .select('id, username, bio, avatar_url')
     .single();
 
-  console.log('[ProfileUpdate] upsert response', {
-    userId: user.id,
-    payloadKeys: Object.keys(payload),
-    data,
-    error,
-  });
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }

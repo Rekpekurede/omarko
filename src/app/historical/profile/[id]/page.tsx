@@ -87,7 +87,7 @@ export default async function HistoricalProfilePage({ params }: PageProps) {
           {figure.avatar_url && (
             <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={figure.avatar_url} alt="" className="h-full w-full object-cover" />
+              <img src={figure.avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" />
             </div>
           )}
           <div className="min-w-0 flex-1">

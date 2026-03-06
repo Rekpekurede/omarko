@@ -14,10 +14,11 @@ interface MarkContentWithEditProps {
   }>;
   markId: string;
   canEdit: boolean;
+  initialEdit?: boolean;
 }
 
-export function MarkContentWithEdit({ content, imageUrl, media = [], markId, canEdit }: MarkContentWithEditProps) {
-  const [editing, setEditing] = useState(false);
+export function MarkContentWithEdit({ content, imageUrl, media = [], markId, canEdit, initialEdit = false }: MarkContentWithEditProps) {
+  const [editing, setEditing] = useState(initialEdit);
   const firstMedia = media[0] ?? null;
   const effectiveImageUrl = firstMedia?.kind === 'image' ? firstMedia.signed_url : imageUrl;
 
@@ -38,7 +39,7 @@ export function MarkContentWithEdit({ content, imageUrl, media = [], markId, can
       {effectiveImageUrl && (
         <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src={effectiveImageUrl} alt="" className="max-h-[80vh] w-full object-contain" />
+          <img src={effectiveImageUrl} alt="" className="max-h-[80vh] w-full object-contain" loading="lazy" />
         </div>
       )}
       {firstMedia?.kind === 'audio' && firstMedia.signed_url && (

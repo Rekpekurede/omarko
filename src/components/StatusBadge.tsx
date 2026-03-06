@@ -6,6 +6,8 @@ const statusStyles: Record<MarkStatus, string> = {
   DISPUTED: 'bg-yellow-200 text-yellow-900',
   CHAMPION: 'bg-green-200 text-green-900',
   SUPPLANTED: 'bg-red-200 text-red-900',
+  CONCEDED: 'border border-border bg-transparent text-text-muted',
+  WITHDRAWN: 'bg-bg-secondary border border-border text-text-primary',
 };
 
 export function StatusBadge({ status }: { status: MarkStatus }) {

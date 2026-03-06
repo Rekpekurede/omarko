@@ -3,7 +3,9 @@ export type MarkStatus =
   | 'CHALLENGED'
   | 'DISPUTED'
   | 'CHAMPION'
-  | 'SUPPLANTED';
+  | 'SUPPLANTED'
+  | 'CONCEDED'
+  | 'WITHDRAWN';
 
 export type VoteType = 'SUPPORT' | 'OPPOSE';
 

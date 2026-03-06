@@ -1,3 +1,4 @@
+/** Audit: removed debug console.log and unused profileSource. */
 import Link from 'next/link';
 import { createClient } from '@/lib/supabase/server';
 import { MarkCard } from '@/components/MarkCard';
@@ -68,7 +69,6 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     // Profile lookup: RPC first (bypasses RLS), fallback to direct query with ilike
     let profileRows: { id: string; username: string; display_name?: string | null; bio?: string | null; location?: string | null; website?: string | null; avatar_url?: string | null; default_domain?: string | null; default_claim_type?: string | null; disputes_raised?: number; disputes_won?: number; disputes_lost?: number; disputes_conceded?: number }[] | null = null;
     let profileError: unknown = null;
-    let profileSource: 'rpc' | 'direct' | 'none' = 'none';
 
     try {
       const rpcRes = await supabase.rpc('get_profile_by_username', { p_username: uname });
@@ -84,7 +84,6 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     }
 
     profile = profileRows?.[0] ?? null;
-    if (profile) profileSource = 'rpc';
 
     // Fallback: direct profiles query (case-insensitive via ilike)
     if (!profile) {
@@ -95,7 +94,6 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
           .ilike('username', uname)
           .limit(1);
         profile = directRows?.[0] ?? null;
-        if (profile) profileSource = 'direct';
       } catch (directErr) {
         console.error('[ProfilePage] profile direct fallback error', directErr);
       }
@@ -117,13 +115,6 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     } catch (freshErr) {
       console.error('[ProfilePage] profile hydrate error', freshErr);
     }
-    console.log('[ProfilePage] resolved profile', {
-      username: profile.username,
-      source: profileSource,
-      hasBio: !!profile.bio,
-      hasAvatarUrl: !!profile.avatar_url,
-    });
-
     const isOwner = !!user && user.id === profile.id;
     const currentTab = (tab === 'challenges' || tab === 'comments' || tab === 'supported') ? tab : 'marks';
 
@@ -184,14 +175,18 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const commentsCountMap: Record<string, number> = {};
         const soiCountMap: Record<string, number> = {};
         if (markIds.length > 0) {
-          const [commentsRes, soiRes] = await Promise.all([
-            supabase.from('comments').select('mark_id').in('mark_id', markIds),
-            supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds),
-          ]);
+          const commentsRes = await supabase.from('comments').select('mark_id').in('mark_id', markIds);
+          let soiRows: { mark_id: string }[] = [];
+          try {
+            const soiRes = await supabase.from('signs_of_influence').select('mark_id').in('mark_id', markIds);
+            soiRows = soiRes.data ?? [];
+          } catch {
+            soiRows = [];
+          }
           for (const row of commentsRes.data ?? []) {
             commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
           }
-          for (const row of soiRes.data ?? []) {
+          for (const row of soiRows) {
             soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
           }
         }
@@ -253,14 +248,18 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const commentsCountMap: Record<string, number> = {};
         const soiCountMap: Record<string, number> = {};
         if (supportedMarkIds.length > 0) {
-          const [commentsRes, soiRes] = await Promise.all([
-            supabase.from('comments').select('mark_id').in('mark_id', supportedMarkIds),
-            supabase.from('signs_of_influence').select('mark_id').in('mark_id', supportedMarkIds),
-          ]);
+          const commentsRes = await supabase.from('comments').select('mark_id').in('mark_id', supportedMarkIds);
+          let soiRows: { mark_id: string }[] = [];
+          try {
+            const soiRes = await supabase.from('signs_of_influence').select('mark_id').in('mark_id', supportedMarkIds);
+            soiRows = soiRes.data ?? [];
+          } catch {
+            soiRows = [];
+          }
           for (const row of commentsRes.data ?? []) {
             commentsCountMap[row.mark_id] = (commentsCountMap[row.mark_id] ?? 0) + 1;
           }
-          for (const row of soiRes.data ?? []) {
+          for (const row of soiRows) {
             soiCountMap[row.mark_id] = (soiCountMap[row.mark_id] ?? 0) + 1;
           }
         }

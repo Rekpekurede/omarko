@@ -43,7 +43,7 @@ export default async function NotificationsPage() {
 
   return (
     <PageContainer className="space-y-4">
-      <h1 className="text-2xl font-semibold">Alerts</h1>
+      <h1 className="text-2xl font-semibold">Notifications</h1>
       <NotificationsList
         initialNotifications={notifications}
         initialNextCursor={nextCursor}

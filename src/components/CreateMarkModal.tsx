@@ -1,5 +1,6 @@
 'use client';
 
+/** Audit: removed dev console.log (upload attachment). */
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { DOMAINS } from '@/lib/types';
@@ -221,9 +222,6 @@ export function CreateMarkModal() {
       if (attachmentMeta?.durationMs) uploadForm.append('duration_ms', String(attachmentMeta.durationMs));
       if (attachmentMeta?.width) uploadForm.append('width', String(attachmentMeta.width));
       if (attachmentMeta?.height) uploadForm.append('height', String(attachmentMeta.height));
-      if (process.env.NODE_ENV === 'development') {
-        console.log('[CreateMarkModal] Uploading attachment', { markId, kind: attachmentMeta?.kind, size: attachmentFile.size });
-      }
       const uploadRes = await fetch('/api/marks/upload-image', {
         method: 'POST',
         body: uploadForm,
