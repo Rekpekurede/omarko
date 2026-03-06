@@ -33,6 +33,7 @@ export function CreateMarkModal() {
   const [toast, setToast] = useState<string | null>(null);
   const [soiUrls, setSoiUrls] = useState<string[]>([]);
   const [soiUrlInput, setSoiUrlInput] = useState('');
+  const [claimTypeOptions, setClaimTypeOptions] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -69,6 +70,16 @@ export function CreateMarkModal() {
       active = false;
     };
   }, [isOpen, domainTouched, claimTypeTouched]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+    fetch('/api/claim-types')
+      .then((res) => (res.ok ? res.json() : null))
+      .then((data) => {
+        if (data?.results?.length) setClaimTypeOptions(data.results);
+      })
+      .catch(() => {});
+  }, [isOpen]);
 
   const resetForm = () => {
     setContent('');
@@ -276,141 +287,164 @@ export function CreateMarkModal() {
       )}
       {isOpen && (
         <div
-          className="fixed inset-0 z-[60] flex items-end bg-black/50 backdrop-blur-sm sm:items-center sm:justify-center"
+          className="fixed inset-0 z-[60] flex items-end bg-black/60 backdrop-blur-sm sm:items-center sm:justify-center"
           onMouseDown={(e) => {
             if (e.target === e.currentTarget) onClose();
           }}
         >
-          <div className="relative w-full max-h-[85vh] overflow-y-auto rounded-t-sm border border-border bg-card shadow-card dark:border-primary/10 dark:bg-card sm:max-w-2xl sm:rounded-sm">
-            <div className="sticky top-0 z-10 border-b border-border bg-card dark:bg-card">
-              <div className="flex items-center justify-between border-b border-border px-4 py-4 sm:px-6">
-                <h2 className="font-display text-xl font-semibold tracking-tight text-foreground">Create mark</h2>
-                <button
-                  type="button"
-                  onClick={onClose}
-                  className="tap-press font-mono p-2 text-muted-foreground transition hover:bg-muted hover:text-foreground"
-                  aria-label="Close composer"
-                >
-                  ×
-                </button>
+          <div className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-[16px] border border-[var(--border)] bg-[var(--bg-secondary)] p-7 shadow-xl sm:max-w-[520px] sm:rounded-2xl">
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h2 className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
+                  Leave Your Mark
+                </h2>
+                <p className="mt-1 font-body text-[0.85rem] italic text-[var(--text-secondary)]">
+                  Declare what you&apos;ve created, discovered, or thought of first.
+                </p>
               </div>
+              <button
+                type="button"
+                onClick={onClose}
+                className="shrink-0 rounded p-1.5 text-[var(--text-muted)] transition-colors hover:text-[var(--text-primary)]"
+                aria-label="Close"
+              >
+                <span className="text-lg leading-none">✕</span>
+              </button>
             </div>
 
-            <form onSubmit={onSubmit} className="space-y-5 p-4 sm:p-6">
-              <div className="border-b border-border pb-5">
-                <label className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Claim type</label>
-                <button
-                  type="button"
-                  onClick={() => setIsClaimTypePickerOpen(true)}
-                  className="tap-press mt-2 flex min-h-[48px] w-full items-center justify-between rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground transition hover:border-foreground/25 focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-primary"
-                >
-                  <span className={selectedClaimType ? 'text-foreground' : 'text-muted-foreground'}>
-                    {selectedClaimType?.name ?? 'Select claim type'}
-                  </span>
-                  <span className="text-xs text-muted-foreground">Change</span>
-                </button>
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Pick the label that best matches what you&apos;re claiming.
-                </p>
+            <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-5">
+              {/* Claim type pills */}
+              <div className="flex flex-col gap-2">
+                <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                  CLAIM TYPE
+                </label>
+                <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
+                  {claimTypeOptions.map((opt) => (
+                      <button
+                        key={opt.id}
+                        type="button"
+                        onClick={() => {
+                          setSelectedClaimType(opt);
+                          setClaimTypeTouched(true);
+                        }}
+                        className={`shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors ${
+                          selectedClaimType?.id === opt.id
+                            ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg-primary)]'
+                            : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                        }`}
+                      >
+                        {opt.name}
+                      </button>
+                    ))}
+                </div>
                 {aiLoading && (
-                  <p className="mt-1 text-xs text-muted-foreground">Analyzing content...</p>
+                  <p className="text-xs text-[var(--text-muted)]">Analyzing content...</p>
                 )}
                 {!aiLoading && aiSuggestion && !aiSuggestionDismissed && (
-                  <div className="mt-2 rounded-lg border border-border bg-muted/50 p-3 text-sm">
-                    <p className="font-medium text-foreground">AI suggestion</p>
-                    <p className="mt-1 text-muted-foreground">Claim type: <span className="text-foreground">{aiSuggestion.claimType}</span></p>
-                    <p className="text-muted-foreground">Domain: <span className="text-foreground">{aiSuggestion.domain}</span></p>
+                  <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] p-3 text-sm">
+                    <p className="font-medium text-[var(--text-primary)]">AI suggestion</p>
+                    <p className="mt-1 text-[var(--text-secondary)]">Claim type: <span className="text-[var(--text-primary)]">{aiSuggestion.claimType}</span></p>
+                    <p className="text-[var(--text-secondary)]">Domain: <span className="text-[var(--text-primary)]">{aiSuggestion.domain}</span></p>
                     <div className="mt-2 flex items-center gap-2">
                       <button
                         type="button"
                         onClick={applyAiSuggestion}
-                        className="rounded-md border border-border bg-card px-2.5 py-1 text-xs text-foreground hover:bg-accent"
+                        className="rounded-md border border-[var(--border)] bg-[var(--bg-card)] px-2.5 py-1 text-xs text-[var(--text-primary)] hover:bg-[var(--accent)] hover:text-[var(--bg-primary)]"
                       >
                         Accept
                       </button>
                       <button
                         type="button"
                         onClick={() => {
-                          setIsClaimTypePickerOpen(true);
                           setClaimTypeTouched(true);
                           setDomainTouched(true);
                           setAiSuggestionDismissed(true);
                         }}
-                        className="rounded-md border border-transparent px-2.5 py-1 text-xs text-muted-foreground hover:text-foreground"
+                        className="rounded-md px-2.5 py-1 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                       >
-                        Change
+                        Dismiss
                       </button>
                     </div>
                   </div>
                 )}
               </div>
 
-              <div className="border-b border-border pb-5">
-                <label htmlFor="composer-domain" className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Domain</label>
-                <select
-                  id="composer-domain"
-                  value={domain}
-                  onChange={(e) => {
-                    setDomain(e.target.value as (typeof DOMAINS)[number]);
-                    setDomainTouched(true);
-                  }}
-                  className="mt-2 min-h-[48px] w-full rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground transition focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
-                >
+              {/* Domain pills */}
+              <div className="flex flex-col gap-2">
+                <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                  DOMAIN
+                </label>
+                <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
                   {DOMAINS.map((d) => (
-                    <option key={d} value={d}>{d}</option>
-                  ))}
-                </select>
+                      <button
+                        key={d}
+                        type="button"
+                        onClick={() => {
+                          setDomain(d as (typeof DOMAINS)[number]);
+                          setDomainTouched(true);
+                        }}
+                        className={`shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors ${
+                          domain === d
+                            ? 'border-[var(--accent)] bg-[var(--accent)] font-semibold text-[var(--bg-primary)]'
+                            : 'border-[var(--border)] text-[var(--text-secondary)] hover:border-[var(--text-muted)]'
+                        }`}
+                      >
+                        {d}
+                      </button>
+                    ))}
+                </div>
               </div>
 
-              <div className="border-b border-border pb-5">
-                <label htmlFor="composer-content" className="font-mono block text-[11px] font-medium uppercase tracking-wider text-muted-foreground">Text content (optional)</label>
+              {/* What's your Mark? */}
+              <div className="flex flex-col gap-2">
+                <label htmlFor="composer-content" className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                  What&apos;s your Mark?
+                </label>
                 <textarea
                   id="composer-content"
-                  rows={5}
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="What&apos;s yours?"
-                  className="mt-2 w-full rounded-sm border border-border bg-muted/30 px-4 py-3 font-display text-foreground placeholder:text-muted-foreground focus:border-primary focus:outline-none focus:ring-1 focus:ring-primary"
+                  placeholder="Describe what you're claiming as yours..."
+                  className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 font-display text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
+                  rows={4}
                 />
-                <p className="mt-1 text-xs text-muted-foreground">
-                  Example: &quot;Silent Hustle&quot; - a phrase you coined
-                </p>
               </div>
-              <div>
-                <label className="block text-sm font-medium text-black dark:text-white">Attachment (optional)</label>
+
+              {/* Attachment */}
+              <div className="flex flex-col gap-2">
                 <input
                   ref={inputRef}
                   type="file"
                   accept="image/*,audio/*,video/*"
                   onChange={onAttachmentChange}
                   aria-label="Upload attachment"
-                  className="mt-1 hidden"
+                  className="hidden"
                 />
-                <div className="mt-2 flex items-center gap-3">
+                <div className="flex flex-wrap items-center gap-3">
                   <button
                     type="button"
                     onClick={() => inputRef.current?.click()}
-                    className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300 dark:hover:bg-gray-700"
+                    className="cursor-pointer rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 font-body text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-hover)]"
                   >
                     Add attachment
                   </button>
                   {attachmentPreviewUrl && attachmentMeta && (
                     <div className="relative">
                       {attachmentMeta.kind === 'image' && (
-                        <div className="h-20 w-20 overflow-hidden rounded border border-gray-200 dark:border-gray-700">
+                        <div className="h-20 w-20 overflow-hidden rounded-lg border border-[var(--border)]">
                           {/* eslint-disable-next-line @next/next/no-img-element */}
                           <img src={attachmentPreviewUrl} alt="Preview" className="h-full w-full object-cover" />
                         </div>
                       )}
                       {attachmentMeta.kind === 'audio' && (
-                        <div className="rounded border border-gray-200 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700">
-                          <p className="font-medium text-foreground">{attachmentFile?.name}</p>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-secondary)]">
+                          <p className="font-medium text-[var(--text-primary)]">{attachmentFile?.name}</p>
                           {attachmentMeta.durationMs ? <p>{Math.round(attachmentMeta.durationMs / 1000)}s</p> : <p>Audio</p>}
                         </div>
                       )}
                       {attachmentMeta.kind === 'video' && (
-                        <div className="rounded border border-gray-200 px-3 py-2 text-xs text-muted-foreground dark:border-gray-700">
-                          <p className="font-medium text-foreground">{attachmentFile?.name}</p>
+                        <div className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-xs text-[var(--text-secondary)]">
+                          <p className="font-medium text-[var(--text-primary)]">{attachmentFile?.name}</p>
                           <p>{attachmentMeta.durationMs ? `${Math.round(attachmentMeta.durationMs / 1000)}s` : 'Video'} · Preview</p>
                         </div>
                       )}
@@ -423,7 +457,7 @@ export function CreateMarkModal() {
                           setAttachmentMeta(null);
                           if (inputRef.current) inputRef.current.value = '';
                         }}
-                        className="absolute -right-1 -top-1 rounded-full bg-gray-800 px-1.5 py-0.5 text-xs text-white hover:bg-gray-700"
+                        className="absolute -right-1 -top-1 rounded-full bg-[var(--text-primary)] px-1.5 py-0.5 text-xs text-[var(--bg-primary)] hover:opacity-90"
                       >
                         ×
                       </button>
@@ -432,16 +466,19 @@ export function CreateMarkModal() {
                 </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium text-black dark:text-white">Sign of influence (optional)</label>
-                <p className="mt-0.5 text-xs text-muted-foreground">Links to posts that take credit from your work. You can add more later from the mark.</p>
-                <div className="mt-2 flex flex-wrap items-center gap-2">
+              {/* Sign of influence (optional) - keep for submission */}
+              <div className="flex flex-col gap-2">
+                <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
+                  Sign of influence
+                </label>
+                <p className="text-xs text-[var(--text-secondary)]">Links to posts that take credit from your work. You can add more later from the mark.</p>
+                <div className="flex flex-wrap items-center gap-2">
                   <input
                     type="url"
                     value={soiUrlInput}
                     onChange={(e) => setSoiUrlInput(e.target.value)}
                     placeholder="https://..."
-                    className="min-w-[200px] flex-1 rounded border border-gray-300 bg-white px-3 py-1.5 text-sm text-black dark:border-gray-600 dark:bg-gray-900 dark:text-white"
+                    className="min-w-[200px] flex-1 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
                   />
                   <button
                     type="button"
@@ -453,20 +490,20 @@ export function CreateMarkModal() {
                       }
                     }}
                     disabled={!soiUrlInput.trim()}
-                    className="rounded border border-gray-300 bg-white px-3 py-1.5 text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 dark:border-gray-600 dark:bg-gray-800 dark:text-gray-300"
+                    className="rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3 py-2 text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-hover)] disabled:opacity-50"
                   >
                     Add
                   </button>
                 </div>
                 {soiUrls.length > 0 && (
-                  <ul className="mt-2 space-y-1">
+                  <ul className="space-y-1">
                     {soiUrls.map((u) => (
-                      <li key={u} className="flex items-center justify-between gap-2 rounded border border-gray-200 bg-gray-50 px-2 py-1 text-sm dark:border-gray-700 dark:bg-gray-800">
-                        <span className="min-w-0 truncate text-foreground">{u}</span>
+                      <li key={u} className="flex items-center justify-between gap-2 rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-2 py-1.5 text-sm">
+                        <span className="min-w-0 truncate text-[var(--text-primary)]">{u}</span>
                         <button
                           type="button"
                           onClick={() => setSoiUrls((prev) => prev.filter((x) => x !== u))}
-                          className="shrink-0 rounded px-1.5 py-0.5 text-xs text-red-600 hover:bg-red-100 dark:hover:bg-red-900/30"
+                          className="shrink-0 rounded px-1.5 py-0.5 text-xs text-[var(--text-muted)] hover:text-[var(--text-primary)]"
                         >
                           Remove
                         </button>
@@ -476,9 +513,9 @@ export function CreateMarkModal() {
                 )}
               </div>
 
-              {error && <p className="text-sm text-red-600">{error}</p>}
-              {uploadNotice && <p className="text-sm text-amber-600 dark:text-amber-400">{uploadNotice}</p>}
-              <label className="flex items-center gap-2 text-xs text-muted-foreground">
+              {error && <p className="text-sm text-red-500">{error}</p>}
+              {uploadNotice && <p className="text-sm text-amber-600">{uploadNotice}</p>}
+              <label className="flex items-center gap-2 font-body text-xs text-[var(--text-muted)]">
                 <input
                   type="checkbox"
                   checked={saveAsDefault}
@@ -487,15 +524,20 @@ export function CreateMarkModal() {
                 Save as my default
               </label>
 
-              <div className="flex justify-end border-t border-border pt-5">
-                <button
-                  type="submit"
-                  disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
-                  className="tap-press min-h-[48px] rounded-sm border border-primary bg-primary px-6 py-3 font-display font-semibold text-primary-foreground transition hover:opacity-90 disabled:opacity-50"
-                >
-                  {submitting ? 'Posting…' : 'Post'}
-                </button>
-              </div>
+              <button
+                type="submit"
+                disabled={submitting || !selectedClaimType || !domain || (!content.trim() && !attachmentFile)}
+                className="flex w-full items-center justify-center gap-2 rounded-lg bg-[var(--accent)] py-3.5 font-body font-semibold text-[var(--bg-primary)] transition-colors hover:bg-[var(--accent-dim)] disabled:opacity-50"
+              >
+                {submitting ? (
+                  <>
+                    <span className="inline-block h-4 w-4 animate-spin rounded-full border-2 border-[var(--bg-primary)] border-t-transparent" aria-hidden />
+                    Posting...
+                  </>
+                ) : (
+                  'Post your Mark'
+                )}
+              </button>
             </form>
             <ClaimTypePickerSheet
               isOpen={isClaimTypePickerOpen}

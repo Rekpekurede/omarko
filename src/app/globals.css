@@ -91,6 +91,13 @@ h1, h2, h3, .mark-text, .display-text {
   .tap-press {
     @apply transition-transform duration-150 active:scale-95;
   }
+  .scrollbar-hide {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }
 
 @keyframes fade-in {
