@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { signOut } from '@/lib/actions';
 import { NotificationsBell } from './NotificationsBell';
@@ -22,13 +21,18 @@ export async function Header() {
       <div className="mx-auto flex w-full max-w-feed items-center gap-4 px-4 py-4 sm:px-4">
         <NavDrawer />
         <Link href="/" className="flex items-center gap-2 cursor-pointer header-wordmark" aria-label="OMarko home">
-          <Image
-            src="/omarko-icon.png"
-            alt="OMarko"
-            width={36}
-            height={36}
-            style={{ objectFit: 'contain' }}
-            priority
+          <div
+            style={{
+              width: 36,
+              height: 36,
+              backgroundImage: 'url(/omarko-icon.png)',
+              backgroundSize: '140%',
+              backgroundPosition: 'center',
+              backgroundRepeat: 'no-repeat',
+              borderRadius: '6px',
+              flexShrink: 0,
+            }}
+            aria-hidden
           />
           <span
             style={{
