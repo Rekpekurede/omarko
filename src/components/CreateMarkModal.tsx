@@ -3,7 +3,7 @@
 /** Audit: removed dev console.log (upload attachment). */
 import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DOMAINS } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES, TOP_CLAIM_TYPES, type ClaimType } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
 import { ClaimTypePickerSheet } from './ClaimTypePickerSheet';
 
@@ -76,7 +76,10 @@ export function CreateMarkModal() {
     fetch('/api/claim-types')
       .then((res) => (res.ok ? res.json() : null))
       .then((data) => {
-        if (data?.results?.length) setClaimTypeOptions(data.results);
+        const raw = data?.results ?? [];
+        const list = raw.filter((r: { name: string }) => CLAIM_TYPES.includes(r.name as ClaimType));
+        list.sort((a: { name: string }, b: { name: string }) => CLAIM_TYPES.indexOf(a.name as ClaimType) - CLAIM_TYPES.indexOf(b.name as ClaimType));
+        if (list.length) setClaimTypeOptions(list);
       })
       .catch(() => {});
   }, [isOpen]);
@@ -313,13 +316,16 @@ export function CreateMarkModal() {
             </div>
 
             <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-5">
-              {/* Claim type pills */}
+              {/* Claim type: top 6 pills + See all */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
                   CLAIM TYPE
                 </label>
-                <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-1">
-                  {claimTypeOptions.map((opt) => (
+                <div className="flex flex-wrap items-center gap-2">
+                  {TOP_CLAIM_TYPES.map((name) => {
+                    const opt = claimTypeOptions.find((o) => o.name === name);
+                    if (!opt) return null;
+                    return (
                       <button
                         key={opt.id}
                         type="button"
@@ -335,7 +341,23 @@ export function CreateMarkModal() {
                       >
                         {opt.name}
                       </button>
-                    ))}
+                    );
+                  })}
+                  {selectedClaimType && !TOP_CLAIM_TYPES.includes(selectedClaimType.name as (typeof TOP_CLAIM_TYPES)[number]) && (
+                    <button
+                      type="button"
+                      className="shrink-0 cursor-pointer rounded-[20px] border border-[var(--accent)] bg-[var(--accent)] px-3.5 py-1.5 font-body text-[0.75rem] font-semibold text-[var(--bg-primary)] transition-colors"
+                    >
+                      {selectedClaimType.name}
+                    </button>
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setIsClaimTypePickerOpen(true)}
+                    className="shrink-0 font-body text-[0.8rem] text-[var(--accent)] hover:underline"
+                  >
+                    + See all claim types
+                  </button>
                 </div>
                 {aiLoading && (
                   <p className="text-xs text-[var(--text-muted)]">Analyzing content...</p>
@@ -542,6 +564,7 @@ export function CreateMarkModal() {
             <ClaimTypePickerSheet
               isOpen={isClaimTypePickerOpen}
               onClose={() => setIsClaimTypePickerOpen(false)}
+              selectedId={selectedClaimType?.id ?? null}
               onSelect={(next) => {
                 setSelectedClaimType(next);
                 setClaimTypeTouched(true);

@@ -4,7 +4,7 @@ const SHOW_HERO_SUBTEXT = true;
 /** OMarko origin mark: circle + inner dot, accent border and fill, subtle glow. */
 function HeroCircle() {
   return (
-    <div className="relative flex items-center justify-center" aria-hidden>
+    <div className="relative flex items-center justify-center text-accent" aria-hidden>
       <div className="relative flex h-20 w-20 items-center justify-center sm:h-24 sm:w-24">
         <div
           className="absolute inset-0 rounded-full border-2 border-accent"
@@ -26,13 +26,15 @@ function HeroCircle() {
 
 export function FeedIntroBanner() {
   return (
-    <section className="rounded-2xl border border-border bg-bg-card px-4 py-10 text-center sm:px-6 sm:py-12">
-      <HeroCircle />
-      <p className="display-text mt-6 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
+    <section className="hero-banner rounded-2xl border border-border bg-bg-card px-4 py-10 text-center sm:px-6 sm:py-12">
+      <div className="hero-circle">
+        <HeroCircle />
+      </div>
+      <p className="hero-title display-text mt-6 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
         You&apos;re claiming it&apos;s yours
       </p>
       {SHOW_HERO_SUBTEXT && (
-        <p className="display-text mx-auto mt-4 max-w-xl text-base font-medium italic leading-relaxed text-accent">
+        <p className="hero-subtitle display-text mx-auto mt-4 max-w-xl text-base font-medium italic leading-relaxed text-accent">
           Let people know.
         </p>
       )}

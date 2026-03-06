@@ -1,5 +1,6 @@
 import { NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
+import { CLAIM_TYPES, CLAIM_TYPE_DESCRIPTIONS } from '@/lib/types';
 
 type ClaimTypeRow = {
   id: string;
@@ -7,17 +8,11 @@ type ClaimTypeRow = {
   description: string | null;
 };
 
-const FALLBACK_CLAIM_TYPES: ClaimTypeRow[] = [
-  { id: 'creation', name: 'Creation', description: 'Use when you created or produced something original.' },
-  { id: 'discovery', name: 'Discovery', description: 'Use when you are claiming you found or uncovered something first.' },
-  { id: 'prediction', name: 'Prediction', description: 'Use when making a time-bound future claim.' },
-  { id: 'stance', name: 'Stance', description: 'Use when taking a clear position on an issue.' },
-  { id: 'opinion', name: 'Opinion', description: 'Use for a personal viewpoint or judgment.' },
-  { id: 'teaching', name: 'Teaching', description: 'Use when explaining knowledge or guiding others.' },
-  { id: 'method', name: 'Method', description: 'Use when sharing a repeatable process or approach.' },
-  { id: 'catchphrase', name: 'Catchphrase', description: 'Use for a memorable phrase you claim authorship of.' },
-  { id: 'theory', name: 'Theory', description: 'Use for an explanatory model or concept you assert.' },
-];
+const FALLBACK_CLAIM_TYPES: ClaimTypeRow[] = CLAIM_TYPES.map((name) => ({
+  id: name.toLowerCase().replace(/\s+/g, '-'),
+  name,
+  description: CLAIM_TYPE_DESCRIPTIONS[name] ?? null,
+}));
 
 export async function GET(request: Request) {
   const supabase = await createClient();
@@ -43,7 +38,8 @@ export async function GET(request: Request) {
     });
   }
 
-  const resultList = ((results ?? []) as ClaimTypeRow[]).filter((x) => x.name.toLowerCase() !== 'statement');
+  const canonicalSet = new Set(CLAIM_TYPES);
+  const resultList = ((results ?? []) as ClaimTypeRow[]).filter((x) => canonicalSet.has(x.name as (typeof CLAIM_TYPES)[number]));
   const filtered = q
     ? resultList.filter((x) => x.name.toLowerCase().includes(q))
     : resultList;

@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import { createClient } from '@/lib/supabase/server';
 import { signOut } from '@/lib/actions';
 import { NotificationsBell } from './NotificationsBell';
@@ -17,15 +18,30 @@ export async function Header() {
   }
 
   return (
-    <header className="sticky top-0 z-10 border-b border-border bg-black/70 backdrop-blur-xl">
+    <header className="site-header sticky top-0 z-10 border-b border-border bg-black/70 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-feed items-center gap-4 px-4 py-4 sm:px-4">
         <NavDrawer />
-        <Link
-          href="/"
-          className="font-display text-[1.3rem] font-semibold text-accent transition-colors hover:opacity-90"
-          aria-label="OMarko home"
-        >
-          OMarko
+        <Link href="/" className="flex items-center gap-2 cursor-pointer header-wordmark" aria-label="OMarko home">
+          <Image
+            src="/omarko-icon.png"
+            alt="OMarko"
+            width={36}
+            height={36}
+            style={{ objectFit: 'contain' }}
+            priority
+          />
+          <span
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: '1.3rem',
+              fontWeight: 600,
+              color: 'var(--accent)',
+              letterSpacing: '-0.02em',
+              lineHeight: 1,
+            }}
+          >
+            OMarko
+          </span>
         </Link>
         <div className="hidden min-w-0 flex-1 sm:block">
           <SearchBar />
@@ -34,7 +50,7 @@ export async function Header() {
           {user && (
             <Link
               href="/bookmarks"
-              className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
+              className="header-icon inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
               aria-label="Bookmarks"
             >
               <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
@@ -44,7 +60,7 @@ export async function Header() {
           )}
           <Link
             href="/search"
-            className="inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
+            className="header-icon inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
             aria-label="Search"
           >
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
@@ -53,30 +69,30 @@ export async function Header() {
             </svg>
           </Link>
           <ThemeToggle />
-          <nav className="hidden items-center gap-3 sm:flex">
-            <Link href="/" className="cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
+          <nav className="header-nav hidden items-center gap-3 sm:flex">
+            <Link href="/" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
               Feed
             </Link>
             {user ? (
               <>
-                <Link href="/bookmarks" className="cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
+                <Link href="/bookmarks" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
                   Bookmarks
                 </Link>
                 <NotificationsBell />
                 <CreateMarkButton />
                 {profile && (
-                  <Link href={`/profile/${profile.username}`} className="cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
+                  <Link href={`/profile/${profile.username}`} className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
                     Profile
                   </Link>
                 )}
                 <form action={signOut}>
-                  <button type="submit" className="cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
+                  <button type="submit" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
                     Sign out
                   </button>
                 </form>
               </>
             ) : (
-              <Link href="/auth" className="cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
+              <Link href="/auth" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
                 Sign in
               </Link>
             )}

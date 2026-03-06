@@ -117,7 +117,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
   }
 
   return (
-    <div className="mx-auto max-w-feed w-full px-3 sm:px-4">
+    <div className="mx-auto max-w-feed w-full px-3 pt-6 sm:px-4">
       <FeedIntroBanner />
       <h1 className="display-text mb-6 mt-8 text-2xl font-semibold text-text-primary">Marks</h1>
       {error && (

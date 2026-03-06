@@ -37,7 +37,55 @@ export interface HistoricalProfile {
 export type MarkProfile = Pick<Profile, 'username' | 'avatar_url'> | Pick<Profile, 'username' | 'avatar_url'>[];
 
 export const DOMAINS = ['Music', 'Dance', 'Literature', 'VisualArt', 'Architecture', 'Politics', 'Business', 'Technology', 'Science', 'Sport', 'Law', 'Culture', 'Food', 'Philosophy', 'General'] as const;
-export const CLAIM_TYPES = ['Creation', 'Prediction', 'Implementation', 'Discovery', 'Innovation', 'Strategy', 'Record', 'Invite'] as const;
+export const CLAIM_TYPES = [
+  'Creation',
+  'Prediction',
+  'Discovery',
+  'Innovation',
+  'Strategy',
+  'Record',
+  'Implementation',
+  'Invite',
+  'Quote',
+  'Concept',
+  'Method',
+  'Theory',
+  'Phrase',
+  'Formula',
+  'Design',
+  'Movement',
+  'Trend',
+  'Story',
+] as const;
+/** Top 6 claim types shown as pills in the create modal. */
+export const TOP_CLAIM_TYPES: (typeof CLAIM_TYPES)[number][] = [
+  'Creation',
+  'Quote',
+  'Prediction',
+  'Discovery',
+  'Innovation',
+  'Concept',
+];
+export const CLAIM_TYPE_DESCRIPTIONS: Record<(typeof CLAIM_TYPES)[number], string> = {
+  Creation: 'Something you made — art, product, writing, software',
+  Quote: 'Words you said that others have repeated',
+  Prediction: 'A future outcome you called before it happened',
+  Discovery: 'Something you found or identified first',
+  Innovation: 'An improvement on something that already existed',
+  Concept: 'An original idea or framework you developed',
+  Method: 'A process or technique you invented',
+  Theory: 'An explanatory model you constructed',
+  Phrase: 'A coined term or expression that spread',
+  Formula: 'A mathematical, scientific, or strategic formula',
+  Design: 'A visual, product, or structural design',
+  Movement: 'A cultural, social, or artistic movement you started',
+  Trend: 'A pattern you identified and named before others',
+  Story: 'A narrative, script, or fictional work you authored',
+  Strategy: 'A plan or approach you devised',
+  Record: 'A measurable achievement — fastest, first, most',
+  Implementation: 'Taking an idea and making it real',
+  Invite: 'An open call or challenge you issued',
+};
 export type Domain = (typeof DOMAINS)[number];
 export type ClaimType = (typeof CLAIM_TYPES)[number];
 

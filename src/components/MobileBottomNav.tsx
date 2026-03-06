@@ -24,31 +24,31 @@ function isActive(pathname: string, href: string) {
 }
 
 function NavItem({ href, label, active, onClick, icon }: NavItemProps) {
-  const classes = `tap-press flex min-w-[3.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 transition duration-150 ${
+  const wrapperClasses = `tap-press flex min-w-[3.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 transition duration-150 ${
     active
-      ? 'bg-primary text-primary-foreground shadow-sm'
+      ? 'nav-item-active bg-primary text-primary-foreground shadow-sm'
       : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
   }`;
 
   const content = (
-    <>
+    <span className="nav-item-inner flex flex-col items-center justify-center gap-1">
       <span className="text-base leading-none" aria-hidden="true">
         {icon}
       </span>
       <span className="text-[11px] font-medium leading-none">{label}</span>
-    </>
+    </span>
   );
 
   if (href) {
     return (
-      <Link href={href} className={classes}>
+      <Link href={href} className={wrapperClasses}>
         {content}
       </Link>
     );
   }
 
   return (
-    <button type="button" onClick={onClick} className={classes}>
+    <button type="button" onClick={onClick} className={wrapperClasses}>
       {content}
     </button>
   );
@@ -61,7 +61,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
   return (
     <>
       <nav className="fixed inset-x-0 bottom-0 z-30 px-4 pb-[max(env(safe-area-inset-bottom),1rem)] pt-4 sm:hidden">
-        <div className="mx-auto flex max-w-lg items-center justify-between gap-2 rounded-2xl border border-border bg-black/70 px-4 py-4 shadow-xl backdrop-blur-xl">
+        <div className="mobile-bottom-nav-bar mx-auto flex max-w-lg items-center justify-between gap-2 rounded-2xl border border-border bg-black/70 px-4 py-4 shadow-xl backdrop-blur-xl">
           <NavItem
             href="/"
             label="Home"

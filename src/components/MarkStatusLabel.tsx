@@ -1,13 +1,13 @@
 import type { MarkStatus } from '@/lib/types';
 
-/** Only show badge for non-default states. ACTIVE gets no label. Uses globals.css vars only. */
+/** ACTIVE: no badge. CHALLENGED/WITHDRAWN/CONCEDED: use status-* classes. */
 const BADGE_CONFIG: Record<Exclude<MarkStatus, 'ACTIVE'>, { label: string; className: string }> = {
-  CHALLENGED: { label: 'CHALLENGED', className: 'border border-accent-dim bg-transparent text-accent' },
-  DISPUTED: { label: 'CHALLENGED', className: 'border border-accent-dim bg-transparent text-accent' },
-  WITHDRAWN: { label: 'WITHDRAWN', className: 'border border-border bg-bg-card-hover text-text-secondary' },
-  CONCEDED: { label: 'CONCEDED', className: 'border border-border bg-transparent text-text-muted' },
-  CHAMPION: { label: 'CHAMPION', className: 'border border-accent-dim bg-transparent text-accent' },
-  SUPPLANTED: { label: 'SUPPLANTED', className: 'border border-border bg-transparent text-text-muted' },
+  CHALLENGED: { label: 'CHALLENGED', className: 'status-challenged' },
+  DISPUTED: { label: 'CHALLENGED', className: 'status-challenged' },
+  WITHDRAWN: { label: 'WITHDRAWN', className: 'status-withdrawn' },
+  CONCEDED: { label: 'CONCEDED', className: 'status-conceded' },
+  CHAMPION: { label: 'CHAMPION', className: 'status-challenged' },
+  SUPPLANTED: { label: 'SUPPLANTED', className: 'status-conceded' },
 };
 
 export function MarkStatusLabel({
@@ -18,16 +18,10 @@ export function MarkStatusLabel({
   withdrawnAt?: string | null;
 }) {
   if (withdrawnAt) {
-    return (
-      <span className={`badge ${BADGE_CONFIG.WITHDRAWN.className}`}>
-        {BADGE_CONFIG.WITHDRAWN.label}
-      </span>
-    );
+    return <span className="status-withdrawn">WITHDRAWN</span>;
   }
-  if (status === 'ACTIVE') {
-    return <span className="provenance-pulse" aria-label="Active claim" />;
-  }
+  if (status === 'ACTIVE') return null;
   const config = BADGE_CONFIG[status];
   if (!config) return null;
-  return <span className={`badge ${config.className}`}>{config.label}</span>;
+  return <span className={config.className}>{config.label}</span>;
 }

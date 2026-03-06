@@ -23,22 +23,19 @@ const notoSans = Noto_Sans({
 const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');})();`;
 
 export const metadata: Metadata = {
-  title: { default: "Omarko", template: "%s | Omarko" },
-  description: "Create and challenge timestamped claims.",
-  applicationName: "Omarko",
+  title: "OMarko",
+  description: "Leave your mark on the world.",
+  applicationName: "OMarko",
   manifest: "/manifest.webmanifest",
   appleWebApp: {
     capable: true,
-    title: "Omarko",
+    title: "OMarko",
     statusBarStyle: "default",
   },
   formatDetection: { telephone: false },
   icons: {
-    icon: [
-      { url: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-      { url: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
-    ],
-    apple: "/icons/icon-192.png",
+    icon: "/omarko-icon.png",
+    apple: "/omarko-icon.png",
   },
 };
 
