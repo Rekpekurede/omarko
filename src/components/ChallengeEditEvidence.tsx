@@ -13,7 +13,9 @@ export function ChallengeEditEvidence({ challengeId, currentEvidenceUrl, current
   const router = useRouter();
   const [open, setOpen] = useState(false);
   const [evidenceUrl, setEvidenceUrl] = useState(currentEvidenceUrl ?? '');
-  const [claimedOriginalDate, setClaimedOriginalDate] = useState(currentClaimedDate ?? '');
+  const [claimedOriginalDate, setClaimedOriginalDate] = useState(
+    typeof currentClaimedDate === 'string' ? currentClaimedDate : ''
+  );
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
 
@@ -21,12 +23,14 @@ export function ChallengeEditEvidence({ challengeId, currentEvidenceUrl, current
     e.preventDefault();
     setError(null);
     setSubmitting(true);
+    const evidenceUrlVal = typeof evidenceUrl === 'string' ? evidenceUrl.trim() || null : null;
+    const claimedOriginalDateVal = (typeof claimedOriginalDate === 'string' && claimedOriginalDate.trim() !== '' && claimedOriginalDate.trim() !== 'false') ? claimedOriginalDate.trim() : null;
     const res = await fetch(`/api/challenges/${challengeId}`, {
       method: 'PATCH',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        evidenceUrl: evidenceUrl.trim() || undefined,
-        claimedOriginalDate: claimedOriginalDate.trim() || undefined,
+        evidenceUrl: evidenceUrlVal,
+        claimedOriginalDate: claimedOriginalDateVal,
       }),
     });
     const data = await res.json().catch(() => ({}));

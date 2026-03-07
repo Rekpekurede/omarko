@@ -43,7 +43,7 @@ export async function PATCH(
         : undefined;
   const rawDate = body.claimedOriginalDate;
   const claimedOriginalDateNormalized =
-    typeof rawDate === 'string' && rawDate.trim() !== ''
+    typeof rawDate === 'string' && rawDate.trim() !== '' && rawDate.trim() !== 'false'
       ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
       : rawDate !== undefined
         ? null

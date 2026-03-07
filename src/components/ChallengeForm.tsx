@@ -27,17 +27,17 @@ export function ChallengeForm({ markId, canChallenge, challengeDisabledReason }:
     const evidenceUrl =
       typeof evidenceUrlRaw === 'string' && evidenceUrlRaw.trim() !== ''
         ? evidenceUrlRaw.trim()
-        : undefined;
+        : null;
     const claimedOriginalDate =
-      typeof claimedOriginalDateRaw === 'string' && claimedOriginalDateRaw.trim() !== ''
+      claimedOriginalDateRaw && typeof claimedOriginalDateRaw === 'string' && claimedOriginalDateRaw.trim() !== ''
         ? claimedOriginalDateRaw.trim()
-        : undefined;
+        : null;
 
-    const payload: { text: string; evidenceUrl?: string; claimedOriginalDate?: string } = {
+    const payload: { text: string; evidenceUrl: string | null; claimedOriginalDate: string | null } = {
       text: text.trim(),
+      evidenceUrl,
+      claimedOriginalDate,
     };
-    if (evidenceUrl !== undefined) payload.evidenceUrl = evidenceUrl;
-    if (claimedOriginalDate !== undefined) payload.claimedOriginalDate = claimedOriginalDate;
 
     const res = await fetch(`/api/marks/${markId}/challenge`, {
       method: 'POST',

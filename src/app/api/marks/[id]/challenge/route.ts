@@ -28,33 +28,19 @@ export async function POST(
   const isEvidenceBacked = !!evidenceUrl;
 
   const rawDate = body.claimedOriginalDate;
-  const claimedOriginalDate =
-    typeof rawDate === 'string' && rawDate.trim() !== ''
-      ? rawDate.trim()
+  const claimedOriginalDateForDb =
+    rawDate && typeof rawDate === 'string' && rawDate.trim() !== ''
+      ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
       : null;
-  const isValidDate =
-    claimedOriginalDate != null &&
-    /^\d{4}-\d{2}-\d{2}$/.test(claimedOriginalDate);
-
-  const insertPayload: {
-    mark_id: string;
-    challenger_id: string;
-    evidence_text: string;
-    evidence_url: string | null;
-    claimed_original_date?: string;
-    is_evidence_backed: boolean;
-    outcome: string;
-  } = {
+  const payload = {
     mark_id: markId,
     challenger_id: user.id,
     evidence_text: text,
     evidence_url: evidenceUrl,
+    claimed_original_date: claimedOriginalDateForDb,
     is_evidence_backed: isEvidenceBacked,
     outcome: 'PENDING',
   };
-  if (isValidDate) {
-    insertPayload.claimed_original_date = claimedOriginalDate as string;
-  }
 
   const { data: markRow } = await supabase
     .from('marks')
@@ -71,7 +57,7 @@ export async function POST(
 
   const { data: challenge, error: insertError } = await supabase
     .from('challenges')
-    .insert(insertPayload)
+    .insert(payload)
     .select('id, mark_id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username)')
     .single();
 
