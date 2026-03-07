@@ -21,6 +21,8 @@ export const CLAIM_TYPES = [
   'Perspective',
   'Trend',
   'Story',
+  'Joke',
+  'Defense',
 ] as const;
 
 export type ClaimType = (typeof CLAIM_TYPES)[number];
