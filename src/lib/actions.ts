@@ -14,7 +14,15 @@ export async function signUp(_prev: unknown, formData: FormData) {
     password,
     options: { data: { username: username || undefined } },
   });
-  if (error) return { error: error.message };
+  if (error) {
+    const msg = error.message?.toLowerCase() ?? '';
+    const isRateLimit =
+      msg.includes('rate limit') || msg.includes('ratelimit') || msg.includes('too many');
+    const message = isRateLimit
+      ? 'Too many sign-up emails sent. Please try again in an hour, or use a different email.'
+      : error.message;
+    return { error: message };
+  }
   redirect('/auth?message=Check your email to confirm');
 }
 
