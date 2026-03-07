@@ -28,15 +28,16 @@ export function ChallengeForm({ markId, canChallenge, challengeDisabledReason }:
       typeof evidenceUrlRaw === 'string' && evidenceUrlRaw.trim() !== ''
         ? evidenceUrlRaw.trim()
         : null;
-    const claimedOriginalDate =
+    const rawDate =
       claimedOriginalDateRaw && typeof claimedOriginalDateRaw === 'string' && claimedOriginalDateRaw.trim() !== ''
         ? claimedOriginalDateRaw.trim()
         : null;
+    const claimedOriginalDate = rawDate !== null && rawDate !== '' && rawDate !== 'false' ? rawDate : null;
 
     const payload: { text: string; evidenceUrl: string | null; claimedOriginalDate: string | null } = {
       text: text.trim(),
       evidenceUrl,
-      claimedOriginalDate,
+      claimedOriginalDate: claimedOriginalDate ?? null,
     };
 
     const res = await fetch(`/api/marks/${markId}/challenge`, {

@@ -12,7 +12,7 @@ export async function POST(
     return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
   }
 
-  let body: { text?: string; evidenceUrl?: string; claimedOriginalDate?: string | boolean | null };
+  let body: { text?: string; evidenceUrl?: string; claimedOriginalDate?: string | boolean | null; claimed_original_date?: string | boolean | null };
   try {
     body = await request.json();
   } catch {
@@ -27,28 +27,42 @@ export async function POST(
   const evidenceUrl = typeof body.evidenceUrl === 'string' ? body.evidenceUrl.trim() || null : null;
   const isEvidenceBacked = !!evidenceUrl;
 
-  const rawDate = body.claimedOriginalDate;
-  const claimedOriginalDate =
-    rawDate && typeof rawDate === 'string' && rawDate.trim() !== '' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim())
-      ? rawDate.trim()
-      : null;
-  const payload = {
+  const rawDate = body.claimedOriginalDate ?? body.claimed_original_date;
+  const isFalsyOrFalse =
+    rawDate === false ||
+    rawDate === 'false' ||
+    rawDate === '' ||
+    rawDate == null ||
+    (typeof rawDate !== 'string');
+  let claimedOriginalDateForDb: string | null = null;
+  if (!isFalsyOrFalse && typeof rawDate === 'string' && rawDate.trim() !== '') {
+    const trimmed = rawDate.trim();
+    if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+      claimedOriginalDateForDb = trimmed;
+    } else if (/^\d{8}$/.test(trimmed)) {
+      claimedOriginalDateForDb = `${trimmed.slice(0, 4)}-${trimmed.slice(4, 6)}-${trimmed.slice(6, 8)}`;
+    }
+  }
+
+  const payload: {
+    mark_id: string;
+    challenger_id: string;
+    evidence_text: string;
+    evidence_url: string | null;
+    claimed_original_date?: string;
+    is_evidence_backed: boolean;
+    outcome: string;
+  } = {
     mark_id: markId,
     challenger_id: user.id,
     evidence_text: text,
     evidence_url: evidenceUrl,
-    claimed_original_date:
-      claimedOriginalDate && claimedOriginalDate !== ''
-        ? claimedOriginalDate
-        : null,
     is_evidence_backed: isEvidenceBacked,
     outcome: 'PENDING',
   };
-
-  console.log('CHALLENGE PAYLOAD', JSON.stringify(payload, null, 2));
-  console.log('claimed_original_date =', payload.claimed_original_date);
-  console.log('resolved_at =', '(not in insert payload)');
-  console.log('created_at =', '(not in insert payload)');
+  if (typeof claimedOriginalDateForDb === 'string' && claimedOriginalDateForDb.length > 0) {
+    payload.claimed_original_date = claimedOriginalDateForDb;
+  }
 
   const { data: markRow } = await supabase
     .from('marks')
@@ -63,11 +77,16 @@ export async function POST(
     return NextResponse.json({ error: 'Cannot challenge your own mark' }, { status: 403 });
   }
 
-  const { data: challenge, error: insertError } = await supabase
-    .from('challenges')
-    .insert(payload)
-    .select('id, mark_id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username)')
-    .single();
+  // Pass params in exact order of function signature so PostgREST positional binding is correct
+  const { data: rpcRows, error: insertError } = await supabase.rpc('insert_challenge', {
+    p_challenger_id: user.id,
+    p_evidence_text: text,
+    p_mark_id: markId,
+    p_claimed_original_date: claimedOriginalDateForDb,
+    p_evidence_url: evidenceUrl,
+    p_is_evidence_backed: isEvidenceBacked,
+    p_outcome: 'PENDING',
+  });
 
   if (insertError) {
     if (insertError.code === '23505') {
@@ -75,6 +94,18 @@ export async function POST(
     }
     return NextResponse.json({ error: insertError.message }, { status: 500 });
   }
+
+  const challengeRow = Array.isArray(rpcRows) ? rpcRows[0] : rpcRows;
+  if (!challengeRow) {
+    return NextResponse.json({ error: 'Challenge insert did not return row' }, { status: 500 });
+  }
+
+  const { data: challengeWithProfile } = await supabase
+    .from('challenges')
+    .select('id, mark_id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username)')
+    .eq('id', challengeRow.id)
+    .single();
+  const challenge = challengeWithProfile ?? challengeRow;
 
   if (isEvidenceBacked && markRow.status !== 'CHAMPION' && markRow.status !== 'SUPPLANTED') {
     await supabase.rpc('recompute_mark_dispute_count', { mark_uuid: markId });
