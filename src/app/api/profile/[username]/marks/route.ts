@@ -70,7 +70,14 @@ export async function GET(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
-  const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile.username } }));
+  const list = (marks ?? []).map((m) => ({
+    ...m,
+    profiles: {
+      username: profile.username,
+      avatar_url: (profile as { avatar_url?: string | null }).avatar_url ?? null,
+      display_name: (profile as { display_name?: string | null }).display_name ?? null,
+    },
+  }));
   const markIds = list.map((m) => m.id);
   const commentsCountMap: Record<string, number> = {};
   if (markIds.length > 0) {

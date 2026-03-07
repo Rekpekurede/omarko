@@ -27,7 +27,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url), historical_profiles(name)')
+    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name), historical_profiles(name)')
     .eq('id', id)
     .single();
 
@@ -60,13 +60,13 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: challenges } = await supabase
     .from('challenges')
-    .select('id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username)')
+    .select('id, challenger_id, evidence_text, evidence_url, claimed_original_date, is_evidence_backed, outcome, resolved_at, created_at, profiles!challenges_challenger_id_fkey(username, display_name)')
     .eq('mark_id', id)
     .order('created_at', { ascending: false });
 
   const { data: comments } = await supabase
     .from('comments')
-    .select('id, user_id, content, created_at, profiles!comments_user_id_fkey(username)')
+    .select('id, user_id, content, created_at, profiles!comments_user_id_fkey(username, display_name)')
     .eq('mark_id', id)
     .order('created_at', { ascending: false });
 
@@ -90,9 +90,13 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     if (existingChallenge) canChallenge = false;
   }
 
-  const profilesData = (mark as { profiles?: { username: string; avatar_url?: string | null } | { username: string; avatar_url?: string | null }[] | null }).profiles;
+  const profilesData = (mark as { profiles?: { username: string; avatar_url?: string | null; display_name?: string | null } | { username: string; avatar_url?: string | null; display_name?: string | null }[] | null }).profiles;
   const profileObj = Array.isArray(profilesData) ? profilesData[0] : profilesData;
-  const displayUsername = isHistorical && historicalName ? historicalName : (profileObj?.username ?? 'unknown');
+  const username = profileObj?.username ?? 'unknown';
+  const displayUsername = isHistorical && historicalName ? historicalName : username;
+  const displayNameTrimmed = profileObj?.display_name?.trim() ?? '';
+  const displayPrimary = !isHistorical && displayNameTrimmed ? displayNameTrimmed : `@${displayUsername}`;
+  const showSecondaryUsername = !isHistorical && !!displayNameTrimmed;
   const avatarUrl = profileObj?.avatar_url ?? null;
   const showOwnerActions = isOwner && !isWithdrawn && !isHistorical;
   const content = (mark as { content?: string }).content ?? '';
@@ -131,32 +135,43 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
       <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
-            <div className="flex items-center gap-3">
+            <div className="flex items-start gap-3">
               <Avatar username={displayUsername} avatarUrl={isHistorical ? null : avatarUrl} size="md" />
-              <div>
+              <div className="min-w-0 flex-1">
                 {isHistorical && mark.historical_profile_id ? (
                   <>
-                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-sm font-medium text-foreground hover:underline">
-                      {displayUsername}
-                    </Link>
-                    <span className="ml-2 inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    <div className="flex items-baseline justify-between gap-2">
+                      <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline">
+                        {displayUsername}
+                      </Link>
+                      <RelativeTime dateString={mark.created_at} className="text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                    </div>
+                    <span className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 mt-1">
                       HISTORICAL FIGURE
                     </span>
                   </>
                 ) : (
-                  <Link href={`/profile/${encodeURIComponent(displayUsername)}`} className="text-sm font-medium text-foreground hover:underline">
-                    @{displayUsername}
-                  </Link>
+                  <>
+                    <div className="flex items-baseline justify-between gap-2">
+                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline min-w-0 truncate">
+                        {displayPrimary}
+                      </Link>
+                      <RelativeTime dateString={mark.created_at} className="text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                    </div>
+                    {showSecondaryUsername && (
+                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[0.78rem] text-[var(--text-muted)] hover:underline block mt-0.5">
+                        @{username}
+                      </Link>
+                    )}
+                  </>
                 )}
-                <span className="ml-2 text-xs text-muted-foreground">
+                <p className="mt-1 text-[0.75rem] text-[var(--text-muted)]">
                   {(mark as { domain?: string }).domain}
                   {(mark as { claim_type?: string }).claim_type && ` · ${(mark as { claim_type: string }).claim_type}`}
-                  {' · '}
-                  <RelativeTime dateString={mark.created_at} />
                   {mark.updated_at && new Date(mark.updated_at).getTime() !== new Date(mark.created_at).getTime() && (
                     <> · Updated <RelativeTime dateString={mark.updated_at} /></>
                   )}
-                </span>
+                </p>
               </div>
               {isWithdrawn && (
                 <span className="text-xs text-muted-foreground">Withdrawn</span>
@@ -167,7 +182,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             )}
             <div className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2">
               <p className="text-sm font-medium text-foreground">
-                @{displayUsername} - {claimTypeName} · {(mark as { domain?: string }).domain}
+                {isHistorical ? displayUsername : (displayPrimary.startsWith('@') ? displayPrimary : `${displayPrimary} (@${username})`)} — {claimTypeName} · {(mark as { domain?: string }).domain}
               </p>
               <p className="text-xs text-muted-foreground">marking this as theirs</p>
             </div>

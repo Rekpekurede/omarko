@@ -12,6 +12,7 @@ export type VoteType = 'SUPPORT' | 'OPPOSE';
 export interface Profile {
   id: string;
   username: string;
+  display_name?: string | null;
   bio: string | null;
   avatar_url?: string | null;
   profile_type?: 'user' | 'historical' | 'admin';
@@ -34,7 +35,7 @@ export interface HistoricalProfile {
 }
 
 /** Supabase may return profiles as object or array for relation */
-export type MarkProfile = Pick<Profile, 'username' | 'avatar_url'> | Pick<Profile, 'username' | 'avatar_url'>[];
+export type MarkProfile = Pick<Profile, 'username' | 'avatar_url' | 'display_name'> | Pick<Profile, 'username' | 'avatar_url' | 'display_name'>[];
 
 export const DOMAINS = [
   'Music',

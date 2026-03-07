@@ -51,7 +51,7 @@ export async function POST(
 
   const { data: updated } = await supabase
     .from('marks')
-    .select('id, user_id, title, content, category, status, support_votes, oppose_votes, dispute_count, disputes_survived, owner_response, withdrawn_at, withdrawn_by, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url)')
+    .select('id, user_id, title, content, category, status, support_votes, oppose_votes, dispute_count, disputes_survived, owner_response, withdrawn_at, withdrawn_by, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name)')
     .eq('id', markId)
     .single();
 

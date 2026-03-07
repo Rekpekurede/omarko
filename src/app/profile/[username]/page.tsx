@@ -170,7 +170,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
       if (marksErr) {
         console.error('[ProfilePage] marks query error', marksErr);
       } else {
-        const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url } }));
+        const list = (marks ?? []).map((m) => ({ ...m, profiles: { username: profile!.username, avatar_url: profile!.avatar_url, display_name: profile!.display_name ?? null } }));
         const markIds = list.map((m) => m.id);
         const commentsCountMap: Record<string, number> = {};
         const soiCountMap: Record<string, number> = {};
@@ -265,12 +265,13 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         }
         const mediaByMarkId = await getSignedMediaForMarkIds(supabase, supportedMarkIds);
         supportedMarks = sorted.map((m) => {
-          const p = m.profiles as { username?: string; avatar_url?: string | null } | { username?: string; avatar_url?: string | null }[] | null;
+          const p = m.profiles as { username?: string; avatar_url?: string | null; display_name?: string | null } | { username?: string; avatar_url?: string | null; display_name?: string | null }[] | null;
           const u = (p && (Array.isArray(p) ? p[0]?.username : p.username)) ?? profile!.username;
           const av = (p && (Array.isArray(p) ? p[0]?.avatar_url : p.avatar_url)) ?? profile!.avatar_url;
+          const dn = (p && (Array.isArray(p) ? p[0]?.display_name : p.display_name)) ?? null;
           return {
             ...m,
-            profiles: { username: u, avatar_url: av },
+            profiles: { username: u, avatar_url: av, display_name: dn },
             comments_count: commentsCountMap[m.id] ?? 0,
             soi_count: soiCountMap[m.id] ?? 0,
             media: mediaByMarkId[m.id] ?? [],
@@ -330,7 +331,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
         const mediaByMarkId = await getSignedMediaForMarkIds(supabase, withdrawnIds);
         withdrawnMarks = (withdrawn ?? []).map((m) => ({
           ...m,
-          profiles: { username: profile!.username, avatar_url: profile!.avatar_url },
+          profiles: { username: profile!.username, avatar_url: profile!.avatar_url, display_name: profile!.display_name ?? null },
           comments_count: commentsCountMap[m.id] ?? 0,
           media: mediaByMarkId[m.id] ?? [],
         }));

@@ -18,7 +18,7 @@ interface ChallengeRow {
   outcome?: string;
   resolved_at?: string | null;
   created_at: string;
-  profiles?: { username: string } | { username: string }[] | null;
+  profiles?: { username: string; display_name?: string | null } | { username: string; display_name?: string | null }[] | null;
 }
 
 interface CommentRow {
@@ -26,7 +26,7 @@ interface CommentRow {
   user_id: string;
   content: string;
   created_at: string;
-  profiles?: { username: string } | { username: string }[] | null;
+  profiles?: { username: string; display_name?: string | null } | { username: string; display_name?: string | null }[] | null;
 }
 
 interface SoiRow {
@@ -56,6 +56,20 @@ interface MarkDetailTabsProps {
 function getUsername(profiles: ChallengeRow['profiles']): string {
   if (!profiles) return 'unknown';
   return Array.isArray(profiles) ? profiles[0]?.username ?? 'unknown' : profiles.username;
+}
+
+function getDisplayPrimary(profiles: CommentRow['profiles']): string {
+  if (!profiles) return '@unknown';
+  const p = Array.isArray(profiles) ? profiles[0] : profiles;
+  const username = p?.username ?? 'unknown';
+  const displayName = (p as { display_name?: string | null })?.display_name?.trim();
+  return displayName || `@${username}`;
+}
+
+function getShowSecondary(profiles: CommentRow['profiles']): boolean {
+  if (!profiles) return false;
+  const p = Array.isArray(profiles) ? profiles[0] : profiles;
+  return !!((p as { display_name?: string | null })?.display_name?.trim());
 }
 
 export function MarkDetailTabs({
@@ -274,14 +288,19 @@ export function MarkDetailTabs({
           )}
           <ul className="space-y-3">
             {challenges.map((c) => {
-              const challengerName = getUsername(c.profiles);
+              const username = getUsername(c.profiles);
+              const p = c.profiles && (Array.isArray(c.profiles) ? c.profiles[0] : c.profiles) as { display_name?: string | null } | undefined;
+              const dn = p?.display_name?.trim() ?? '';
+              const challengerPrimary = dn ? dn : `@${username}`;
+              const challengerShowSecondary = !!dn;
               const outcome = c.outcome ?? 'PENDING';
               const isResolved = outcome !== 'PENDING';
               const isChallenger = currentUserId === c.challenger_id;
               return (
                 <li key={c.id} className="rounded-xl border border-border bg-muted/50 p-3 text-sm">
-                  <div className="flex flex-wrap items-center gap-2">
-                    <span className="font-medium text-foreground">@{challengerName}</span>
+                  <div className="flex flex-wrap items-baseline gap-2">
+                    <span className="text-[0.95rem] font-bold text-[var(--text-primary)]">{challengerPrimary}</span>
+                    {challengerShowSecondary && <span className="text-[0.78rem] text-[var(--text-muted)]">@{username}</span>}
                     {c.is_evidence_backed ? (
                       <span className="rounded-full bg-green-100 px-2 py-0.5 text-xs font-medium text-green-800">Evidence-backed</span>
                     ) : (
@@ -347,11 +366,18 @@ export function MarkDetailTabs({
           )}
           <ul className="space-y-2">
             {comments.map((c) => {
-              const authorName = getUsername(c.profiles);
+              const username = getUsername(c.profiles);
+              const displayPrimary = getDisplayPrimary(c.profiles);
+              const showSecondary = getShowSecondary(c.profiles);
               return (
                 <li key={c.id} className="rounded-xl border border-border bg-muted/50 p-3 text-sm">
-                  <span className="font-medium text-foreground">@{authorName}</span>
-                  <span className="text-xs text-muted-foreground"> · {new Date(c.created_at).toLocaleString()}</span>
+                  <div className="flex items-baseline justify-between gap-2">
+                    <div>
+                      <span className="text-[0.95rem] font-bold text-[var(--text-primary)]">{displayPrimary}</span>
+                      {showSecondary && <span className="ml-1.5 text-[0.78rem] text-[var(--text-muted)]">@{username}</span>}
+                    </div>
+                    <span className="text-[0.75rem] text-[var(--text-muted)] shrink-0">{new Date(c.created_at).toLocaleString()}</span>
+                  </div>
                   <p className="mt-0.5 text-foreground">{c.content}</p>
                 </li>
               );

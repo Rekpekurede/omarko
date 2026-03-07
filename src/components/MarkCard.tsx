@@ -24,10 +24,10 @@ const DOMAIN_BADGE_CLASS: Record<string, string> = {
 };
 const DOMAIN_DEFAULT = 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]';
 
-function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null } | null {
+function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null; display_name?: string | null } | null {
   if (!profiles) return null;
   const p = Array.isArray(profiles) ? profiles[0] : profiles;
-  return p ? { username: p.username, avatar_url: (p as { avatar_url?: string | null }).avatar_url } : null;
+  return p ? { username: p.username, avatar_url: (p as { avatar_url?: string | null }).avatar_url, display_name: (p as { display_name?: string | null }).display_name } : null;
 }
 
 function getHistoricalName(historical: Mark['historical_profiles']): string | null {
@@ -133,35 +133,55 @@ export function MarkCard({
   const soiCount = mark.soi_count ?? 0;
   const domainBadgeClass = (mark.domain && DOMAIN_BADGE_CLASS[mark.domain]) ? DOMAIN_BADGE_CLASS[mark.domain] : DOMAIN_DEFAULT;
 
+  const displayNameTrimmed = profile?.display_name?.trim() ?? '';
+  const displayPrimary = displayNameTrimmed ? displayNameTrimmed : `@${username}`;
+  const showSecondaryUsername = !!displayNameTrimmed;
+
   return (
     <article className={`mark-card relative z-0 ${witnessGlow ? 'witness-glow' : ''}`}>
       <div className="flex items-start justify-between gap-4">
-        <div className="flex min-w-0 flex-1 items-center gap-4">
+        <div className="flex min-w-0 flex-1 items-start gap-4">
           {isHistorical ? (
             <>
               <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
                 <Avatar username={historicalName} avatarUrl={null} size="card" variant="certificate" />
               </Link>
-              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[0.875rem] font-semibold text-text-primary hover:underline cursor-pointer transition-colors duration-200">
-                {historicalName}
-              </Link>
-              <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent">
-                HISTORICAL FIGURE
-              </span>
+              <div className="min-w-0 flex-1 flex flex-col">
+                <div className="flex items-baseline justify-between gap-2">
+                  <span className="flex items-center gap-2 min-w-0">
+                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline cursor-pointer truncate">
+                      {historicalName}
+                    </Link>
+                    <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent shrink-0">
+                      HISTORICAL FIGURE
+                    </span>
+                  </span>
+                  <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                </div>
+              </div>
             </>
           ) : (
             <>
               <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
                 <Avatar username={username} avatarUrl={avatarUrl} size="card" variant="certificate" />
               </Link>
-              <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.875rem] font-semibold text-text-primary hover:underline cursor-pointer transition-colors duration-200">
-                @{username}
-              </Link>
+              <div className="min-w-0 flex-1">
+                <div className="flex items-baseline justify-between gap-2">
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate">
+                    {displayPrimary}
+                  </Link>
+                  <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                </div>
+                {showSecondaryUsername && (
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.78rem] text-[var(--text-muted)] hover:underline cursor-pointer block mt-0.5">
+                    @{username}
+                  </Link>
+                )}
+              </div>
             </>
           )}
         </div>
         <div className="flex shrink-0 items-center gap-4">
-          <RelativeTime dateString={mark.created_at} className="font-body text-[0.72rem] text-text-muted tabular-nums" />
           {(mark.status !== 'ACTIVE' || mark.withdrawn_at) && (
             <span className="ml-2 flex items-center">
               <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
