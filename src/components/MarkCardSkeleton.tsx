@@ -8,7 +8,7 @@ export function MarkCardSkeleton() {
       style={{ marginBottom: 16 }}
     >
       <div className="flex items-center gap-4">
-        <div className="h-9 w-9 shrink-0 rounded-full bg-[var(--border-subtle)]" />
+        <div className="h-[46px] w-[38px] shrink-0 rounded-[50%] bg-[var(--border-subtle)]" />
         <div className="h-4 w-24 rounded bg-[var(--border-subtle)]" />
         <div className="ml-auto h-3 w-16 rounded bg-[var(--border-subtle)]" />
       </div>

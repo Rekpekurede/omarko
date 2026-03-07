@@ -6,6 +6,7 @@ import { Header } from "@/components/Header";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
+import { PwaRegister } from "@/components/PwaRegister";
 import { createClient } from "@/lib/supabase/server";
 
 const playfair = Playfair_Display({
@@ -70,8 +71,10 @@ export default async function RootLayout({
     <html lang="en" className={`${playfair.variable} ${notoSans.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
+        <link rel="manifest" href="/manifest.webmanifest" />
       </head>
       <body className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased">
+        <PwaRegister />
         <ThemeProvider>
           <CreateMarkModalProvider>
             <AppShell header={<Header />} username={username} avatarUrl={avatarUrl} isSignedIn={isSignedIn}>

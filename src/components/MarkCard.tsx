@@ -251,11 +251,11 @@ export function MarkCard({
                 setLightboxUrl(mark.image_url ?? '');
                 setLightboxOpen(true);
               }}
-              className="mt-6 block w-full cursor-zoom-in group text-left"
+              className="mt-4 block w-full cursor-zoom-in group text-left"
             >
-              <div className="relative aspect-video max-h-64 w-full overflow-hidden rounded-[12px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02]">
+              <div className="relative h-[280px] w-full overflow-hidden rounded-[10px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02] sm:aspect-video sm:h-auto sm:max-h-[320px]">
                 {imageLoadError ? (
-                  <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-[12px] bg-[var(--border-subtle)] text-[var(--text-muted)] font-body text-sm">
+                  <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-[10px] bg-[var(--border-subtle)] text-[var(--text-muted)] font-body text-sm">
                     Image unavailable
                   </div>
                 ) : (
@@ -263,7 +263,7 @@ export function MarkCard({
                   <img
                     src={mark.image_url}
                     alt=""
-                    className="h-full w-full object-cover"
+                    className="h-full w-full object-cover object-[center_top]"
                     loading="lazy"
                     onError={() => setImageLoadError(true)}
                   />
@@ -303,31 +303,31 @@ export function MarkCard({
         {showChallenge && !isWithdrawn && (
           isHistorical ? (
             <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <span className="flex items-center gap-1 cursor-default" title="Challenges on historical marks are reviewed by designated custodians.">
-                <span aria-hidden>✖</span>
-                <span>{challengeCount}</span>
+              <span className="flex items-center gap-1 cursor-default text-text-muted" title="Challenges on historical marks are reviewed by designated custodians.">
+                <span aria-hidden>⚔️</span>
+                <span>Challenge · {challengeCount}</span>
               </span>
             </TooltipGuide>
           ) : isOwner ? (
             <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <Link href={`/mark/${mark.id}`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer">
-                <span aria-hidden>✖</span>
-                <span>{challengeCount}</span>
+              <Link href={`/mark/${mark.id}`} className="tap-press flex items-center gap-1 text-text-muted hover:text-accent transition-colors duration-150 cursor-pointer">
+                <span aria-hidden>⚔️</span>
+                <span>Challenge · {challengeCount}</span>
               </Link>
             </TooltipGuide>
           ) : (
             <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer">
-                <span aria-hidden>✖</span>
-                <span>{challengeCount}</span>
+              <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex items-center gap-1 text-text-muted hover:text-accent transition-colors duration-150 cursor-pointer">
+                <span aria-hidden>⚔️</span>
+                <span>Challenge · {challengeCount}</span>
               </Link>
             </TooltipGuide>
           )
         )}
         {!showChallenge && (
-          <span className="flex items-center gap-1">
-            <span aria-hidden>✖</span>
-            <span>{challengeCount}</span>
+          <span className="flex items-center gap-1 text-text-muted">
+            <span aria-hidden>⚔️</span>
+            <span>Challenge · {challengeCount}</span>
           </span>
         )}
         <TooltipGuide tooltipKey="soi" tooltipText="Sign of Influence — add evidence that this idea has spread">

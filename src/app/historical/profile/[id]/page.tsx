@@ -85,7 +85,7 @@ export default async function HistoricalProfilePage({ params }: PageProps) {
       <div className="rounded-2xl border border-border bg-card p-6">
         <div className="flex flex-wrap items-start gap-4">
           {figure.avatar_url && (
-            <div className="h-24 w-24 shrink-0 overflow-hidden rounded-full bg-muted">
+            <div className="h-[115px] w-24 shrink-0 overflow-hidden rounded-[50%] border-[1.5px] border-[var(--accent)] bg-muted">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img src={figure.avatar_url} alt="" className="h-full w-full object-cover" loading="lazy" />
             </div>

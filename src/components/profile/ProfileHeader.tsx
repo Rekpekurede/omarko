@@ -52,7 +52,7 @@ export function ProfileHeader({
         <div className="flex flex-col items-start gap-5 sm:flex-row sm:items-end">
           <div className="flex flex-col items-center sm:items-start">
             {isOwner ? (
-              <div className="rounded-full ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
+              <div className="rounded-[50%] ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
                 <AvatarUpload
                   username={username}
                   avatarUrl={localAvatarUrl}
@@ -62,7 +62,7 @@ export function ProfileHeader({
                 />
               </div>
             ) : (
-              <div className="rounded-full ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
+              <div className="rounded-[50%] ring-2 ring-primary/50 ring-offset-2 ring-offset-background">
                 <Avatar username={username} avatarUrl={localAvatarUrl} size="xl" />
               </div>
             )}

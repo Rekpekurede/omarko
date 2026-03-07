@@ -1,6 +1,6 @@
 {
-  "name": "Omarko",
-  "short_name": "Omarko",
+  "name": "OMarko",
+  "short_name": "OMarko",
   "description": "Create and challenge timestamped claims.",
   "start_url": "/",
   "scope": "/",
@@ -8,6 +8,12 @@
   "background_color": "#ffffff",
   "theme_color": "#ffffff",
   "icons": [
+    {
+      "src": "/omarko-icon.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
     {
       "src": "/omarko-icon.png",
       "sizes": "512x512",
