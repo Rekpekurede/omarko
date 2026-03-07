@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useDrawer } from '@/context/DrawerContext';
 import { signOut } from '@/lib/actions';
 import { Avatar } from './Avatar';
+import { PwaInstallButton } from './PwaInstallButton';
 
 interface SideDrawerProps {
   username: string | null;
@@ -90,6 +91,7 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
                 </Link>
               );
             })}
+            <PwaInstallButton />
             <form action={signOut} className="border-l-[3px] border-transparent">
               <button
                 type="submit"
