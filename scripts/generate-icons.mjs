@@ -9,7 +9,9 @@ import { fileURLToPath } from 'url';
 import { deflateRawSync } from 'zlib';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
-const OUT_DIR = join(__dirname, '..', 'public', 'icons');
+const PUBLIC = join(__dirname, '..', 'public');
+const OUT_DIR = join(PUBLIC, 'icons');
+const SCREENSHOTS_DIR = join(PUBLIC, 'screenshots');
 
 function crc32(data) {
   let crc = 0xffffffff;
@@ -45,23 +47,30 @@ function makeChunk(type, data) {
   return chunk;
 }
 
-/** Create a solid-color PNG (gray #4b5563) */
+/** Create a solid-color PNG (gray #4b5563), square */
 function createPng(size) {
+  return createPngRect(size, size);
+}
+
+/** Create a solid-color rectangular PNG (RGB #12121A - dark bg) */
+function createPngRect(width, height) {
   const ihdr = Buffer.alloc(13);
-  writeU32(ihdr, 0, size);
-  writeU32(ihdr, 4, size);
+  writeU32(ihdr, 0, width);
+  writeU32(ihdr, 4, height);
   ihdr[8] = 8; // bit depth
   ihdr[9] = 2; // color type (RGB)
   ihdr[10] = 0; ihdr[11] = 0; ihdr[12] = 0; // compression, filter, interlace
 
-  const raw = Buffer.alloc(size * (size * 3 + 1));
+  const rowBytes = width * 3 + 1;
+  const raw = Buffer.alloc(height * rowBytes);
   let off = 0;
-  for (let y = 0; y < size; y++) {
+  const r = 0x12, g = 0x12, b = 0x1a; // #12121A
+  for (let y = 0; y < height; y++) {
     raw[off++] = 0; // filter byte
-    for (let x = 0; x < size; x++) {
-      raw[off++] = 75;   // R (#4b5563)
-      raw[off++] = 85;   // G
-      raw[off++] = 99;   // B
+    for (let x = 0; x < width; x++) {
+      raw[off++] = r;
+      raw[off++] = g;
+      raw[off++] = b;
     }
   }
   const idat = deflateRawSync(raw, { level: 9 });
@@ -76,13 +85,21 @@ function createPng(size) {
 
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
+  await mkdir(SCREENSHOTS_DIR, { recursive: true });
+
   const sizes = [192, 512];
   for (const size of sizes) {
     const png = createPng(size);
     await writeFile(join(OUT_DIR, `icon-${size}.png`), png);
     await writeFile(join(OUT_DIR, `maskable-${size}.png`), png);
   }
+
+  // PWA screenshots: wide (desktop) and narrow (mobile) for richer install UI
+  await writeFile(join(SCREENSHOTS_DIR, 'wide.png'), createPngRect(1280, 720));
+  await writeFile(join(SCREENSHOTS_DIR, 'narrow.png'), createPngRect(750, 1334));
+
   console.log('Icons generated in public/icons/');
+  console.log('Screenshots generated in public/screenshots/');
 }
 
 main().catch(console.error);
