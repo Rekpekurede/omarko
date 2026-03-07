@@ -43,7 +43,7 @@ export async function PATCH(
         : undefined;
   const rawDate = body.claimedOriginalDate;
   const claimedOriginalDateNormalized =
-    typeof rawDate === 'string' && rawDate.trim() !== '' && rawDate.trim() !== 'false'
+    rawDate && typeof rawDate === 'string' && rawDate.trim() !== ''
       ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
       : rawDate !== undefined
         ? null
@@ -51,7 +51,11 @@ export async function PATCH(
 
   const updates: { evidence_url?: string | null; claimed_original_date?: string | null; is_evidence_backed?: boolean } = {};
   if (evidenceUrl !== undefined) updates.evidence_url = evidenceUrl;
-  if (claimedOriginalDateNormalized !== undefined) updates.claimed_original_date = claimedOriginalDateNormalized;
+  if (claimedOriginalDateNormalized !== undefined)
+    updates.claimed_original_date =
+      claimedOriginalDateNormalized && claimedOriginalDateNormalized !== ''
+        ? claimedOriginalDateNormalized
+        : null;
 
   const wasEvidenceBacked = challengeRow.is_evidence_backed;
   const addingEvidence = !!evidenceUrl && !challengeRow.evidence_url;

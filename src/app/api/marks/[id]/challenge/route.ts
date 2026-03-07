@@ -29,18 +29,26 @@ export async function POST(
 
   const rawDate = body.claimedOriginalDate;
   const claimedOriginalDate =
-    rawDate && typeof rawDate === 'string' && rawDate.trim() !== ''
-      ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
+    rawDate && typeof rawDate === 'string' && rawDate.trim() !== '' && /^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim())
+      ? rawDate.trim()
       : null;
   const payload = {
     mark_id: markId,
     challenger_id: user.id,
     evidence_text: text,
     evidence_url: evidenceUrl,
-    claimed_original_date: claimedOriginalDate || null,
+    claimed_original_date:
+      claimedOriginalDate && claimedOriginalDate !== ''
+        ? claimedOriginalDate
+        : null,
     is_evidence_backed: isEvidenceBacked,
     outcome: 'PENDING',
   };
+
+  console.log('CHALLENGE PAYLOAD', JSON.stringify(payload, null, 2));
+  console.log('claimed_original_date =', payload.claimed_original_date);
+  console.log('resolved_at =', '(not in insert payload)');
+  console.log('created_at =', '(not in insert payload)');
 
   const { data: markRow } = await supabase
     .from('marks')
