@@ -20,6 +20,7 @@ const DOMAIN_BADGE_CLASS: Record<string, string> = {
   General: 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]',
   Philosophy: 'bg-[rgba(167,139,250,0.12)] text-[#C4B5FD] border border-[rgba(167,139,250,0.2)]',
   'Visual Art': 'bg-[rgba(192,132,252,0.12)] text-[#D8B4FE] border border-[rgba(192,132,252,0.2)]',
+  Religion: 'bg-[rgba(251,191,36,0.12)] text-[#FCD34D] border border-[rgba(251,191,36,0.2)]',
 };
 const DOMAIN_DEFAULT = 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]';
 

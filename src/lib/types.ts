@@ -51,6 +51,7 @@ export const DOMAINS = [
   'Culture',
   'Food',
   'Philosophy',
+  'Religion',
   'General',
 ] as const;
 
