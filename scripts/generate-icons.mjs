@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /**
- * Generate PWA icons: convert omarko-icon to true PNG and resize to 144/192/512.
- * Falls back to placeholder solid-color icons if omarko-icon.png is missing.
+ * Generate PWA app icons: rock + fingerprint symbol only, no text.
+ * Square PNG, solid dark background, centered symbol, high contrast.
  * Run: node scripts/generate-icons.mjs
  */
 import { mkdir, writeFile, readFile, access } from 'fs/promises';
@@ -90,15 +90,30 @@ const SOURCE_ICON = join(PUBLIC, 'omarko-icon.png');
 // PWA install icon background (matches manifest background_color)
 const BG = { r: 8, g: 8, b: 12 }; // #08080C
 
-/** Create a Chrome-friendly PWA icon: solid background + centered logo. Opaque PNG (no transparency). */
+/**
+ * Extract symbol-only (rock + fingerprint) from source: crop to top/center to exclude text.
+ * Then create PWA icon: solid dark background, centered symbol, high contrast for small sizes.
+ */
 async function createAppIcon(sourcePngBuffer, size, maskable = false) {
   const safeScale = maskable ? 0.8 : 0.82;
   const logoSize = Math.round(size * safeScale);
-  const logo = await sharp(sourcePngBuffer).resize(logoSize, logoSize).png().toBuffer();
+
+  const meta = await sharp(sourcePngBuffer).metadata();
+  const w = meta.width ?? 1024;
+  const h = meta.height ?? 1024;
+  // Crop to upper portion so we get only the rock/fingerprint symbol (no text at bottom)
+  const cropTop = Math.floor(h * 0.52);
+  const symbol = await sharp(sourcePngBuffer)
+    .extract({ left: 0, top: 0, width: w, height: cropTop })
+    .resize(logoSize, logoSize)
+    .normalize()
+    .png()
+    .toBuffer();
+
   return sharp({
     create: { width: size, height: size, channels: 3, background: BG },
   })
-    .composite([{ input: logo, gravity: 'center' }])
+    .composite([{ input: symbol, gravity: 'center' }])
     .flatten({ background: BG })
     .png()
     .toBuffer();
