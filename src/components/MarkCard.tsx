@@ -281,87 +281,89 @@ export function MarkCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="engagement-row mt-[14px] border-t border-border-subtle pt-3 flex flex-nowrap items-center gap-[18px] text-[0.78rem] text-text-muted">
-        <TooltipGuide
-          tooltipKey="support"
-          tooltipText="Support this Mark — you believe this claim is valid"
-          requiresAuth
-          currentUserId={currentUserId}
-        >
-          <button
-            type="button"
-            onClick={() => handleVote('support')}
-            disabled={!canVote || isWithdrawn || pending}
-            className={`tap-press flex items-center gap-1 cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
-              vote === 'SUPPORT' ? 'text-accent' : 'hover:text-accent'
-            }`}
-            aria-label="Support"
+      <div className="engagement-row mt-4 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-sm text-text-muted md:gap-6 md:pt-3.5">
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:justify-between md:gap-6">
+          <TooltipGuide
+            tooltipKey="support"
+            tooltipText="Support this Mark — you believe this claim is valid"
+            requiresAuth
+            currentUserId={currentUserId}
           >
-            <span aria-hidden>👍</span>
-            <span>{supportVotes}</span>
-          </button>
-        </TooltipGuide>
-        {showChallenge && !isWithdrawn && (
-          isHistorical ? (
-            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <span className="flex items-center gap-1 cursor-default text-text-muted" title="Challenges on historical marks are reviewed by designated custodians.">
-                <span aria-hidden>⚔️</span>
-                <span>Challenge · {challengeCount}</span>
-              </span>
-            </TooltipGuide>
-          ) : isOwner ? (
-            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <Link href={`/mark/${mark.id}`} className="tap-press flex items-center gap-1 text-text-muted hover:text-accent transition-colors duration-150 cursor-pointer">
-                <span aria-hidden>⚔️</span>
-                <span>Challenge · {challengeCount}</span>
-              </Link>
-            </TooltipGuide>
-          ) : (
-            <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-              <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex items-center gap-1 text-text-muted hover:text-accent transition-colors duration-150 cursor-pointer">
-                <span aria-hidden>⚔️</span>
-                <span>Challenge · {challengeCount}</span>
-              </Link>
-            </TooltipGuide>
-          )
-        )}
-        {!showChallenge && (
-          <span className="flex items-center gap-1 text-text-muted">
-            <span aria-hidden>⚔️</span>
-            <span>Challenge · {challengeCount}</span>
-          </span>
-        )}
-        <TooltipGuide tooltipKey="soi" tooltipText="Sign of Influence — add evidence that this idea has spread">
-          <Link href={`/mark/${mark.id}?tab=soi`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer font-body font-semibold text-[0.68rem] tracking-[0.08em]">
-            <span aria-hidden>SOI</span>
-            <span>{soiCount}</span>
-          </Link>
-        </TooltipGuide>
-        <TooltipGuide
-          tooltipKey="oppose"
-          tooltipText="Oppose this Mark — you disagree with this claim"
-          requiresAuth
-          currentUserId={currentUserId}
-        >
-          <button
-            type="button"
-            onClick={() => handleVote('oppose')}
-            disabled={!canVote || isWithdrawn || pending}
-            className={`tap-press flex items-center gap-1 cursor-pointer transition-colors duration-150 disabled:opacity-50 disabled:cursor-not-allowed ${
-              vote === 'OPPOSE' ? 'text-red-400' : 'hover:text-accent'
-            }`}
-            aria-label="Oppose"
+            <button
+              type="button"
+              onClick={() => handleVote('support')}
+              disabled={!canVote || isWithdrawn || pending}
+              className={`tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                vote === 'SUPPORT' ? 'text-accent' : 'hover:text-accent'
+              }`}
+              aria-label="Support"
+            >
+              <span aria-hidden>👍</span>
+              <span>{supportVotes}</span>
+            </button>
+          </TooltipGuide>
+          {showChallenge && !isWithdrawn && (
+            isHistorical ? (
+              <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
+                <span className="flex shrink-0 cursor-default items-center gap-1.5 whitespace-nowrap text-text-muted" title="Challenges on historical marks are reviewed by designated custodians.">
+                  <span aria-hidden>⚔️</span>
+                  <span>{challengeCount}</span>
+                </span>
+              </TooltipGuide>
+            ) : isOwner ? (
+              <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
+                <Link href={`/mark/${mark.id}`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
+                  <span aria-hidden>⚔️</span>
+                  <span>{challengeCount}</span>
+                </Link>
+              </TooltipGuide>
+            ) : (
+              <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
+                <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
+                  <span aria-hidden>⚔️</span>
+                  <span>{challengeCount}</span>
+                </Link>
+              </TooltipGuide>
+            )
+          )}
+          {!showChallenge && (
+            <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted">
+              <span aria-hidden>⚔️</span>
+              <span>{challengeCount}</span>
+            </span>
+          )}
+          <TooltipGuide tooltipKey="soi" tooltipText="Sign of Influence — add evidence that this idea has spread">
+            <Link href={`/mark/${mark.id}?tab=soi`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap font-semibold tracking-wide transition-colors duration-150 hover:text-accent">
+              <span aria-hidden>SOI</span>
+              <span>{soiCount}</span>
+            </Link>
+          </TooltipGuide>
+          <TooltipGuide
+            tooltipKey="oppose"
+            tooltipText="Oppose this Mark — you disagree with this claim"
+            requiresAuth
+            currentUserId={currentUserId}
           >
-            <span aria-hidden>👎</span>
-            <span>{opposeVotes}</span>
-          </button>
-        </TooltipGuide>
-        <TooltipGuide tooltipKey="comment" tooltipText="Comment on this Mark">
-          <Link href={`/mark/${mark.id}?tab=comments`} className="tap-press flex items-center gap-1 hover:text-accent transition-colors duration-150 cursor-pointer">
-            <span aria-hidden>💬</span>
-            <span>{commentsCount}</span>
-          </Link>
-        </TooltipGuide>
+            <button
+              type="button"
+              onClick={() => handleVote('oppose')}
+              disabled={!canVote || isWithdrawn || pending}
+              className={`tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
+                vote === 'OPPOSE' ? 'text-red-400' : 'hover:text-accent'
+              }`}
+              aria-label="Oppose"
+            >
+              <span aria-hidden>👎</span>
+              <span>{opposeVotes}</span>
+            </button>
+          </TooltipGuide>
+          <TooltipGuide tooltipKey="comment" tooltipText="Comment on this Mark">
+            <Link href={`/mark/${mark.id}?tab=comments`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 hover:text-accent">
+              <span aria-hidden>💬</span>
+              <span>{commentsCount}</span>
+            </Link>
+          </TooltipGuide>
+        </div>
         {showBookmark && (
           <TooltipGuide
             tooltipKey="bookmark"
@@ -369,7 +371,7 @@ export function MarkCard({
             requiresAuth
             currentUserId={currentUserId}
           >
-            <span className="engagement-bookmark ml-auto inline-flex shrink-0" title={bookmarked ? 'Saved' : 'Save'}>
+            <span className="engagement-bookmark ml-1 flex shrink-0 items-center md:ml-2" title={bookmarked ? 'Saved' : 'Save'}>
               <BookmarkButton markId={mark.id} bookmarked={bookmarked} iconOnly />
             </span>
           </TooltipGuide>
