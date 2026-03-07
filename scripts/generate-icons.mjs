@@ -87,7 +87,7 @@ async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   await mkdir(SCREENSHOTS_DIR, { recursive: true });
 
-  const sizes = [192, 512];
+  const sizes = [144, 192, 512];
   for (const size of sizes) {
     const png = createPng(size);
     await writeFile(join(OUT_DIR, `icon-${size}.png`), png);
