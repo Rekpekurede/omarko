@@ -18,6 +18,7 @@ export const CLAIM_TYPES = [
   'Design',
   'Movement',
   'Observation',
+  'Perspective',
   'Trend',
   'Story',
 ] as const;

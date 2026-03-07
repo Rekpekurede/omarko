@@ -82,6 +82,7 @@ export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
   Design: 'A visual, product, or structural design',
   Movement: 'A cultural, social, or artistic movement you started',
   Observation: 'Something you noticed or documented about the world',
+  Perspective: 'A standpoint or way of viewing something — your take for evaluation.',
   Trend: 'A pattern you identified and named before others',
   Story: 'A narrative, script, or fictional work you authored',
   Strategy: 'A plan or approach you devised',

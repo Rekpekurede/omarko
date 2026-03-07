@@ -19,7 +19,7 @@ interface ClaimTypePickerProps {
 function getHeuristicSuggestion(text: string): string | null {
   const lower = text.toLowerCase();
   if (/\b(will|going to|by 20\d{2})\b/.test(lower)) return 'Prediction';
-  if (/\b(i believe|i think)\b/.test(lower)) return 'Opinion';
+  if (/\b(i believe|i think)\b/.test(lower)) return 'Perspective';
   if (/\b(i discovered|i found)\b/.test(lower)) return 'Discovery';
   if (/\b(recipe|ingredients)\b/.test(lower)) return 'Recipe';
   return null;
