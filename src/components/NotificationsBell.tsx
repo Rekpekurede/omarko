@@ -1,69 +1,10 @@
 'use client';
 
 import Link from 'next/link';
-import { useCallback, useEffect, useState } from 'react';
-import { createClient } from '@/lib/supabase/client';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 
 export function NotificationsBell() {
-  const [unreadCount, setUnreadCount] = useState<number | null>(null);
-
-  const refetchUnreadCount = useCallback(() => {
-    fetch('/api/notifications?limit=1')
-      .then((res) => res.json())
-      .then((data) => {
-        if (typeof data.unread_count === 'number') {
-          setUnreadCount(data.unread_count);
-        } else if (typeof data.unreadCount === 'number') {
-          setUnreadCount(data.unreadCount);
-        }
-      })
-      .catch(() => {});
-  }, []);
-
-  useEffect(() => {
-    let active = true;
-    let channel: ReturnType<ReturnType<typeof createClient>['channel']> | null = null;
-    const supabase = createClient();
-
-    const onVisibilityChange = () => {
-      if (document.visibilityState === 'visible') refetchUnreadCount();
-    };
-
-    refetchUnreadCount();
-    document.addEventListener('visibilitychange', onVisibilityChange);
-
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (!active || !user?.id) return;
-      channel = supabase
-        .channel('notifications')
-        .on(
-          'postgres_changes',
-          {
-            event: 'INSERT',
-            schema: 'public',
-            table: 'notifications',
-            filter: `user_id=eq.${user.id}`,
-          },
-          () => refetchUnreadCount()
-        )
-        .subscribe();
-    });
-
-    const interval = setInterval(refetchUnreadCount, 30000);
-
-    return () => {
-      active = false;
-      document.removeEventListener('visibilitychange', onVisibilityChange);
-      clearInterval(interval);
-      if (channel) supabase.removeChannel(channel);
-    };
-  }, [refetchUnreadCount]);
-
-  useEffect(() => {
-    const onNotificationsChanged = () => refetchUnreadCount();
-    window.addEventListener('notifications:changed', onNotificationsChanged);
-    return () => window.removeEventListener('notifications:changed', onNotificationsChanged);
-  }, [refetchUnreadCount]);
+  const unreadCount = useUnreadNotificationCount();
 
   return (
     <Link

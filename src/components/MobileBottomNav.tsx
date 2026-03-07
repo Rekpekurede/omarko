@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import type { ReactNode } from 'react';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
+import { useUnreadNotificationCount } from '@/hooks/useUnreadNotificationCount';
 
 interface MobileBottomNavProps {
   isSignedIn: boolean;
@@ -16,6 +17,7 @@ type NavItemProps = {
   active: boolean;
   onClick?: () => void;
   icon: ReactNode;
+  badge?: number | null;
 };
 
 function isActive(pathname: string, href: string) {
@@ -23,18 +25,34 @@ function isActive(pathname: string, href: string) {
   return pathname.startsWith(href);
 }
 
-function NavItem({ href, label, active, onClick, icon }: NavItemProps) {
-  const wrapperClasses = `tap-press flex min-w-[3.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 transition duration-150 ${
+function NavItem({ href, label, active, onClick, icon, badge }: NavItemProps) {
+  const wrapperClasses = `tap-press relative flex min-w-[3.5rem] flex-1 flex-col items-center justify-center gap-1 rounded-xl px-2 py-2.5 transition duration-150 ${
     active
       ? 'nav-item-active bg-primary text-primary-foreground shadow-sm'
       : 'text-muted-foreground hover:bg-accent/70 hover:text-foreground'
   }`;
 
-  const content = (
-    <span className="nav-item-inner flex flex-col items-center justify-center gap-1">
+  const iconWithBadge = badge != null && badge > 0 ? (
+    <span className="relative inline-flex shrink-0">
       <span className="text-base leading-none" aria-hidden="true">
         {icon}
       </span>
+      <span
+        className="absolute -right-1.5 -top-1 flex h-4 min-w-4 items-center justify-center rounded-full px-1 text-[10px] font-medium text-black"
+        style={{ backgroundColor: 'var(--accent)' }}
+      >
+        {badge > 99 ? '99+' : badge}
+      </span>
+    </span>
+  ) : (
+    <span className="text-base leading-none" aria-hidden="true">
+      {icon}
+    </span>
+  );
+
+  const content = (
+    <span className="nav-item-inner flex flex-col items-center justify-center gap-1">
+      {iconWithBadge}
       <span className="text-[11px] font-medium leading-none">{label}</span>
     </span>
   );
@@ -57,6 +75,7 @@ function NavItem({ href, label, active, onClick, icon }: NavItemProps) {
 export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) {
   const pathname = usePathname();
   const { openCreateModal } = useCreateMarkModal();
+  const unreadCount = useUnreadNotificationCount();
 
   return (
     <>
@@ -101,6 +120,7 @@ export function MobileBottomNav({ isSignedIn, username }: MobileBottomNavProps) 
                 href="/notifications"
                 label="Notifications"
                 active={isActive(pathname, '/notifications')}
+                badge={unreadCount}
                 icon={
                   <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <path d="M15 17h5l-1.4-1.4A2 2 0 0 1 18 14.2V11a6 6 0 1 0-12 0v3.2a2 2 0 0 1-.6 1.4L4 17h5" />

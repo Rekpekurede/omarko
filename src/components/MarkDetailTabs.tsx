@@ -231,7 +231,7 @@ export function MarkDetailTabs({
                 value={soiUrl}
                 onChange={(e) => setSoiUrl(e.target.value)}
                 placeholder="https://..."
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                className="w-full rounded-xl border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent caret-text-primary"
               />
               {soiError && <p className="text-sm text-red-600">{soiError}</p>}
               <button
@@ -352,13 +352,13 @@ export function MarkDetailTabs({
                 onChange={(e) => setCommentContent(e.target.value)}
                 rows={2}
                 placeholder="Add a comment..."
-                className="w-full rounded-xl border border-border bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-foreground focus:outline-none focus:ring-1 focus:ring-foreground"
+                className="w-full rounded-xl border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent caret-text-primary"
               />
               {commentError && <p className="text-sm text-red-600">{commentError}</p>}
               <button
                 type="submit"
                 disabled={!commentContent.trim() || commentSubmitting}
-                className="min-h-[40px] rounded-xl bg-foreground px-4 py-2 text-sm font-medium text-background transition hover:opacity-90 disabled:opacity-50"
+                className="min-h-[40px] rounded-xl bg-accent px-4 py-2 text-sm font-medium text-black transition hover:opacity-90 disabled:opacity-50"
               >
                 {commentSubmitting ? 'Posting…' : 'Post comment'}
               </button>

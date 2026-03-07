@@ -99,8 +99,8 @@ export function WithdrawContestButtons({ markId, hasChallenges }: WithdrawContes
         )}
       </div>
       {contestOpen && (
-        <form onSubmit={handleContest} className="space-y-2 border-t border-gray-200 pt-2">
-          <label htmlFor="owner_response" className="block text-sm font-medium text-black">
+        <form onSubmit={handleContest} className="space-y-2 border-t border-border pt-2">
+          <label htmlFor="owner_response" className="block text-sm font-medium text-text-primary">
             Owner response (optional)
           </label>
           <textarea
@@ -109,12 +109,12 @@ export function WithdrawContestButtons({ markId, hasChallenges }: WithdrawContes
             onChange={(e) => setOwnerResponse(e.target.value)}
             rows={2}
             placeholder="Add your response to the challenge..."
-            className="w-full rounded border border-gray-300 bg-white px-3 py-2 text-sm text-black placeholder-gray-500 focus:border-black focus:outline-none focus:ring-1 focus:ring-black"
+            className="w-full rounded-xl border border-border bg-bg-card px-3 py-2 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent caret-text-primary"
           />
           <button
             type="submit"
             disabled={contestSubmitting}
-            className="rounded border border-black bg-black px-3 py-1.5 text-sm font-medium text-white hover:bg-gray-800 disabled:opacity-50"
+            className="rounded-xl border border-border bg-accent px-3 py-1.5 text-sm font-medium text-black hover:opacity-90 disabled:opacity-50"
           >
             {contestSubmitting ? 'Saving…' : 'Save response'}
           </button>

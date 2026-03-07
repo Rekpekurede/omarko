@@ -55,27 +55,27 @@ export function ChallengeEditEvidence({ challengeId, currentEvidenceUrl, current
           Add / edit evidence
         </button>
       ) : (
-        <form onSubmit={handleSubmit} className="mt-2 space-y-2 rounded border border-gray-200 bg-gray-50 p-2">
+        <form onSubmit={handleSubmit} className="mt-2 space-y-2 rounded-xl border border-border bg-bg-card p-2">
           <input
             type="url"
             value={evidenceUrl}
             onChange={(e) => setEvidenceUrl(e.target.value)}
             placeholder="Evidence URL"
-            className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm"
+            className="w-full rounded-xl border border-border bg-bg-card px-2 py-1 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent caret-text-primary"
           />
           <input
             type="text"
             value={claimedOriginalDate}
             onChange={(e) => setClaimedOriginalDate(e.target.value)}
             placeholder="Claimed original date (e.g. YYYY-MM-DD)"
-            className="w-full rounded border border-gray-300 bg-white px-2 py-1 text-sm"
+            className="w-full rounded-xl border border-border bg-bg-card px-2 py-1 text-sm text-text-primary placeholder:text-text-muted focus:border-accent focus:outline-none focus:ring-1 focus:ring-accent caret-text-primary"
           />
           {error && <p className="text-xs text-red-600">{error}</p>}
           <div className="flex gap-2">
-            <button type="submit" disabled={submitting} className="rounded bg-black px-2 py-1 text-xs text-white hover:bg-gray-800 disabled:opacity-50">
+            <button type="submit" disabled={submitting} className="rounded-xl bg-accent px-2 py-1 text-xs font-medium text-black hover:opacity-90 disabled:opacity-50">
               Save
             </button>
-            <button type="button" onClick={() => setOpen(false)} className="rounded border border-gray-300 px-2 py-1 text-xs hover:bg-gray-100">
+            <button type="button" onClick={() => setOpen(false)} className="rounded-xl border border-border px-2 py-1 text-xs text-text-primary hover:bg-bg-card-hover">
               Cancel
             </button>
           </div>
