@@ -253,9 +253,9 @@ export function MarkCard({
               }}
               className="mt-4 block w-full cursor-zoom-in group text-left"
             >
-              <div className="relative h-[280px] w-full overflow-hidden rounded-[10px] bg-[var(--border-subtle)] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.02] sm:aspect-video sm:h-auto sm:max-h-[320px]">
+              <div className="relative w-fit max-w-full overflow-hidden rounded-[10px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.01]">
                 {imageLoadError ? (
-                  <div className="flex h-full min-h-[120px] w-full items-center justify-center rounded-[10px] bg-[var(--border-subtle)] text-[var(--text-muted)] font-body text-sm">
+                  <div className="flex min-h-[120px] min-w-[200px] items-center justify-center rounded-[10px] bg-[var(--border-subtle)] py-12 text-[var(--text-muted)] font-body text-sm">
                     Image unavailable
                   </div>
                 ) : (
@@ -263,7 +263,8 @@ export function MarkCard({
                   <img
                     src={mark.image_url}
                     alt=""
-                    className="h-full w-full object-cover object-[center_top]"
+                    className="block max-w-full rounded-[10px] object-contain align-top"
+                    style={{ maxHeight: 'min(70vh, 600px)' }}
                     loading="lazy"
                     onError={() => setImageLoadError(true)}
                   />
