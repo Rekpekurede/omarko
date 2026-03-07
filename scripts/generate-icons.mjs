@@ -87,6 +87,23 @@ function createPngRect(width, height) {
 
 const SOURCE_ICON = join(PUBLIC, 'omarko-icon.png');
 
+// PWA install icon background (matches manifest background_color)
+const BG = { r: 8, g: 8, b: 12 }; // #08080C
+
+/** Create a Chrome-friendly PWA icon: solid background + centered logo. Opaque PNG (no transparency). */
+async function createAppIcon(sourcePngBuffer, size, maskable = false) {
+  const safeScale = maskable ? 0.8 : 0.82;
+  const logoSize = Math.round(size * safeScale);
+  const logo = await sharp(sourcePngBuffer).resize(logoSize, logoSize).png().toBuffer();
+  return sharp({
+    create: { width: size, height: size, channels: 3, background: BG },
+  })
+    .composite([{ input: logo, gravity: 'center' }])
+    .flatten({ background: BG })
+    .png()
+    .toBuffer();
+}
+
 async function sourceExists() {
   try {
     await access(SOURCE_ICON);
@@ -100,37 +117,31 @@ async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   await mkdir(SCREENSHOTS_DIR, { recursive: true });
 
-  const sizes = [144, 192, 512];
+  const pwaSizes = [
+    { size: 192, name: 'icon-192.png', maskable: false },
+    { size: 512, name: 'icon-512.png', maskable: false },
+    { size: 512, name: 'icon-512-maskable.png', maskable: true },
+  ];
+
   if (await sourceExists()) {
     const buf = await readFile(SOURCE_ICON);
-    const pipeline = sharp(buf);
-    // Re-encode as PNG (fixes JPEG-saved-as-.png) and overwrite source
-    const pngBuf = await pipeline.png().toBuffer();
+    const pngBuf = await sharp(buf).png().toBuffer();
     await writeFile(SOURCE_ICON, pngBuf);
-    // Generate each size from the source
-    for (const size of sizes) {
-      const resized = await sharp(pngBuf).resize(size, size).png().toBuffer();
-      await writeFile(join(OUT_DIR, `icon-${size}.png`), resized);
-      await writeFile(join(OUT_DIR, `maskable-${size}.png`), resized);
+    for (const { size, name, maskable } of pwaSizes) {
+      const out = await createAppIcon(pngBuf, size, maskable);
+      await writeFile(join(OUT_DIR, name), out);
     }
-    const icon512 = await sharp(pngBuf).resize(512, 512).png().toBuffer();
-    await writeFile(join(OUT_DIR, 'icon-512-maskable.png'), icon512);
-    console.log('Icons generated from omarko-icon.png (converted to PNG) in public/icons/');
+    console.log('PWA icons generated (solid bg + centered logo) in public/icons/');
   } else {
-    for (const size of sizes) {
-      const png = createPng(size);
-      await writeFile(join(OUT_DIR, `icon-${size}.png`), png);
-      await writeFile(join(OUT_DIR, `maskable-${size}.png`), png);
+    for (const { size, name } of pwaSizes) {
+      const placeholder = createPng(size);
+      await writeFile(join(OUT_DIR, name), placeholder);
     }
-    const png512 = createPng(512);
-    await writeFile(join(OUT_DIR, 'icon-512-maskable.png'), png512);
-    console.log('Icons generated (placeholders) in public/icons/');
+    console.log('PWA icons generated (placeholders) in public/icons/');
   }
 
-  // PWA screenshots: wide (desktop) and narrow (mobile) for richer install UI
   await writeFile(join(SCREENSHOTS_DIR, 'wide.png'), createPngRect(1280, 720));
   await writeFile(join(SCREENSHOTS_DIR, 'narrow.png'), createPngRect(750, 1334));
-
   console.log('Screenshots generated in public/screenshots/');
 }
 

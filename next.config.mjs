@@ -1,11 +1,8 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  async headers() {
+  async rewrites() {
     return [
-      {
-        source: "/manifest.webmanifest",
-        headers: [{ key: "Content-Type", value: "application/manifest+json" }],
-      },
+      { source: "/manifest.webmanifest", destination: "/api/manifest" },
     ];
   },
 };
