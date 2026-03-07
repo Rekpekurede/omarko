@@ -48,9 +48,10 @@ export function usePWAInstall(): PWAInstallState {
     try {
       await deferredPrompt.prompt();
       const { outcome } = await deferredPrompt.userChoice;
-      if (outcome === 'accepted') setDeferredPrompt(null);
+      setDeferredPrompt(null); // hide button after any install attempt (accept or dismiss)
       return outcome === 'accepted';
     } catch {
+      setDeferredPrompt(null);
       return false;
     }
   }, [deferredPrompt]);
