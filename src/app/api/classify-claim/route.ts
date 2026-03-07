@@ -56,6 +56,8 @@ function pickClaimType(input: string): { claimType: ClaimType; confidence: Confi
     return { claimType: 'Joke', confidence: 'high' };
   if (/\b(defend|defense|defending|i defend|my defense|argument for|case for)\b/.test(lower))
     return { claimType: 'Defense', confidence: 'high' };
+  if (/\b(word i coined|i coined the word|my word|the word i)\b/.test(lower))
+    return { claimType: 'Word', confidence: 'high' };
 
   // Medium matches
   if (/\b(will|going to|forecast|predict|by 20\d{2}|soon)\b/.test(lower))
@@ -92,6 +94,8 @@ function pickClaimType(input: string): { claimType: ClaimType; confidence: Confi
     return { claimType: 'Joke', confidence: 'medium' };
   if (/\b(defense|defending|advocate|argument for|in defense of)\b/.test(lower))
     return { claimType: 'Defense', confidence: 'medium' };
+  if (/\b(coined|neologism|my word|defined the term|word for)\b/.test(lower))
+    return { claimType: 'Word', confidence: 'medium' };
 
   // Fallback -> low confidence (UI will not show)
   return { claimType: 'Concept', confidence: 'low' };

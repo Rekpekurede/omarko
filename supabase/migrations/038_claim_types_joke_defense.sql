@@ -1,9 +1,10 @@
--- Add claim types: Joke, Defense.
+-- Add claim types: Joke, Defense, Word.
 
 INSERT INTO public.claim_types (name, description)
 VALUES
   ('Joke', 'A humorous claim — joke, bit, or comedic statement you originated.'),
-  ('Defense', 'A defense of a person, position, or policy — your argument or case for something.')
+  ('Defense', 'A defense of a person, position, or policy — your argument or case for something.'),
+  ('Word', 'A word you coined or that you are known for using or defining.')
 ON CONFLICT (name) DO UPDATE SET description = EXCLUDED.description;
 
 -- Allow new claim_type values on marks
@@ -15,5 +16,5 @@ CHECK (claim_type IN (
   'Quote', 'Concept', 'Method', 'Theory',
   'Phrase', 'Formula', 'Design', 'Movement',
   'Perspective', 'Trend', 'Story', 'Observation', 'Event',
-  'Joke', 'Defense'
+  'Joke', 'Defense', 'Word'
 ));
