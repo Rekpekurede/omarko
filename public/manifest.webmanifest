@@ -10,6 +10,11 @@
   "theme_color": "#f59e0b",
   "icons": [
     {
+      "src": "/omarko-icon.png",
+      "sizes": "1024x1024",
+      "type": "image/png"
+    },
+    {
       "src": "/icons/icon-144.png",
       "sizes": "144x144",
       "type": "image/png"
@@ -43,12 +48,6 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
-    },
-    {
-      "src": "/omarko-icon.png",
-      "sizes": "1024x1024",
-      "type": "image/png",
-      "purpose": "any"
     }
   ],
   "screenshots": [
