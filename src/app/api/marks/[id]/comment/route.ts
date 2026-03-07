@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createNotification } from '@/lib/createNotification';
 
 export async function POST(
   request: Request,
@@ -32,6 +33,21 @@ export async function POST(
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  try {
+    const { data: markRow } = await supabase.from('marks').select('user_id').eq('id', markId).single();
+    if (markRow?.user_id) {
+      await createNotification({
+        userId: markRow.user_id,
+        actorId: user.id,
+        type: 'comment',
+        markId,
+        commentId: comment?.id ?? null,
+      });
+    }
+  } catch {
+    /* notification failure must not break the main action */
   }
 
   const { count } = await supabase

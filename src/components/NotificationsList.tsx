@@ -1,184 +1,149 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
 
-interface NotificationRow {
+export interface NotificationItem {
   id: string;
   type: string;
-  mark_id: string | null;
-  actor_id: string | null;
-  actor_username?: string | null;
-  actor_avatar_url?: string | null;
-  read_at: string | null;
+  is_read: boolean;
   created_at: string;
+  actor: { display_name: string; username: string; avatar_url: string | null };
+  mark: { id: string; content: string } | null;
 }
 
-interface NotificationsListProps {
-  initialNotifications: NotificationRow[];
-  initialNextCursor: string | null;
-  initialUnreadCount: number;
-}
+const ACTION_TEXT: Record<string, string> = {
+  follow: 'followed you',
+  support: 'supported your mark',
+  oppose: 'opposed your mark',
+  challenge: 'challenged your mark',
+  comment: 'commented on your mark',
+  soi: 'added a Sign of Influence to your mark',
+};
 
-export function NotificationsList({
-  initialNotifications,
-  initialNextCursor,
-  initialUnreadCount,
-}: NotificationsListProps) {
-  const router = useRouter();
-  const [notifications, setNotifications] = useState<NotificationRow[]>(initialNotifications);
-  const [nextCursor, setNextCursor] = useState<string | null>(initialNextCursor);
-  const [loading, setLoading] = useState(false);
-  const [markingAll, setMarkingAll] = useState(false);
-
-  const unreadCount = useMemo(
-    () => notifications.filter((n) => !n.read_at).length,
-    [notifications]
+function NotificationSkeleton() {
+  return (
+    <li className="flex animate-pulse items-start gap-3 rounded-xl border border-border bg-card p-3">
+      <div className="h-10 w-10 shrink-0 rounded-[50%] bg-bg-secondary" />
+      <div className="min-w-0 flex-1 space-y-2">
+        <div className="h-4 w-3/4 rounded bg-bg-secondary" />
+        <div className="h-3 w-1/2 rounded bg-bg-secondary" />
+      </div>
+    </li>
   );
+}
 
-  const notifyUnreadChanged = () => {
-    window.dispatchEvent(new Event('notifications:changed'));
-  };
+export function NotificationsList() {
+  const router = useRouter();
+  const [notifications, setNotifications] = useState<NotificationItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
-  const markAsRead = async (id: string) => {
-    await fetch(`/api/notifications/${id}/read`, { method: 'PATCH' });
-    setNotifications((prev) =>
-      prev.map((n) => (n.id === id ? { ...n, read_at: new Date().toISOString() } : n))
-    );
-    notifyUnreadChanged();
-  };
-
-  const destinationFor = (n: NotificationRow) => {
-    if (n.mark_id) return `/mark/${n.mark_id}`;
-    if (n.type === 'follow' && n.actor_username) {
-      return `/profile/${encodeURIComponent(n.actor_username)}`;
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch('/api/notifications');
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) {
+        setError('Failed to load notifications');
+        return;
+      }
+      setNotifications(Array.isArray(data.notifications) ? data.notifications : []);
+    } catch {
+      setError('Failed to load notifications');
+    } finally {
+      setLoading(false);
     }
-    return null;
-  };
+  }, []);
 
-  const handleClick = (n: NotificationRow) => {
-    if (!n.read_at) markAsRead(n.id);
-    const destination = destinationFor(n);
+  useEffect(() => {
+    fetch('/api/notifications/read', { method: 'POST' })
+      .then((res) => {
+        if (res.ok) window.dispatchEvent(new Event('notifications:changed'));
+      })
+      .catch(() => {});
+    fetchNotifications();
+  }, [fetchNotifications]);
+
+  const handleClick = (n: NotificationItem) => {
+    const destination = n.mark ? `/mark/${n.mark.id}` : n.type === 'follow' ? `/profile/${encodeURIComponent(n.actor.username)}` : null;
     if (destination) router.push(destination);
   };
 
-  const markAllRead = async () => {
-    setMarkingAll(true);
-    const res = await fetch('/api/notifications/read-all', { method: 'PATCH' });
-    setMarkingAll(false);
-    if (res.ok) {
-      setNotifications((prev) =>
-        prev.map((n) => ({ ...n, read_at: n.read_at ?? new Date().toISOString() }))
-      );
-      notifyUnreadChanged();
-      router.refresh();
-    }
+  const primaryText = (n: NotificationItem) => {
+    const name = n.actor.display_name?.trim() || (n.actor.username ? `@${n.actor.username}` : 'Someone');
+    const action = ACTION_TEXT[n.type] ?? 'interacted';
+    return `${name} ${action}`;
   };
 
-  useEffect(() => {
-    if (initialUnreadCount > 0) {
-      markAllRead();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const loadMore = async () => {
-    if (!nextCursor || loading) return;
-    setLoading(true);
-    const res = await fetch(`/api/notifications?cursor=${encodeURIComponent(nextCursor)}&limit=20`);
-    const data = await res.json().catch(() => ({}));
-    setLoading(false);
-    if (res.ok && data.notifications?.length) {
-      setNotifications((prev) => [...prev, ...data.notifications]);
-      setNextCursor(data.nextCursor ?? null);
-    }
+  const secondarySnippet = (n: NotificationItem) => {
+    if (!n.mark?.content) return null;
+    const text = n.mark.content.slice(0, 50);
+    return text.length < n.mark.content.length ? `${text}…` : text;
   };
 
-  const notificationText = (n: NotificationRow) => {
-    const actor = n.actor_username ? `@${n.actor_username}` : 'Someone';
-    switch (n.type) {
-      case 'vote_support':
-        return `${actor} supported your mark`;
-      case 'vote_oppose':
-        return `${actor} opposed your mark`;
-      case 'comment':
-      case 'COMMENT_CREATED':
-        return `${actor} replied to your post`;
-      case 'dispute_raised':
-      case 'DISPUTE_CREATED':
-        return `${actor} challenged your claim`;
-      case 'follow':
-        return `${actor} followed you`;
-      case 'MARK_CHAMPION':
-        return 'Your mark became champion';
-      case 'MARK_SUPPLANTED':
-        return 'Your mark was supplanted';
-      case 'MARK_WITHDRAWN':
-        return 'Your mark was withdrawn';
-      default:
-        return 'You have a new alert';
-    }
-  };
-
-  const hasUnread = unreadCount > 0;
-
-  return (
-    <div className="space-y-4">
-      <p className="text-sm text-muted-foreground">
-        {unreadCount} unread {unreadCount === 1 ? 'alert' : 'alerts'}
-      </p>
-      {hasUnread && (
-        <button
-          type="button"
-          onClick={markAllRead}
-          disabled={markingAll}
-          className="rounded-xl border border-border bg-card px-3 py-1.5 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
-        >
-          {markingAll ? 'Marking…' : 'Mark all read'}
-        </button>
-      )}
+  if (loading) {
+    return (
       <ul className="space-y-2">
-        {notifications.map((n) => (
-          <li key={n.id}>
-            <button
-              type="button"
-              onClick={() => handleClick(n)}
-              className={`w-full rounded-xl border border-border p-3 text-left transition hover:bg-accent ${
-                n.read_at ? 'bg-card text-muted-foreground' : 'bg-muted/80 text-foreground'
-              }`}
-            >
-              <span className="flex items-center gap-3">
-                <Avatar username={n.actor_username ?? 'user'} avatarUrl={n.actor_avatar_url ?? null} size="sm" />
-                <span className="min-w-0 flex-1">
-                  <span className={`block text-sm ${n.read_at ? 'font-normal' : 'font-medium'}`}>
-                    {notificationText(n)}
-                  </span>
-                  <span className="mt-0.5 inline-flex items-center text-xs text-muted-foreground">
-                    <RelativeTime dateString={n.created_at} />
-                  </span>
-                </span>
-              </span>
-            </button>
-          </li>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <NotificationSkeleton key={i} />
         ))}
       </ul>
-      {notifications.length === 0 && (
-        <p className="py-8 text-center text-sm text-muted-foreground">No alerts yet.</p>
-      )}
-      {nextCursor && (
-        <div className="flex justify-center">
+    );
+  }
+
+  if (error) {
+    return (
+      <p className="py-8 text-center text-sm text-[var(--text-muted)]">
+        Something went wrong. Please try again later.
+      </p>
+    );
+  }
+
+  if (notifications.length === 0) {
+    return (
+      <p className="py-8 text-center text-sm text-[var(--text-muted)]">
+        No notifications yet. When people interact with your marks, you&apos;ll see it here.
+      </p>
+    );
+  }
+
+  return (
+    <ul className="space-y-2">
+      {notifications.map((n) => (
+        <li key={n.id}>
           <button
             type="button"
-            onClick={loadMore}
-            disabled={loading}
-            className="rounded-xl border border-border bg-card px-4 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+            onClick={() => handleClick(n)}
+            className={`w-full rounded-xl border border-border p-3 text-left transition hover:bg-bg-card-hover ${
+              n.is_read ? 'bg-card text-[var(--text-muted)]' : 'border-l-4 border-l-[var(--accent)] bg-muted/50 text-[var(--text-primary)]'
+            }`}
           >
-            {loading ? 'Loading…' : 'Load more'}
+            <div className="flex items-start gap-3">
+              <Avatar
+                username={n.actor.username || 'user'}
+                avatarUrl={n.actor.avatar_url ?? null}
+                size="md"
+                className="shrink-0"
+              />
+              <div className="min-w-0 flex-1">
+                <p className={`text-[0.95rem] ${n.is_read ? 'font-normal' : 'font-semibold'}`}>
+                  {primaryText(n)}
+                </p>
+                {secondarySnippet(n) && (
+                  <p className="mt-0.5 truncate text-[0.78rem] text-[var(--text-muted)]">
+                    {secondarySnippet(n)}
+                  </p>
+                )}
+                <p className="mt-1 text-[0.75rem] text-[var(--text-muted)] tabular-nums">
+                  <RelativeTime dateString={n.created_at} />
+                </p>
+              </div>
+            </div>
           </button>
-        </div>
-      )}
-    </div>
+        </li>
+      ))}
+    </ul>
   );
 }

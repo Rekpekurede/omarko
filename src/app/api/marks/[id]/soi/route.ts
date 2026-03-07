@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createNotification } from '@/lib/createNotification';
 
 /** GET: list signs of influence for a mark */
 export async function GET(
@@ -79,5 +80,17 @@ export async function POST(
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
+
+  try {
+    await createNotification({
+      userId: mark.user_id,
+      actorId: user.id,
+      type: 'soi',
+      markId,
+    });
+  } catch {
+    /* notification failure must not break the main action */
+  }
+
   return NextResponse.json(inserted);
 }

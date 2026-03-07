@@ -52,24 +52,6 @@ export async function POST(
 
   await supabase.rpc('recompute_mark_dispute_count', { mark_uuid: markId });
 
-  await supabase.rpc('create_notification', {
-    p_user_id: mark.user_id,
-    p_type: 'MARK_SUPPLANTED',
-    p_mark_id: markId,
-    p_actor_id: null,
-    p_message: 'Your mark was supplanted.',
-  });
-
-  for (const c of pending) {
-    await supabase.rpc('create_notification', {
-      p_user_id: c.challenger_id,
-      p_type: 'MARK_CHAMPION',
-      p_mark_id: markId,
-      p_actor_id: mark.user_id,
-      p_message: 'A mark you challenged was conceded.',
-    });
-  }
-
   const { data: ownerProfile } = await supabase.from('profiles').select('disputes_conceded').eq('id', mark.user_id).single();
   await supabase.from('profiles').update({ disputes_conceded: (ownerProfile?.disputes_conceded ?? 0) + 1 }).eq('id', mark.user_id);
 

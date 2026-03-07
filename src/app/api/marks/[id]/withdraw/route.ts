@@ -56,13 +56,6 @@ export async function POST(
   }
 
   await supabase.rpc('recompute_mark_dispute_count', { mark_uuid: markId });
-  await supabase.rpc('create_notification', {
-    p_user_id: mark.user_id,
-    p_type: 'MARK_WITHDRAWN',
-    p_mark_id: markId,
-    p_actor_id: null,
-    p_message: 'Your mark was withdrawn.',
-  });
 
   const { data: updated } = await supabase
     .from('marks')

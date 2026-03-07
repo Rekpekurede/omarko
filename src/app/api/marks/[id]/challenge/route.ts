@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createNotification } from '@/lib/createNotification';
 
 export async function POST(
   request: Request,
@@ -121,6 +122,17 @@ export async function POST(
     .select('id, user_id, title, content, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name)')
     .eq('id', markId)
     .single();
+
+  try {
+    await createNotification({
+      userId: markRow.user_id,
+      actorId: user.id,
+      type: 'challenge',
+      markId,
+    });
+  } catch {
+    /* notification failure must not break the main action */
+  }
 
   return NextResponse.json({ mark, challenge });
 }

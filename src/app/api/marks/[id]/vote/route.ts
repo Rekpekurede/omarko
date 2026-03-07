@@ -1,6 +1,7 @@
 /** Audit: removed console.log and unused VOTE_ROUTE_VERSION. */
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createNotification } from '@/lib/createNotification';
 
 function normalizeVoteType(input: unknown): 'SUPPORT' | 'OPPOSE' {
   const normalized = String(input ?? '').trim().toUpperCase();
@@ -131,6 +132,19 @@ export async function POST(
       details: recomputeErr.details,
     });
     return NextResponse.json({ error: recomputeErr.message }, { status: 500 });
+  }
+
+  if (userVote !== null) {
+    try {
+      await createNotification({
+        userId: markRow.user_id,
+        actorId: user.id,
+        type: userVote === 'SUPPORT' ? 'support' : 'oppose',
+        markId,
+      });
+    } catch {
+      /* notification failure must not break the main action */
+    }
   }
 
   // 3. Return authoritative state

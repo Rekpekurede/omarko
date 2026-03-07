@@ -1,5 +1,6 @@
 import { createClient } from '@/lib/supabase/server';
 import { NextResponse } from 'next/server';
+import { createNotification } from '@/lib/createNotification';
 
 async function getCounts(supabase: Awaited<ReturnType<typeof createClient>>, profileId: string) {
   const [followersRes, followingRes] = await Promise.all([
@@ -45,6 +46,16 @@ export async function POST(
       return NextResponse.json({ ok: true, following: true, ...counts });
     }
     return NextResponse.json({ error: error.message }, { status: 500 });
+  }
+
+  try {
+    await createNotification({
+      userId: profile.id,
+      actorId: user.id,
+      type: 'follow',
+    });
+  } catch {
+    /* notification failure must not break the main action */
   }
 
   const counts = await getCounts(supabase, profile.id);

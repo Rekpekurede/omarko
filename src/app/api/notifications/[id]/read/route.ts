@@ -14,10 +14,10 @@ export async function PATCH(
 
   const { data, error } = await supabase
     .from('notifications')
-    .update({ read_at: new Date().toISOString() })
+    .update({ is_read: true })
     .eq('id', id)
     .eq('user_id', user.id)
-    .select('id, read_at')
+    .select('id, is_read')
     .single();
 
   if (error) {
