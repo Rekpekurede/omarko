@@ -28,7 +28,7 @@ export async function POST(
   const isEvidenceBacked = !!evidenceUrl;
 
   const rawDate = body.claimedOriginalDate;
-  const claimedOriginalDateForDb =
+  const claimedOriginalDate =
     rawDate && typeof rawDate === 'string' && rawDate.trim() !== ''
       ? (/^\d{4}-\d{2}-\d{2}$/.test(rawDate.trim()) ? rawDate.trim() : null)
       : null;
@@ -37,7 +37,7 @@ export async function POST(
     challenger_id: user.id,
     evidence_text: text,
     evidence_url: evidenceUrl,
-    claimed_original_date: claimedOriginalDateForDb,
+    claimed_original_date: claimedOriginalDate || null,
     is_evidence_backed: isEvidenceBacked,
     outcome: 'PENDING',
   };
