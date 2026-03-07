@@ -1,12 +1,14 @@
 #!/usr/bin/env node
 /**
- * Generate PWA placeholder icons using Node.js built-ins only.
+ * Generate PWA icons: convert omarko-icon to true PNG and resize to 144/192/512.
+ * Falls back to placeholder solid-color icons if omarko-icon.png is missing.
  * Run: node scripts/generate-icons.mjs
  */
-import { mkdir, writeFile } from 'fs/promises';
+import { mkdir, writeFile, readFile, access } from 'fs/promises';
 import { join, dirname } from 'path';
 import { fileURLToPath } from 'url';
 import { deflateRawSync } from 'zlib';
+import sharp from 'sharp';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const PUBLIC = join(__dirname, '..', 'public');
@@ -83,22 +85,52 @@ function createPngRect(width, height) {
   return Buffer.concat([signature, ihdrChunk, idatChunk, iendChunk]);
 }
 
+const SOURCE_ICON = join(PUBLIC, 'omarko-icon.png');
+
+async function sourceExists() {
+  try {
+    await access(SOURCE_ICON);
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function main() {
   await mkdir(OUT_DIR, { recursive: true });
   await mkdir(SCREENSHOTS_DIR, { recursive: true });
 
   const sizes = [144, 192, 512];
-  for (const size of sizes) {
-    const png = createPng(size);
-    await writeFile(join(OUT_DIR, `icon-${size}.png`), png);
-    await writeFile(join(OUT_DIR, `maskable-${size}.png`), png);
+  if (await sourceExists()) {
+    const buf = await readFile(SOURCE_ICON);
+    const pipeline = sharp(buf);
+    // Re-encode as PNG (fixes JPEG-saved-as-.png) and overwrite source
+    const pngBuf = await pipeline.png().toBuffer();
+    await writeFile(SOURCE_ICON, pngBuf);
+    // Generate each size from the source
+    for (const size of sizes) {
+      const resized = await sharp(pngBuf).resize(size, size).png().toBuffer();
+      await writeFile(join(OUT_DIR, `icon-${size}.png`), resized);
+      await writeFile(join(OUT_DIR, `maskable-${size}.png`), resized);
+    }
+    const icon512 = await sharp(pngBuf).resize(512, 512).png().toBuffer();
+    await writeFile(join(OUT_DIR, 'icon-512-maskable.png'), icon512);
+    console.log('Icons generated from omarko-icon.png (converted to PNG) in public/icons/');
+  } else {
+    for (const size of sizes) {
+      const png = createPng(size);
+      await writeFile(join(OUT_DIR, `icon-${size}.png`), png);
+      await writeFile(join(OUT_DIR, `maskable-${size}.png`), png);
+    }
+    const png512 = createPng(512);
+    await writeFile(join(OUT_DIR, 'icon-512-maskable.png'), png512);
+    console.log('Icons generated (placeholders) in public/icons/');
   }
 
   // PWA screenshots: wide (desktop) and narrow (mobile) for richer install UI
   await writeFile(join(SCREENSHOTS_DIR, 'wide.png'), createPngRect(1280, 720));
   await writeFile(join(SCREENSHOTS_DIR, 'narrow.png'), createPngRect(750, 1334));
 
-  console.log('Icons generated in public/icons/');
   console.log('Screenshots generated in public/screenshots/');
 }
 
