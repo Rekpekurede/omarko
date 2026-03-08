@@ -137,19 +137,28 @@ export function MarkCard({
   const displayPrimary = displayNameTrimmed ? displayNameTrimmed : `@${username}`;
   const showSecondaryUsername = !!displayNameTrimmed;
 
+  const goToMark = () => router.push(`/mark/${mark.id}`);
+
   return (
-    <article className={`mark-card relative z-0 ${witnessGlow ? 'witness-glow' : ''}`}>
+    <article
+      className={`mark-card relative z-0 cursor-pointer ${witnessGlow ? 'witness-glow' : ''}`}
+      onClick={goToMark}
+      role="button"
+      tabIndex={0}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); goToMark(); } }}
+      aria-label={`View mark by ${isHistorical ? historicalName : `@${username}`}`}
+    >
       <div className="flex items-start justify-between gap-4">
         <div className="flex min-w-0 flex-1 items-start gap-4">
           {isHistorical ? (
             <>
-              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
+              <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5" onClick={(e) => e.stopPropagation()}>
                 <Avatar username={historicalName} avatarUrl={null} size="card" variant="certificate" />
               </Link>
               <div className="min-w-0 flex-1 flex flex-col">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0">
-                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer truncate">
+                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer truncate" onClick={(e) => e.stopPropagation()}>
                       {historicalName}
                     </Link>
                     <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent shrink-0">
@@ -162,18 +171,18 @@ export function MarkCard({
             </>
           ) : (
             <>
-              <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5">
+              <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5" onClick={(e) => e.stopPropagation()}>
                 <Avatar username={username} avatarUrl={avatarUrl} size="card" variant="certificate" />
               </Link>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate">
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate" onClick={(e) => e.stopPropagation()}>
                     {displayPrimary}
                   </Link>
                   <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                 </div>
                 {showSecondaryUsername && (
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[13px] text-[var(--text-muted)] opacity-65 hover:underline cursor-pointer block mt-0.5">
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[13px] text-[var(--text-muted)] opacity-65 hover:underline cursor-pointer block mt-0.5" onClick={(e) => e.stopPropagation()}>
                     @{username}
                   </Link>
                 )}
@@ -181,7 +190,7 @@ export function MarkCard({
             </>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-4">
+        <div className="flex shrink-0 items-center gap-4" onClick={(e) => e.stopPropagation()}>
           {(mark.status !== 'ACTIVE' || mark.withdrawn_at) && (
             <span className="ml-2 flex items-center">
               <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
@@ -191,7 +200,7 @@ export function MarkCard({
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
-                onClick={() => setMenuOpen((o) => !o)}
+                onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
                 className="cursor-pointer rounded p-1 text-text-muted transition-colors duration-150 hover:text-text-primary"
                 aria-label="More options"
                 aria-expanded={menuOpen ? 'true' : 'false'}
@@ -199,10 +208,10 @@ export function MarkCard({
                 <span className="text-lg leading-none">⋯</span>
               </button>
               {menuOpen && (
-                <div className="absolute right-0 top-full z-10 mt-1 min-w-[180px] rounded-lg border border-border bg-bg-card py-1 shadow-lg">
+                <div className="absolute right-0 top-full z-10 mt-1 min-w-[180px] rounded-lg border border-border bg-bg-card py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
                   <Link
                     href={`/mark/${mark.id}?edit=1`}
-                    onClick={() => setMenuOpen(false)}
+                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
                     className="block cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
                   >
                     Edit
@@ -258,7 +267,7 @@ export function MarkCard({
       {(mark.image_url || mark.content) && (
         <>
           {mark.content && (
-            <p className="mark-text mt-3 text-text-primary line-clamp-3 min-w-0 break-words">
+            <p className="mark-text mt-3 text-text-primary min-w-0 break-words">
               {mark.content}
             </p>
           )}
@@ -302,7 +311,7 @@ export function MarkCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5">
+      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5" onClick={(e) => e.stopPropagation()}>
         <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:gap-4">
           <TooltipGuide
             tooltipKey="support"
