@@ -311,8 +311,8 @@ export function MarkCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5" onClick={(e) => e.stopPropagation()}>
-        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:gap-4">
+      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5 md:gap-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:justify-between md:gap-4">
           <TooltipGuide
             tooltipKey="support"
             tooltipText="Support this Mark — you believe this claim is valid"
@@ -335,30 +335,34 @@ export function MarkCard({
           {showChallenge && !isWithdrawn && (
             isHistorical ? (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <span className="flex shrink-0 cursor-default items-center gap-1.5 whitespace-nowrap text-text-muted" title="Challenges on historical marks are reviewed by designated custodians.">
-                  <span aria-hidden>⚔️</span>
+                <span className="engagement-challenge flex shrink-0 cursor-default items-center gap-1.5 whitespace-nowrap text-text-muted md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:transition-colors md:duration-150 md:hover:bg-[var(--accent-glow)]" title="Challenges on historical marks are reviewed by designated custodians.">
+                  <span aria-hidden>⚔️ Challenge</span>
+                  <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
                 </span>
               </TooltipGuide>
             ) : isOwner ? (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <Link href={`/mark/${mark.id}`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
-                  <span aria-hidden>⚔️</span>
+                <Link href={`/mark/${mark.id}`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
+                  <span aria-hidden>⚔️ Challenge</span>
+                  <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
                 </Link>
               </TooltipGuide>
             ) : (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <Link href={`/mark/${mark.id}?tab=challenges`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
-                  <span aria-hidden>⚔️</span>
+                <Link href={`/mark/${mark.id}?tab=challenges`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
+                  <span aria-hidden>⚔️ Challenge</span>
+                  <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
                 </Link>
               </TooltipGuide>
             )
           )}
           {!showChallenge && (
-            <span className="flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted">
-              <span aria-hidden>⚔️</span>
+            <span className="engagement-challenge flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)]">
+              <span aria-hidden>⚔️ Challenge</span>
+              <span className="hidden md:inline" aria-hidden> · </span>
               <span>{challengeCount}</span>
             </span>
           )}
