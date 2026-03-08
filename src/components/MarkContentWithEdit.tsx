@@ -56,7 +56,11 @@ export function MarkContentWithEdit({ content, imageUrl, media = [], markId, can
           </video>
         </div>
       )}
-      {content && <p className="mt-3 text-base leading-relaxed text-foreground">{content}</p>}
+      {content && (
+        <p className="mt-3 text-[17px] md:text-[19px] leading-[1.5] text-foreground word-break break-word overflow-wrap break-words min-w-0">
+          {content}
+        </p>
+      )}
       {canEdit && (
         <button
           type="button"

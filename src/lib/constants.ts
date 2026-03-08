@@ -1,5 +1,7 @@
-/** Single source of truth for claim types. Import here everywhere claim types are needed. */
-export const CLAIM_TYPES = [
+import type { ClaimType } from './types';
+
+/** Ordered list of claim types; must match keys of CLAIM_TYPE_DESCRIPTIONS in types.ts. */
+export const CLAIM_TYPES: readonly ClaimType[] = [
   'Creation',
   'Prediction',
   'Discovery',
@@ -24,6 +26,6 @@ export const CLAIM_TYPES = [
   'Joke',
   'Defense',
   'Word',
-] as const;
+];
 
-export type ClaimType = (typeof CLAIM_TYPES)[number];
+export type { ClaimType };

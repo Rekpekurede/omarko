@@ -132,7 +132,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   return (
     <PageContainer className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
+      <div className="rounded-2xl border border-border bg-card p-[14px_16px] md:p-[18px_20px] overflow-hidden">
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-3">
@@ -141,10 +141,10 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                 {isHistorical && mark.historical_profile_id ? (
                   <>
                     <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline">
+                      <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-[16px] font-semibold text-[var(--text-primary)] hover:underline">
                         {displayUsername}
                       </Link>
-                      <RelativeTime dateString={mark.created_at} className="text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                      <RelativeTime dateString={mark.created_at} className="text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                     </div>
                     <span className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 mt-1">
                       HISTORICAL FIGURE
@@ -153,13 +153,13 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                 ) : (
                   <>
                     <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline min-w-0 truncate">
+                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[16px] font-semibold text-[var(--text-primary)] hover:underline min-w-0 truncate">
                         {displayPrimary}
                       </Link>
-                      <RelativeTime dateString={mark.created_at} className="text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                      <RelativeTime dateString={mark.created_at} className="text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                     </div>
                     {showSecondaryUsername && (
-                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[0.78rem] text-[var(--text-muted)] hover:underline block mt-0.5">
+                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[13px] text-[var(--text-muted)] opacity-65 hover:underline block mt-0.5">
                         @{username}
                       </Link>
                     )}

@@ -56,19 +56,10 @@ export const DOMAINS = [
   'General',
 ] as const;
 
-export { CLAIM_TYPES, type ClaimType } from './constants';
-import type { ClaimType } from './constants';
+export { CLAIM_TYPES } from './constants';
 
-/** Top 6 claim types shown as pills in the create modal. */
-export const TOP_CLAIM_TYPES: ClaimType[] = [
-  'Creation',
-  'Quote',
-  'Prediction',
-  'Discovery',
-  'Innovation',
-  'Concept',
-];
-export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
+/** Single source for descriptions; ClaimType is derived from these keys so they always match. */
+export const CLAIM_TYPE_DESCRIPTIONS = {
   Creation: 'Something you made — art, product, writing, software',
   Quote: 'Words you said that others have repeated',
   Prediction: 'A future outcome you called before it happened',
@@ -90,7 +81,22 @@ export const CLAIM_TYPE_DESCRIPTIONS: Record<ClaimType, string> = {
   Record: 'A measurable achievement — fastest, first, most',
   Implementation: 'Taking an idea and making it real',
   Invite: 'An open call or challenge you issued',
-};
+  Joke: 'A humorous claim — joke, bit, or comedic statement you originated.',
+  Defense: 'A defense of a person, position, or policy — your argument or case for something.',
+  Word: 'A word you coined or that you are known for using or defining.',
+} as const;
+
+export type ClaimType = keyof typeof CLAIM_TYPE_DESCRIPTIONS;
+
+/** Top 6 claim types shown as pills in the create modal. */
+export const TOP_CLAIM_TYPES: ClaimType[] = [
+  'Creation',
+  'Quote',
+  'Prediction',
+  'Discovery',
+  'Innovation',
+  'Concept',
+];
 export type Domain = (typeof DOMAINS)[number];
 
 export type NotificationType = 'DISPUTE_CREATED' | 'MARK_SUPPLANTED' | 'MARK_CHAMPION' | 'MARK_WITHDRAWN' | 'COMMENT_CREATED';

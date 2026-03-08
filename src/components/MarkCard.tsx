@@ -149,14 +149,14 @@ export function MarkCard({
               <div className="min-w-0 flex-1 flex flex-col">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0">
-                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline cursor-pointer truncate">
+                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer truncate">
                       {historicalName}
                     </Link>
                     <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent shrink-0">
                       HISTORICAL FIGURE
                     </span>
                   </span>
-                  <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                  <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                 </div>
               </div>
             </>
@@ -167,13 +167,13 @@ export function MarkCard({
               </Link>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.95rem] font-bold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate">
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate">
                     {displayPrimary}
                   </Link>
-                  <RelativeTime dateString={mark.created_at} className="font-body text-[0.75rem] text-[var(--text-muted)] tabular-nums shrink-0" />
+                  <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                 </div>
                 {showSecondaryUsername && (
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[0.78rem] text-[var(--text-muted)] hover:underline cursor-pointer block mt-0.5">
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[13px] text-[var(--text-muted)] opacity-65 hover:underline cursor-pointer block mt-0.5">
                     @{username}
                   </Link>
                 )}
@@ -242,7 +242,7 @@ export function MarkCard({
         </div>
       </div>
 
-      <div className="badge-row">
+      <div className="badge-row mt-3">
         {mark.claim_type && (
           <span className="badge-claim-type">
             {mark.claim_type}
@@ -258,7 +258,7 @@ export function MarkCard({
       {(mark.image_url || mark.content) && (
         <>
           {mark.content && (
-            <p className="mark-text mt-4 text-text-primary line-clamp-3">
+            <p className="mark-text mt-3 text-text-primary line-clamp-3 min-w-0 break-words">
               {mark.content}
             </p>
           )}
@@ -272,7 +272,7 @@ export function MarkCard({
                 setLightboxUrl(mark.image_url ?? '');
                 setLightboxOpen(true);
               }}
-              className="mt-4 block w-full cursor-zoom-in group text-left"
+              className="mt-3 block w-full min-w-0 cursor-zoom-in group text-left"
             >
               <div className="relative w-fit max-w-full overflow-hidden rounded-[10px] shadow-[0_4px_20px_rgba(0,0,0,0.3)] transition-transform duration-200 ease-out group-hover:scale-[1.01]">
                 {imageLoadError ? (
@@ -302,8 +302,8 @@ export function MarkCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="engagement-row mt-4 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-sm text-text-muted md:gap-6 md:pt-3.5">
-        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:justify-between md:gap-6">
+      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5">
+        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:gap-4">
           <TooltipGuide
             tooltipKey="support"
             tooltipText="Support this Mark — you believe this claim is valid"
@@ -392,7 +392,7 @@ export function MarkCard({
             requiresAuth
             currentUserId={currentUserId}
           >
-            <span className="engagement-bookmark ml-1 flex shrink-0 items-center md:ml-2" title={bookmarked ? 'Saved' : 'Save'}>
+            <span className="engagement-bookmark ml-auto flex shrink-0 items-center" title={bookmarked ? 'Saved' : 'Save'}>
               <BookmarkButton markId={mark.id} bookmarked={bookmarked} iconOnly />
             </span>
           </TooltipGuide>

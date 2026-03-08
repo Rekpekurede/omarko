@@ -207,24 +207,39 @@ h1, h2, h3, .display-text {
   letter-spacing: -0.02em;
 }
 
-/* Mark claim content — hero of the card */
+/* Mark claim content — hero of the card; compact on mobile, comfortable on desktop */
 .mark-text {
-  font-family: var(--font-display), Georgia, serif;
-  font-size: 1.05rem;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 15px;
   font-weight: 400;
-  line-height: 1.75;
+  line-height: 1.45;
   color: var(--text-primary);
+  word-break: break-word;
+  overflow-wrap: break-word;
+  white-space: normal;
+}
+@media (min-width: 768px) {
+  .mark-text {
+    font-size: 17px;
+    line-height: 1.5;
+  }
 }
 
-/* Mark card */
+/* Mark card — padding and containment */
 .mark-card {
   background: var(--bg-card);
   border: 1px solid var(--certificate-border);
   border-radius: 16px;
-  padding: 24px;
+  padding: 14px 16px;
   margin-bottom: 24px;
   cursor: default;
   transition: border-color 0.15s ease, background 0.15s ease;
+  overflow: hidden;
+}
+@media (min-width: 768px) {
+  .mark-card {
+    padding: 18px 20px;
+  }
 }
 .mark-card:hover {
   background: var(--bg-card-hover);
@@ -239,38 +254,56 @@ h1, h2, h3, .display-text {
   50% { box-shadow: 0 0 20px 2px var(--accent-glow); }
 }
 
-/* Mark card badge row — classification pills, never touching */
+/* Mark card badge row — pills don't wrap; scroll horizontally if needed */
 .mark-card .badge-row {
   display: flex;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   align-items: center;
   gap: 6px;
-  margin-top: 10px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+}
+.mark-card .badge-row::-webkit-scrollbar {
+  display: none;
 }
 .mark-card .badge-claim-type {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  flex-shrink: 0;
+  padding: 2px 8px;
   border-radius: 4px;
   border: 1px solid var(--accent-dim);
   color: var(--accent);
   background: transparent;
-  font-size: 0.62rem;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: var(--font-body);
 }
 .mark-card .badge-domain {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  flex-shrink: 0;
+  padding: 2px 8px;
   border-radius: 4px;
-  font-size: 0.62rem;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.1em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: var(--font-body);
+}
+
+/* Engagement row — compact, single line, bookmark right-aligned */
+.mark-card .engagement-row {
+  font-size: 13px;
+  gap: 14px;
+}
+@media (min-width: 768px) {
+  .mark-card .engagement-row {
+    gap: 16px;
+  }
 }
 
 /* Global badge (status, etc.) */
