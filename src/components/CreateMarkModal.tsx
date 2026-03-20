@@ -442,7 +442,7 @@ export function CreateMarkModal() {
               {/* Claim type: top 6 pills + See all */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                  CLAIM TYPE
+                  CLAIM TYPE (what is yours)
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
                   {TOP_CLAIM_TYPES.map((name) => {
@@ -490,7 +490,7 @@ export function CreateMarkModal() {
               {/* Domain pills — scrollable with visible indicator */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                  DOMAIN
+                  DOMAIN (the field it belongs to)
                 </label>
                 <div style={{ position: 'relative' }}>
                   <div
