@@ -6,9 +6,11 @@ import { useRouter } from 'next/navigation';
 interface WithdrawContestButtonsProps {
   markId: string;
   hasChallenges: boolean;
+  /** Muted inline links (mark detail owner row). */
+  quietInline?: boolean;
 }
 
-export function WithdrawContestButtons({ markId, hasChallenges }: WithdrawContestButtonsProps) {
+export function WithdrawContestButtons({ markId, hasChallenges, quietInline = false }: WithdrawContestButtonsProps) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [withdrawing, setWithdrawing] = useState(false);
@@ -65,41 +67,40 @@ export function WithdrawContestButtons({ markId, hasChallenges }: WithdrawContes
     router.refresh();
   };
 
+  const linkBtn = quietInline
+    ? 'text-xs font-normal text-muted-foreground underline-offset-2 transition hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50 disabled:no-underline'
+    : 'text-sm font-normal text-muted-foreground underline-offset-4 transition hover:text-foreground hover:underline disabled:pointer-events-none disabled:opacity-50 disabled:no-underline';
+
+  const sep = <span className="text-muted-foreground/40 select-none" aria-hidden>·</span>;
+
   return (
     <div className="space-y-2">
-      <div className="flex flex-wrap gap-2">
+      <div
+        className={
+          quietInline
+            ? 'inline-flex flex-wrap items-center gap-x-1.5 gap-y-0.5'
+            : 'flex flex-wrap items-center gap-x-4 gap-y-1'
+        }
+      >
         {!hasChallenges && (
-          <button
-            type="button"
-            onClick={handleWithdraw}
-            disabled={withdrawing}
-            className="rounded border border-amber-600 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
-          >
+          <button type="button" onClick={handleWithdraw} disabled={withdrawing} className={linkBtn}>
             {withdrawing ? 'Withdrawing…' : 'Withdraw'}
           </button>
         )}
         {hasChallenges && (
-          <button
-            type="button"
-            onClick={handleConcede}
-            disabled={conceding}
-            className="rounded border border-amber-600 bg-amber-50 px-3 py-1.5 text-sm font-medium text-amber-800 hover:bg-amber-100 disabled:opacity-50"
-          >
-            {conceding ? 'Conceding…' : 'Concede'}
-          </button>
-        )}
-        {hasChallenges && (
-          <button
-            type="button"
-            onClick={() => setContestOpen(!contestOpen)}
-            className="rounded border border-black bg-white px-3 py-1.5 text-sm font-medium text-black hover:bg-gray-100"
-          >
-            Contest
-          </button>
+          <>
+            <button type="button" onClick={handleConcede} disabled={conceding} className={linkBtn}>
+              {conceding ? 'Conceding…' : 'Concede'}
+            </button>
+            {sep}
+            <button type="button" onClick={() => setContestOpen(!contestOpen)} className={linkBtn}>
+              {contestOpen ? 'Cancel' : 'Contest'}
+            </button>
+          </>
         )}
       </div>
       {contestOpen && (
-        <form onSubmit={handleContest} className="space-y-2 border-t border-border pt-2">
+        <form onSubmit={handleContest} className="space-y-2 border-t border-border/60 pt-3">
           <label htmlFor="owner_response" className="block text-sm font-medium text-text-primary">
             Owner response (optional)
           </label>

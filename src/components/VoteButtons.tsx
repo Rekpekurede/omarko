@@ -11,6 +11,12 @@ interface VoteButtonsProps {
   initialSupportVotes?: number;
   initialOpposeVotes?: number;
   onVoteUpdate?: (updated: { support_votes?: number; oppose_votes?: number; userVote?: 'SUPPORT' | 'OPPOSE' | null }) => void;
+  /** Mark detail: unified stats row includes challenges, survived, SOI */
+  challengeCount?: number;
+  disputesSurvived?: number;
+  soiCount?: number;
+  /** When true, only show stats (no vote UI) */
+  isWithdrawn?: boolean;
 }
 
 function applyVoteTransition(
@@ -38,6 +44,10 @@ function applyVoteTransition(
   };
 }
 
+function StatSep() {
+  return <span className="text-muted-foreground/35 select-none px-1 sm:px-1.5" aria-hidden>|</span>;
+}
+
 export function VoteButtons({
   markId,
   canVote,
@@ -46,6 +56,10 @@ export function VoteButtons({
   initialSupportVotes = 0,
   initialOpposeVotes = 0,
   onVoteUpdate,
+  challengeCount = 0,
+  disputesSurvived = 0,
+  soiCount = 0,
+  isWithdrawn = false,
 }: VoteButtonsProps) {
   const router = useRouter();
   const [vote, setVote] = useState<'SUPPORT' | 'OPPOSE' | null>(currentVote);
@@ -62,7 +76,7 @@ export function VoteButtons({
   }, [currentVote, initialSupportVotes, initialOpposeVotes]);
 
   const handleVote = async (voteType: 'SUPPORT' | 'OPPOSE') => {
-    if (!canVote || isPending) return;
+    if (!canVote || isPending || isWithdrawn) return;
     if (isOwnMark && voteType === 'OPPOSE') {
       setToast('You cannot oppose your own mark.');
       setTimeout(() => setToast(null), 2200);
@@ -100,8 +114,7 @@ export function VoteButtons({
           setToast(data.error);
           setTimeout(() => setToast(null), 2200);
         }
-      }
-      else setError(data.error ?? 'Failed to vote');
+      } else setError(data.error ?? 'Failed to vote');
       setIsPending(false);
       return;
     }
@@ -119,30 +132,55 @@ export function VoteButtons({
     }
   };
 
-  if (!canVote) {
+  const statsRow = (
+    <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
+      <span className="tabular-nums">Support: {supportVotes}</span>
+      <StatSep />
+      <span className="tabular-nums">Oppose: {opposeVotes}</span>
+      <StatSep />
+      <span className="tabular-nums">Challenges: {challengeCount}</span>
+      <StatSep />
+      <span className="tabular-nums">Survived: {disputesSurvived}</span>
+      <StatSep />
+      <span className="tabular-nums">SOI: {soiCount}</span>
+    </div>
+  );
+
+  if (isWithdrawn || !canVote) {
+    const s = initialSupportVotes;
+    const o = initialOpposeVotes;
     return (
-      <span className="text-sm text-muted-foreground">
-        You cannot vote (you may be the author).
-      </span>
+      <div className="mt-6 space-y-2">
+        <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
+          <span className="tabular-nums">Support: {s}</span>
+          <StatSep />
+          <span className="tabular-nums">Oppose: {o}</span>
+          <StatSep />
+          <span className="tabular-nums">Challenges: {challengeCount}</span>
+          <StatSep />
+          <span className="tabular-nums">Survived: {disputesSurvived}</span>
+          <StatSep />
+          <span className="tabular-nums">SOI: {soiCount}</span>
+        </div>
+        {isWithdrawn && (
+          <p className="text-[11px] text-muted-foreground sm:text-xs" title="Voting is disabled for withdrawn marks">
+            Voting unavailable for withdrawn marks.
+          </p>
+        )}
+      </div>
     );
   }
 
   return (
-    <div className="flex flex-col gap-2">
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-xs text-muted-foreground">
-        <span>Support: {supportVotes}</span>
-        <span>Oppose: {opposeVotes}</span>
-        <span>{vote === 'SUPPORT' ? (isOwnMark ? 'Supported (you)' : 'Supported') : vote === 'OPPOSE' ? 'Opposed' : 'No vote'}</span>
-      </div>
-      <div className="grid grid-cols-2 gap-2 sm:flex sm:flex-wrap sm:items-center">
+    <div className="mt-6 space-y-4">
+      {statsRow}
+      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:max-w-xl sm:gap-3">
         <button
           type="button"
           onClick={() => handleVote('SUPPORT')}
           disabled={isPending}
-          className={`min-h-[44px] rounded-xl px-3 py-2 text-sm font-medium disabled:opacity-50 ${
-            vote === 'SUPPORT'
-              ? 'bg-foreground text-background'
-              : 'border border-border bg-card text-foreground hover:bg-accent/70'
+          className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50 sm:w-auto sm:min-w-[140px] bg-[#C9A84C] text-[#141210] hover:brightness-95 active:brightness-90 dark:text-[#141210] ${
+            vote === 'SUPPORT' ? 'shadow-sm ring-2 ring-[#8A6E2F]/50' : ''
           }`}
         >
           Support
@@ -151,26 +189,35 @@ export function VoteButtons({
           type="button"
           onClick={() => handleVote('OPPOSE')}
           disabled={isPending || isOwnMark}
-          className={`min-h-[44px] rounded-xl border px-3 py-2 text-sm font-medium disabled:opacity-50 ${
+          className={`min-h-[44px] w-full rounded-xl border bg-transparent px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 sm:w-auto sm:min-w-[140px] ${
             vote === 'OPPOSE'
-              ? 'border-foreground bg-accent text-foreground'
-              : 'border-border bg-card text-foreground hover:bg-accent/70'
+              ? 'border-[#C9A84C]/70 text-[#C9A84C] dark:border-[#C9A84C]/60 dark:text-[#D4BC6A]'
+              : 'border-[#C9A84C]/35 text-muted-foreground hover:border-[#C9A84C]/55 hover:text-foreground dark:border-[#C9A84C]/28 dark:text-[#9A8A6A] dark:hover:border-[#C9A84C]/45 dark:hover:text-[#C9A84C]/90'
           }`}
         >
           Oppose
         </button>
-        {vote && (
+      </div>
+      {vote && (
+        <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-4">
+          <p className="text-xs font-medium text-muted-foreground">
+            {vote === 'SUPPORT'
+              ? isOwnMark
+                ? 'You’re supporting your mark.'
+                : 'You’re supporting this mark.'
+              : 'You opposed this mark.'}
+          </p>
           <button
             type="button"
             onClick={handleRemove}
             disabled={isPending}
-            className="min-h-[44px] rounded-xl border border-border bg-muted px-3 py-2 text-sm font-medium text-foreground hover:bg-accent disabled:opacity-50"
+            className="text-left text-xs text-muted-foreground underline-offset-2 hover:text-foreground hover:underline disabled:opacity-50 sm:text-left"
           >
-            Remove
+            Remove vote
           </button>
-        )}
-      </div>
-      {error && <p className="text-sm text-red-600">{error}</p>}
+        </div>
+      )}
+      {error && <p className="text-sm text-red-600 dark:text-red-400">{error}</p>}
       {toast && <p className="text-sm text-amber-600 dark:text-amber-400">{toast}</p>}
     </div>
   );

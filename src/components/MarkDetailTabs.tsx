@@ -148,52 +148,36 @@ export function MarkDetailTabs({
 
   return (
     <div className="rounded-2xl border border-border bg-card p-4 sm:p-6">
-      <div className="mb-4 flex flex-wrap gap-2 border-b border-border pb-1">
-        <button
-          type="button"
-          onClick={() => setTab('overview')}
-          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'overview' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
-        >
-          Overview
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('challenges')}
-          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'challenges' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
-        >
-          Challenges ({challengeCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('soi')}
-          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'soi' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
-        >
-          SOI ({tab === 'soi' ? soiList.length : initialSoiCount})
-        </button>
-        <button
-          type="button"
-          onClick={() => setTab('comments')}
-          className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'comments' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
-        >
-          Comments ({comments.length})
-        </button>
-        {versionCount > 0 && (
-          <button
-            type="button"
-            onClick={() => setTab('versions')}
-            className={`rounded-xl px-3 py-2 text-sm font-medium ${tab === 'versions' ? 'bg-foreground text-background' : 'text-muted-foreground hover:bg-accent hover:text-foreground'}`}
-          >
-            History ({versionCount})
-          </button>
-        )}
+      <div className="mb-4 flex flex-wrap gap-1" aria-label="Mark sections">
+        {(
+          [
+            { id: 'overview' as const, label: 'Overview' },
+            { id: 'challenges' as const, label: `Challenges (${challengeCount})` },
+            { id: 'soi' as const, label: `SOI (${tab === 'soi' ? soiList.length : initialSoiCount})` },
+            { id: 'comments' as const, label: `Comments (${comments.length})` },
+            ...(versionCount > 0 ? [{ id: 'versions' as const, label: `History (${versionCount})` }] : []),
+          ] as const
+        ).map(({ id, label }) => {
+          const active = tab === id;
+          return (
+            <button
+              key={id}
+              type="button"
+              aria-current={active ? 'true' : undefined}
+              onClick={() => setTab(id)}
+              className={`px-3 py-2.5 text-sm font-medium transition-colors border-b-2 -mb-px ${
+                active
+                  ? 'border-[#C9A84C] text-[var(--text-primary)]'
+                  : 'border-transparent text-muted-foreground hover:text-foreground'
+              }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      {tab === 'overview' && (
-        <div className="space-y-3 text-sm text-muted-foreground">
-          <p>This mark has {challengeCount} challenge{challengeCount !== 1 ? 's' : ''}, {initialSoiCount} sign{initialSoiCount !== 1 ? 's' : ''} of influence, and {comments.length} comment{comments.length !== 1 ? 's' : ''}.</p>
-          <p>Use the tabs above to view details.</p>
-        </div>
-      )}
+      {tab === 'overview' && <p className="text-sm italic text-muted-foreground">No activity yet.</p>}
 
       {tab === 'soi' && (
         <div className="space-y-4">

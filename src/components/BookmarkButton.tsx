@@ -8,9 +8,10 @@ interface BookmarkButtonProps {
   bookmarked: boolean;
   /** When true, show only the star icon (no "Save"/"Saved" text). Used in card engagement row. */
   iconOnly?: boolean;
+  className?: string;
 }
 
-export function BookmarkButton({ markId, bookmarked: initialBookmarked, iconOnly = false }: BookmarkButtonProps) {
+export function BookmarkButton({ markId, bookmarked: initialBookmarked, iconOnly = false, className = '' }: BookmarkButtonProps) {
   const router = useRouter();
   const [bookmarked, setBookmarked] = useState(initialBookmarked);
   const [pending, setPending] = useState(false);
@@ -32,7 +33,9 @@ export function BookmarkButton({ markId, bookmarked: initialBookmarked, iconOnly
       type="button"
       onClick={toggle}
       disabled={pending}
-      className="flex min-h-[40px] cursor-pointer items-center justify-center rounded-lg px-3 py-2 text-[0.8rem] font-medium text-text-muted transition-colors duration-150 hover:text-accent disabled:opacity-50"
+      className={`flex cursor-pointer items-center justify-center rounded-lg text-[0.8rem] font-medium text-text-muted transition-colors duration-150 hover:text-accent disabled:opacity-50 ${
+        iconOnly ? 'min-h-9 min-w-9 p-1.5' : 'min-h-[40px] px-3 py-2'
+      } ${className}`.trim()}
       aria-label={bookmarked ? 'Remove bookmark' : 'Bookmark'}
       title={bookmarked ? 'Remove bookmark' : 'Bookmark for later'}
     >

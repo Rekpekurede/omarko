@@ -11,6 +11,7 @@ import { BookmarkButton } from '@/components/BookmarkButton';
 import { RelativeTime } from '@/components/RelativeTime';
 import { PageContainer } from '@/components/PageContainer';
 import { getSignedMediaForMarkIds } from '@/lib/markMedia';
+import { DOMAIN_BADGE_CLASS, DOMAIN_DEFAULT } from '@/lib/markDomainBadge';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -101,7 +102,14 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const showOwnerActions = isOwner && !isWithdrawn && !isHistorical;
   const content = (mark as { content?: string }).content ?? '';
   const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
-  const claimTypeName = mark.claim_type ?? 'Unclassified';
+  const domainLabel = (mark as { domain?: string }).domain;
+  const domainBadgeClass =
+    domainLabel && DOMAIN_BADGE_CLASS[domainLabel] ? DOMAIN_BADGE_CLASS[domainLabel] : DOMAIN_DEFAULT;
+  const hasBeenEdited = !!(
+    mark.updated_at &&
+    new Date(mark.updated_at).getTime() !== new Date(mark.created_at).getTime()
+  );
+  const canEditMark = isOwner && !hasChallenges && !isWithdrawn;
   const mediaByMarkId = await getSignedMediaForMarkIds(supabase, [id]);
   const media = mediaByMarkId[id] ?? [];
 
@@ -130,114 +138,167 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     soiCount = 0;
   }
 
+  const challengesCount = mark.dispute_count ?? 0;
+  const survivedCount = mark.disputes_survived ?? 0;
+
   return (
-    <PageContainer className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-[14px_16px] md:p-[18px_20px] overflow-hidden" data-status={mark.status}>
-        <div className="flex items-start justify-between gap-4">
-          <div className="min-w-0 flex-1">
-            <div className="flex items-start gap-3">
-              <Avatar username={displayUsername} avatarUrl={isHistorical ? null : avatarUrl} size="md" />
-              <div className="min-w-0 flex-1">
-                {isHistorical && mark.historical_profile_id ? (
-                  <>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/historical/profile/${mark.historical_profile_id}`} className="text-[16px] font-semibold text-[var(--text-primary)] hover:underline">
-                        {displayUsername}
-                      </Link>
-                      <RelativeTime dateString={mark.created_at} className="text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
-                    </div>
-                    <span className="inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400 mt-1">
-                      HISTORICAL FIGURE
+    <PageContainer className="space-y-8">
+      {/* Section 1–5: main mark card */}
+      <div
+        className="overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-5 md:p-6"
+        data-status={mark.status}
+      >
+        {/* Section 1: header — identity, tags, bookmark / status top-right */}
+        <div className="flex items-start justify-between gap-3 sm:gap-4">
+          <div className="flex min-w-0 flex-1 items-start gap-3 sm:gap-4">
+            <Avatar username={displayUsername} avatarUrl={isHistorical ? null : avatarUrl} size="md" />
+            <div className="min-w-0 flex-1">
+              {isHistorical && mark.historical_profile_id ? (
+                <>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
+                    <Link
+                      href={`/historical/profile/${mark.historical_profile_id}`}
+                      className="mark-card-display-name text-[16px] font-semibold text-[var(--text-primary)] hover:underline"
+                    >
+                      {displayUsername}
+                    </Link>
+                    <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums">
+                      <RelativeTime dateString={mark.created_at} />
+                      {hasBeenEdited && (
+                        <>
+                          <span className="text-[var(--text-muted)]/50" aria-hidden>
+                            ·
+                          </span>
+                          <span className="text-[11px]">
+                            Edited <RelativeTime dateString={mark.updated_at!} />
+                          </span>
+                        </>
+                      )}
                     </span>
-                  </>
-                ) : (
-                  <>
-                    <div className="flex items-baseline justify-between gap-2">
-                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[16px] font-semibold text-[var(--text-primary)] hover:underline min-w-0 truncate">
-                        {displayPrimary}
-                      </Link>
-                      <RelativeTime dateString={mark.created_at} className="text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
-                    </div>
-                    {showSecondaryUsername && (
-                      <Link href={`/profile/${encodeURIComponent(username)}`} className="text-[13px] text-[var(--text-muted)] opacity-65 hover:underline block mt-0.5">
-                        @{username}
-                      </Link>
-                    )}
-                  </>
-                )}
-                <p className="mt-1 text-[0.75rem] text-[var(--text-muted)]">
-                  {(mark as { domain?: string }).domain}
-                  {(mark as { claim_type?: string }).claim_type && ` · ${(mark as { claim_type: string }).claim_type}`}
-                  {mark.updated_at && new Date(mark.updated_at).getTime() !== new Date(mark.created_at).getTime() && (
-                    <> · Updated <RelativeTime dateString={mark.updated_at} /></>
+                  </div>
+                  <span className="mt-1 inline-flex items-center rounded-full border border-amber-500/70 bg-amber-500/10 px-2 py-0.5 text-xs font-medium text-amber-700 dark:text-amber-400">
+                    HISTORICAL FIGURE
+                  </span>
+                </>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1">
+                    <Link
+                      href={`/profile/${encodeURIComponent(username)}`}
+                      className="mark-card-display-name min-w-0 truncate text-[16px] font-semibold text-[var(--text-primary)] hover:underline"
+                    >
+                      {displayPrimary}
+                    </Link>
+                    <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums shrink-0">
+                      <RelativeTime dateString={mark.created_at} />
+                      {hasBeenEdited && (
+                        <>
+                          <span className="text-[var(--text-muted)]/50" aria-hidden>
+                            ·
+                          </span>
+                          <span className="text-[11px]">
+                            Edited <RelativeTime dateString={mark.updated_at!} />
+                          </span>
+                        </>
+                      )}
+                    </span>
+                  </div>
+                  {showSecondaryUsername && (
+                    <Link
+                      href={`/profile/${encodeURIComponent(username)}`}
+                      className="mt-0.5 block text-[13px] text-[var(--text-muted)] opacity-65 hover:underline"
+                    >
+                      @{username}
+                    </Link>
                   )}
-                </p>
-              </div>
-              {isWithdrawn && (
-                <span className="text-xs text-muted-foreground">Withdrawn</span>
+                </>
+              )}
+              {(mark.claim_type || domainLabel) && (
+                <div className="mark-detail-header badge-row mt-3">
+                  {mark.claim_type && <span className="badge-claim-type">{mark.claim_type}</span>}
+                  {domainLabel && (
+                    <span className={`badge-domain ${domainBadgeClass}`} data-domain={domainLabel}>
+                      {domainLabel}
+                    </span>
+                  )}
+                </div>
               )}
             </div>
-            {isWithdrawn && withdrawnByUsername && (
-              <p className="mt-1 text-sm text-muted-foreground">Withdrawn by @{withdrawnByUsername}</p>
-            )}
-            <div className="mt-3 rounded-md border border-border bg-muted/50 px-3 py-2">
-              <p className="text-sm font-medium text-foreground">
-                {isHistorical ? displayUsername : (displayPrimary.startsWith('@') ? displayPrimary : `${displayPrimary} (@${username})`)} — {claimTypeName} · {(mark as { domain?: string }).domain}
-              </p>
-              <p className="text-xs text-muted-foreground">marking this as theirs</p>
-            </div>
-            <MarkContentWithEdit
-              content={content}
-              imageUrl={imageUrl}
-              media={media}
-              markId={mark.id}
-              canEdit={isOwner && !hasChallenges && !isWithdrawn}
-              initialEdit={tab === 'edit' || edit === '1'}
-            />
-            {versionCount > 0 && (
-              <p className="mt-2">
-                <Link href={`/mark/${id}?tab=versions`} className="text-sm text-gray-500 hover:underline">
-                  Edited ({versionCount})
-                </Link>
-              </p>
-            )}
           </div>
-          {mark.status !== 'ACTIVE' && (
-            <MarkStatusLabel status={mark.status as import('@/lib/types').MarkStatus} />
-          )}
-        </div>
-        <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-2">
-          {user && <BookmarkButton markId={mark.id} bookmarked={isBookmarked} />}
-          <span className="text-xs text-muted-foreground">Challenges: {mark.dispute_count ?? 0}</span>
-          <span className="text-xs text-muted-foreground">Challenges survived: {mark.disputes_survived ?? 0}</span>
-          {!isWithdrawn && user && (
-            <VoteButtons
-              markId={mark.id}
-              canVote={canVote}
-              isOwnMark={isOwner}
-              currentVote={currentVote}
-              initialSupportVotes={mark.support_votes ?? 0}
-              initialOpposeVotes={mark.oppose_votes ?? 0}
-            />
-          )}
-          {isWithdrawn && (
-            <span className="text-sm text-gray-400" title="Voting and challenges are disabled for withdrawn marks">
-              Voting and challenges disabled
-            </span>
-          )}
-        </div>
-        {showOwnerActions && (
-          <div className="mt-4 rounded border border-amber-200 bg-amber-50/50 p-3">
-            {hasChallenges ? (
-              <h3 className="mb-2 text-sm font-semibold text-amber-900">This mark has challenges</h3>
-            ) : (
-              <h3 className="mb-2 text-sm font-semibold text-amber-900">Owner actions</h3>
+          <div className="flex shrink-0 items-start gap-1 sm:gap-2">
+            {user && (
+              <BookmarkButton markId={mark.id} bookmarked={isBookmarked} iconOnly className="-mr-1 sm:mr-0" />
             )}
-            <WithdrawContestButtons markId={mark.id} hasChallenges={hasChallenges} />
+            {mark.status !== 'ACTIVE' && (
+              <MarkStatusLabel status={mark.status as import('@/lib/types').MarkStatus} />
+            )}
+            {isWithdrawn && <span className="text-xs text-muted-foreground sm:whitespace-nowrap">Withdrawn</span>}
+          </div>
+        </div>
+
+        {isWithdrawn && withdrawnByUsername && (
+          <p className="mt-2 text-sm text-muted-foreground">Withdrawn by @{withdrawnByUsername}</p>
+        )}
+
+        {/* Section 2: content only */}
+        <div className="mt-8 md:mt-10">
+          <MarkContentWithEdit
+            content={content}
+            imageUrl={imageUrl}
+            media={media}
+            markId={mark.id}
+            canEdit={canEditMark}
+            initialEdit={tab === 'edit' || edit === '1'}
+            hideInlineEditButton={canEditMark}
+          />
+          {versionCount > 0 && (
+            <p className="mt-4">
+              <Link
+                href={`/mark/${id}?tab=versions`}
+                className="text-xs text-muted-foreground hover:text-foreground hover:underline"
+              >
+                Version history ({versionCount})
+              </Link>
+            </p>
+          )}
+        </div>
+
+        {/* Sections 3–4: stats + vote actions */}
+        <VoteButtons
+          markId={mark.id}
+          canVote={canVote}
+          isOwnMark={isOwner}
+          currentVote={currentVote}
+          initialSupportVotes={mark.support_votes ?? 0}
+          initialOpposeVotes={mark.oppose_votes ?? 0}
+          challengeCount={challengesCount}
+          disputesSurvived={survivedCount}
+          soiCount={soiCount}
+          isWithdrawn={isWithdrawn}
+        />
+
+        {/* Section 5: owner — quiet inline links */}
+        {showOwnerActions && (
+          <div className="mt-4 inline-flex flex-wrap items-center gap-x-1.5 gap-y-1 text-xs text-muted-foreground">
+            {canEditMark && (
+              <Link
+                href={`/mark/${id}?edit=1`}
+                className="font-normal underline-offset-2 transition hover:text-foreground hover:underline"
+              >
+                Edit
+              </Link>
+            )}
+            {canEditMark && (
+              <span className="text-muted-foreground/40 select-none" aria-hidden>
+                ·
+              </span>
+            )}
+            <WithdrawContestButtons markId={mark.id} hasChallenges={hasChallenges} quietInline />
           </div>
         )}
       </div>
 
+      {/* Section 7: tabs in separate card */}
       <MarkDetailTabs
         markId={id}
         currentTab={currentTab}
@@ -248,7 +309,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         isWithdrawn={isWithdrawn}
         currentUserId={user?.id ?? null}
         versionCount={versionCount}
-        canEdit={isOwner && !hasChallenges && !isWithdrawn}
+        canEdit={canEditMark}
         challengeCount={challengeCount ?? 0}
         soiCount={soiCount}
         isOwner={isOwner}

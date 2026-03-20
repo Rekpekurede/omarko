@@ -15,9 +15,19 @@ interface MarkContentWithEditProps {
   markId: string;
   canEdit: boolean;
   initialEdit?: boolean;
+  /** When set, the inline Edit control is omitted (e.g. detail page shows Edit in the footer row). */
+  hideInlineEditButton?: boolean;
 }
 
-export function MarkContentWithEdit({ content, imageUrl, media = [], markId, canEdit, initialEdit = false }: MarkContentWithEditProps) {
+export function MarkContentWithEdit({
+  content,
+  imageUrl,
+  media = [],
+  markId,
+  canEdit,
+  initialEdit = false,
+  hideInlineEditButton = false,
+}: MarkContentWithEditProps) {
   const [editing, setEditing] = useState(initialEdit);
   const firstMedia = media[0] ?? null;
   const effectiveImageUrl = firstMedia?.kind === 'image' ? firstMedia.signed_url : imageUrl;
@@ -35,33 +45,33 @@ export function MarkContentWithEdit({ content, imageUrl, media = [], markId, can
   }
 
   return (
-    <div>
+    <div className="flex flex-col gap-6">
       {effectiveImageUrl && (
-        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted">
+        <div className="overflow-hidden rounded-xl border border-border bg-muted">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src={effectiveImageUrl} alt="" className="max-h-[80vh] w-full object-contain" loading="lazy" />
         </div>
       )}
       {firstMedia?.kind === 'audio' && firstMedia.signed_url && (
-        <div className="mt-3 rounded-xl border border-border bg-muted/40 p-3">
+        <div className="rounded-xl border border-border bg-muted/40 p-3">
           <audio controls className="w-full" preload="metadata">
             <source src={firstMedia.signed_url} />
           </audio>
         </div>
       )}
       {firstMedia?.kind === 'video' && firstMedia.signed_url && (
-        <div className="mt-3 overflow-hidden rounded-xl border border-border bg-muted/40 p-2">
+        <div className="overflow-hidden rounded-xl border border-border bg-muted/40 p-2">
           <video controls preload="metadata" poster={firstMedia.poster_signed_url ?? undefined} className="max-h-[80vh] w-full rounded-lg">
             <source src={firstMedia.signed_url} />
           </video>
         </div>
       )}
-      {content && <p className="mt-3 mark-text min-w-0">{content}</p>}
-      {canEdit && (
+      {content && <p className="mark-text min-w-0 text-base leading-relaxed">{content}</p>}
+      {canEdit && !hideInlineEditButton && (
         <button
           type="button"
           onClick={() => setEditing(true)}
-          className="mt-2 text-sm text-muted-foreground hover:underline"
+          className="text-sm text-muted-foreground hover:underline"
         >
           Edit
         </button>

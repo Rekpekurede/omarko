@@ -1,14 +1,24 @@
 'use client';
 
 /** Audit: removed dev console.log (upload attachment). */
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { DOMAINS, CLAIM_TYPES, TOP_CLAIM_TYPES, type ClaimType } from '@/lib/types';
+import { DOMAINS, CLAIM_TYPES, type ClaimType } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
 import { ClaimTypePickerSheet } from './ClaimTypePickerSheet';
 import { compressImage } from '@/lib/compressImage';
 
 const TOAST_MS = 1800;
+
+/** Three distinct random claim types for the modal suggestion row (reshuffled each time the modal opens). */
+function pickThreeRandomClaimTypes(): ClaimType[] {
+  const pool = [...CLAIM_TYPES];
+  for (let i = pool.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [pool[i], pool[j]] = [pool[j], pool[i]];
+  }
+  return pool.slice(0, 3);
+}
 
 /** Map upload API errors to user-friendly messages. Always suggests posting without image if upload fails. */
 function uploadErrorMessage(raw: string): string {
@@ -46,6 +56,12 @@ export function CreateMarkModal() {
   const [soiUrls, setSoiUrls] = useState<string[]>([]);
   const [soiUrlInput, setSoiUrlInput] = useState('');
   const [claimTypeOptions, setClaimTypeOptions] = useState<{ id: string; name: string }[]>([]);
+
+  /** Exactly 3 distinct random claim types whenever the modal opens (not tied to API load). */
+  const randomClaimSuggestions = useMemo(
+    () => (isOpen ? pickThreeRandomClaimTypes() : []),
+    [isOpen]
+  );
 
   useEffect(() => {
     if (!isOpen) return;
@@ -439,19 +455,18 @@ export function CreateMarkModal() {
             </div>
 
             <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-5">
-              {/* Claim type: top 6 pills + See all */}
+              {/* Claim type: 3 random pills + See all */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
                   CLAIM TYPE (what is yours)
                 </label>
                 <div className="flex flex-wrap items-center gap-2">
-                  {TOP_CLAIM_TYPES.map((name) => {
-                    const opt = claimTypeOptions.find((o) => o.name === name);
-                    if (!opt) return null;
-                    const isSelected = selectedClaimType?.id === opt.id;
+                  {randomClaimSuggestions.map((name) => {
+                    const opt = claimTypeOptions.find((o) => o.name === name) ?? { id: name, name };
+                    const isSelected = selectedClaimType?.name === opt.name;
                     return (
                       <button
-                        key={opt.id}
+                        key={name}
                         type="button"
                         onClick={() => {
                           setSelectedClaimType(opt);
@@ -464,11 +479,11 @@ export function CreateMarkModal() {
                             : { background: 'transparent', color: 'var(--text-secondary)', border: '1px solid var(--border)' }
                         }
                       >
-                        {opt.name}
+                        {name}
                       </button>
                     );
                   })}
-                  {selectedClaimType && !TOP_CLAIM_TYPES.includes(selectedClaimType.name as (typeof TOP_CLAIM_TYPES)[number]) && (
+                  {selectedClaimType && !randomClaimSuggestions.includes(selectedClaimType.name as ClaimType) && (
                     <button
                       type="button"
                       className="shrink-0 cursor-pointer rounded-[20px] border px-3.5 py-1.5 font-body text-[0.75rem] transition-colors"
@@ -492,18 +507,8 @@ export function CreateMarkModal() {
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
                   DOMAIN (the field it belongs to)
                 </label>
-                <div style={{ position: 'relative' }}>
-                  <div
-                    style={{
-                      display: 'flex',
-                      gap: '8px',
-                      overflowX: 'auto',
-                      paddingBottom: '8px',
-                      scrollbarWidth: 'thin',
-                      scrollbarColor: 'var(--accent) transparent',
-                      WebkitOverflowScrolling: 'touch',
-                    }}
-                  >
+                <div className="relative">
+                  <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch' }}>
                     {DOMAINS.map((d) => (
                       <button
                         key={d}
