@@ -53,19 +53,7 @@ export async function Header() {
             <SearchBar />
           </div>
         </div>
-        <div className="ml-auto flex items-center gap-1.5">
-          {user && (
-            <Link
-              href="/bookmarks"
-              className="header-icon inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
-              aria-label="Bookmarks"
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                <path d="M6 3h12v18l-6-4-6 4V3z" />
-              </svg>
-            </Link>
-          )}
-          {/* Search icon is replaced by the full SearchBar above */}
+        <div className="ml-auto flex shrink-0 items-center gap-2">
           <ThemeToggle />
           <nav className="header-nav hidden items-center gap-3 sm:flex">
             <Link href="/" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
@@ -73,9 +61,6 @@ export async function Header() {
             </Link>
             {user ? (
               <>
-                <Link href="/bookmarks" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">
-                  Bookmarks
-                </Link>
                 <NotificationsBell />
                 <CreateMarkButton />
                 {profile && (
