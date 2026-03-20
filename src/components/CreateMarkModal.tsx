@@ -425,7 +425,7 @@ export function CreateMarkModal() {
                   Leave Your Mark
                 </h2>
                 <p className="mt-1 font-body text-[0.85rem] italic text-[var(--text-secondary)]">
-                  Let it be known what you were responsible for.
+                  Declare what you&apos;ve created, discovered, or thought of first.
                 </p>
               </div>
               <button
