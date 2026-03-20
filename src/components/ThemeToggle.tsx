@@ -6,13 +6,14 @@ export function ThemeToggle() {
   const { theme, setTheme } = useTheme();
 
   const cycle = () => {
-    if (theme === 'light') setTheme('dark');
-    else if (theme === 'dark') setTheme('system');
-    else setTheme('light');
+    if (theme === 'dark') setTheme('light');
+    else if (theme === 'light') setTheme('cobrain');
+    else if (theme === 'cobrain') setTheme('dark');
+    else setTheme('dark'); // system → dark
   };
 
   const label =
-    theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'System';
+    theme === 'cobrain' ? 'Cobrain' : theme === 'light' ? 'Light' : theme === 'dark' ? 'Dark' : 'System';
 
   return (
     <button

@@ -21,7 +21,7 @@ const notoSans = Noto_Sans({
   variable: "--font-body",
 });
 
-const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');})();`;
+const themeScript = `(function(){var t=localStorage.getItem('omarko-theme')||'system';if(t==='cobrain'){document.documentElement.setAttribute('data-theme','cobrain');}else{var d=t==='dark'||(t==='system'&&window.matchMedia('(prefers-color-scheme:dark)').matches);document.documentElement.setAttribute('data-theme',d?'dark':'light');}})();`;
 
 export const metadata: Metadata = {
   title: "OMarko",

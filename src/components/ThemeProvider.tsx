@@ -2,7 +2,7 @@
 
 import { createContext, useCallback, useContext, useEffect, useState } from 'react';
 
-export type Theme = 'light' | 'dark' | 'system';
+export type Theme = 'light' | 'dark' | 'system' | 'cobrain';
 
 const STORAGE_KEY = 'omarko-theme';
 
@@ -14,11 +14,15 @@ function getSystemDark(): boolean {
 function getStoredTheme(): Theme {
   if (typeof window === 'undefined') return 'system';
   const stored = localStorage.getItem(STORAGE_KEY);
-  if (stored === 'light' || stored === 'dark' || stored === 'system') return stored;
+  if (stored === 'light' || stored === 'dark' || stored === 'system' || stored === 'cobrain') return stored;
   return 'system';
 }
 
 function applyTheme(theme: Theme) {
+  if (theme === 'cobrain') {
+    document.documentElement.setAttribute('data-theme', 'cobrain');
+    return;
+  }
   const dark = theme === 'dark' || (theme === 'system' && getSystemDark());
   document.documentElement.setAttribute('data-theme', dark ? 'dark' : 'light');
 }

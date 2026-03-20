@@ -26,6 +26,7 @@ export const CLAIM_TYPES: readonly ClaimType[] = [
   'Joke',
   'Defense',
   'Word',
+  'Scenario',
 ];
 
 export type { ClaimType };

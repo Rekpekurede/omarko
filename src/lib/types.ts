@@ -84,6 +84,7 @@ export const CLAIM_TYPE_DESCRIPTIONS = {
   Joke: 'A humorous claim — joke, bit, or comedic statement you originated.',
   Defense: 'A defense of a person, position, or policy — your argument or case for something.',
   Word: 'A word you coined or that you are known for using or defining.',
+  Scenario: 'A situation or scenario you described, outlined, or set out.',
 } as const;
 
 export type ClaimType = keyof typeof CLAIM_TYPE_DESCRIPTIONS;
