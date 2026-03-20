@@ -422,7 +422,7 @@ export function CreateMarkModal() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
-                  Leave Your Mark
+                  What is your mark?
                 </h2>
                 <p className="mt-1 font-body text-[0.85rem] italic text-[var(--text-secondary)]">
                   Let it be known what you&apos;re responsible for.
