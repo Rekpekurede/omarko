@@ -6,7 +6,6 @@ import { useDrawer } from '@/context/DrawerContext';
 import { signOut } from '@/lib/actions';
 import { Avatar } from './Avatar';
 import { PwaInstallButton } from './PwaInstallButton';
-import { ThemeToggle } from './ThemeToggle';
 
 interface SideDrawerProps {
   username: string | null;
@@ -14,9 +13,10 @@ interface SideDrawerProps {
 }
 
 const menuItems = [
-  { label: 'Home', href: '/', icon: '🏠', useUsername: false },
-  { label: 'Profile', href: '/profile/', icon: '👤', useUsername: true },
-  { label: 'Settings', href: '/settings', icon: '⚙️', useUsername: false },
+  { label: 'Home', href: '/', icon: '🏠', useUsername: false, requiresAuth: false },
+  { label: 'Profile', href: '/profile/', icon: '👤', useUsername: true, requiresAuth: true },
+  { label: 'Settings', href: '/settings', icon: '⚙️', useUsername: false, requiresAuth: false },
+  { label: 'Bookmarks', href: '/bookmarks', icon: '🔖', useUsername: false, requiresAuth: true },
 ] as const;
 
 export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
@@ -79,7 +79,9 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
             {menuItems.map((item) => {
               const href = item.useUsername
                 ? (username ? `/profile/${encodeURIComponent(username)}` : '/auth')
-                : item.href;
+                : item.requiresAuth && !username
+                  ? '/auth'
+                  : item.href;
               return (
                 <Link
                   key={item.label}
@@ -93,11 +95,6 @@ export function SideDrawer({ username, avatarUrl }: SideDrawerProps) {
               );
             })}
             <PwaInstallButton />
-            <div className="tap-press flex w-full items-center gap-4 rounded-r-lg border-l-[3px] border-transparent py-4 px-6 text-left text-text-secondary transition-colors duration-150 hover:border-accent hover:text-text-primary">
-              <span className="text-xl" aria-hidden>🌓</span>
-              <span className="flex-1">Theme</span>
-              <ThemeToggle />
-            </div>
             <form action={signOut} className="border-l-[3px] border-transparent">
               <button
                 type="submit"
