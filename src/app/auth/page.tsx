@@ -45,7 +45,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
             </h1>
             <p className="mt-4 font-body text-[1rem] leading-relaxed text-[var(--text-secondary)] md:text-[1.05rem]">
               Omarko is where people record ideas, creations, predictions, and discoveries that
-              began with them — so the world can later verify who started it.
+              they were responsible for bringing into the world — so the world can later verify where it truly came from.
             </p>
           </section>
 
@@ -56,28 +56,28 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   Post a Mark
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Record something that came from you — an idea, prediction, creation, argument, or
-                  discovery. Timestamped. Public. Permanent.
+                  Publicly claim something came from you — an idea, prediction, creation, argument, or
+                  discovery. No gatekeeping. No proof required. Your word is your mark.
                 </p>
               </div>
 
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 md:p-7">
                 <p className="font-body text-[1rem] font-semibold text-[var(--text-primary)]">
-                  Attach Proof
+                  The Community Decides
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Submit real-world evidence your idea spread — links, screenshots, citations. Your
-                  influence becomes traceable.
+                  If anyone believes your claim isn't genuine, they can challenge it with evidence. The
+                  public votes. Truth wins over volume — not whoever shouts loudest.
                 </p>
               </div>
 
               <div className="rounded-xl border border-[var(--border)] bg-[var(--bg-card)] p-6 md:p-7">
                 <p className="font-body text-[1rem] font-semibold text-[var(--text-primary)]">
-                  Let the World Verify
+                  The Record Stands
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Anyone can challenge a claim with evidence. The community decides what stands.
-                  The record never lies.
+                  Win a challenge and your mark is permanent. Lose one and it is supplanted. Your
+                  profile reflects everything — what stood and what didn't.
                 </p>
               </div>
             </div>
@@ -87,21 +87,6 @@ export default async function AuthPage({ searchParams }: PageProps) {
             <p className="font-display text-[1.15rem] italic text-[var(--text-muted)]">
               Instead of arguing about where something began — the world will simply look it up.
             </p>
-
-            <div className="mt-8 flex flex-col gap-3 md:flex-row md:justify-center">
-              <button
-                type="button"
-                className="w-full rounded-lg bg-[var(--accent)] px-6 py-3 text-center font-body font-semibold text-[var(--bg-primary)] transition-colors hover:bg-[var(--accent-dim)] md:w-[240px]"
-              >
-                Create account
-              </button>
-              <button
-                type="button"
-                className="w-full rounded-lg border border-[var(--accent)] bg-transparent px-6 py-3 text-center font-body font-semibold text-[var(--accent)] transition-colors hover:bg-[var(--accent-glow)] md:w-[240px]"
-              >
-                Sign in
-              </button>
-            </div>
           </section>
 
           {/* Marketing CTA ends above; keep AuthForms below */}

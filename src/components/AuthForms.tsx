@@ -26,9 +26,9 @@ export function AuthForms({ message, error }: AuthFormsProps) {
 
   return (
     <div className="w-full max-w-sm">
-      <h2 className="font-display text-[1.5rem] font-semibold text-[var(--text-primary)]">
+      <p className="font-display text-[1.5rem] font-semibold text-[var(--text-primary)]">
         Join OMarko
-      </h2>
+      </p>
       <p className="mt-1 font-body text-[0.9rem] italic text-[var(--text-secondary)]">
         Start leaving your mark on the world.
       </p>
