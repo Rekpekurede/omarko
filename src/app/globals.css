@@ -357,6 +357,20 @@ h1, h2, h3, .display-text {
   font-family: var(--font-body);
 }
 
+/* Dark-mode domain tags: match claim-type "stamp" system */
+[data-theme="dark"] .mark-card .badge-domain {
+  background: transparent !important;
+  border: 1px solid #8A6E2F !important;
+  color: #C9A84C !important;
+  padding: 2px 8px !important;
+  border-radius: 4px !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  font-family: var(--font-body) !important;
+}
+
 /* Engagement row — compact, single line, bookmark right-aligned */
 .mark-card .engagement-row {
   font-size: 13px;
@@ -372,6 +386,12 @@ h1, h2, h3, .display-text {
 .mark-card .engagement-row a span:not([aria-hidden]),
 .mark-card .engagement-row button span:not([aria-hidden]) {
   color: var(--accent);
+}
+
+/* Dark-mode SOI label should be distinct gold */
+[data-theme="dark"] .mark-card .engagement-row a[href*="tab=soi"] span[aria-hidden],
+[data-theme="dark"] .mark-card .engagement-row a[href*="tab=soi"] span[aria-hidden] {
+  color: #C9A84C !important;
 }
 
 /* Global badge (status, etc.) */
@@ -398,6 +418,14 @@ h1, h2, h3, .display-text {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   font-weight: 900;
+}
+
+/* Dark-mode CHALLENGED refinement (no solid-gold fill) */
+[data-theme="dark"] .status-challenged {
+  border: 1.5px solid #C9A84C !important;
+  color: #C9A84C !important;
+  background: transparent !important;
+  letter-spacing: 0.5px !important;
 }
 .status-withdrawn {
   background: rgba(100, 100, 120, 0.15);

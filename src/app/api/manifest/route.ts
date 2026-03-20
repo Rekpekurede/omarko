@@ -22,7 +22,7 @@ export async function GET(request: NextRequest) {
     scope: '/',
     display: 'standalone' as const,
     background_color: '#08080C',
-    theme_color: '#f59e0b',
+    theme_color: '#0A0B0E',
     icons: [
       {
         src: `${origin}/icons/icon-192.png`,
