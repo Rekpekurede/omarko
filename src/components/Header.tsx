@@ -25,13 +25,13 @@ export async function Header() {
             style={{
               width: 36,
               height: 36,
-              backgroundImage: 'url(/omarko-icon.png)',
               backgroundSize: '140%',
               backgroundPosition: 'center',
               backgroundRepeat: 'no-repeat',
               borderRadius: '6px',
               flexShrink: 0,
             }}
+            className="omarko-logo-mark"
             aria-hidden
           />
           <span

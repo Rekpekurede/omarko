@@ -132,7 +132,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   return (
     <PageContainer className="space-y-6">
-      <div className="rounded-2xl border border-border bg-card p-[14px_16px] md:p-[18px_20px] overflow-hidden">
+      <div className="rounded-2xl border border-border bg-card p-[14px_16px] md:p-[18px_20px] overflow-hidden" data-status={mark.status}>
         <div className="flex items-start justify-between gap-4">
           <div className="min-w-0 flex-1">
             <div className="flex items-start gap-3">

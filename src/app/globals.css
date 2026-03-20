@@ -7,35 +7,35 @@
   Dark default; light via [data-theme="light"].
 */
 :root {
-  --bg-primary: #08080C;
-  --bg-secondary: #0A0A0F;
-  --bg-card: #12121A;
-  --bg-card-hover: #16161F;
-  --border: rgba(255, 255, 255, 0.05);
-  --border-subtle: rgba(255, 255, 255, 0.03);
-  --text-primary: #FAFAFA;
-  --text-secondary: #A1A1A1;
-  --text-muted: #737373;
-  --accent: #f59e0b;
-  --accent-dim: #d97706;
-  --accent-glow: rgba(245, 158, 11, 0.12);
-  --certificate-border: rgba(255, 255, 255, 0.06);
+  --bg-primary: #0A0B0E;
+  --bg-secondary: #111318;
+  --bg-card: #111318;
+  --bg-card-hover: #16161E;
+  --border: #8A6E2F;
+  --border-subtle: rgba(138, 110, 47, 0.35);
+  --text-primary: #FFFFFF;
+  --text-secondary: #E8E0D0;
+  --text-muted: #8A8878;
+  --accent: #C9A84C;
+  --accent-dim: #8A6E2F;
+  --accent-glow: rgba(201, 168, 76, 0.10);
+  --certificate-border: #8A6E2F;
 }
 
 [data-theme="light"] {
-  --bg-primary: #F2EDE4;
-  --bg-secondary: #EDE6DA;
-  --bg-card: #FAF7F2;
-  --bg-card-hover: #F5F0E8;
-  --border: #DDD4C0;
-  --border-subtle: #E8E0D0;
-  --text-primary: #1A1408;
-  --text-secondary: #6B6050;
-  --text-muted: #9E8E78;
-  --accent: #9A6B20;
-  --accent-dim: #7A5218;
-  --accent-glow: rgba(154, 107, 32, 0.10);
-  --certificate-border: rgba(0, 0, 0, 0.06);
+  --bg-primary: #F5F0E8;
+  --bg-secondary: #FFFFFF;
+  --bg-card: #FFFFFF;
+  --bg-card-hover: #F7F3EA;
+  --border: #D4AF5A;
+  --border-subtle: rgba(212, 175, 90, 0.35);
+  --text-primary: #0A0B0E;
+  --text-secondary: #2C2820;
+  --text-muted: #7A7060;
+  --accent: #B8912A;
+  --accent-dim: #8A6E2F;
+  --accent-glow: rgba(184, 145, 42, 0.12);
+  --certificate-border: #D4AF5A;
 }
 
 /* Experimental: Cobrain theme (easily reversible — remove this block to revert) */
@@ -52,6 +52,26 @@
   --accent: #00B4C8;
   --accent-dim: #008FA0;
   --accent-glow: rgba(0, 180, 200, 0.10);
+}
+
+/* Logo: theme-safe background (no checker transparency artefact) */
+.omarko-logo-mark {
+  background-image: url('/omarko-logo-dark.png');
+  background-size: 140%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+[data-theme="light"] .omarko-logo-mark {
+  background-image: url('/omarko-logo-light.png');
+}
+.omarko-hero-mark {
+  background-image: url('/omarko-logo-dark.png');
+  background-size: 140%;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+[data-theme="light"] .omarko-hero-mark {
+  background-image: url('/omarko-logo-light.png');
 }
 
 /* Light: navbar — warm taupe, not dark grey */
@@ -80,23 +100,23 @@
 }
 [data-theme="light"] .feed-tab-active {
   background: var(--accent) !important;
-  color: #FAF7F2 !important;
+  color: #0A0B0E !important;
   box-shadow: none;
   border-color: transparent !important;
 }
 [data-theme="light"] .feed-tab-link:not(.feed-tab-active) {
-  color: var(--text-muted);
+  color: var(--accent-dim);
 }
 [data-theme="light"] .feed-tab-link:not(.feed-tab-active):hover {
-  color: var(--text-secondary);
-  border-color: var(--border);
+  color: var(--accent);
+  border-color: var(--accent-dim);
 }
 
 /* Light: cards */
 [data-theme="light"] .mark-card {
   background: var(--bg-card);
   border: 1px solid var(--border);
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
 }
 [data-theme="light"] .mark-card:hover {
   background: var(--bg-card-hover);
@@ -108,7 +128,7 @@
 
 /* Light: claim type badge — no white/grey background */
 [data-theme="light"] .mark-card .badge-claim-type {
-  border: 1px solid var(--accent-dim);
+  border: 1px solid var(--accent);
   color: var(--accent);
   background: transparent;
 }
@@ -197,6 +217,17 @@
   font-family: var(--font-display), Georgia, serif;
 }
 
+/* Gold ownership hero headline (both themes) */
+.hero-banner .hero-title {
+  color: var(--accent) !important;
+  font-family: var(--font-display), Georgia, serif;
+  font-weight: 700;
+}
+.hero-banner .hero-subtitle {
+  color: var(--accent) !important;
+  font-family: var(--font-display), Georgia, serif;
+}
+
 html {
   scroll-behavior: smooth;
 }
@@ -225,10 +256,10 @@ h1, h2, h3, .display-text {
 
 /* Mark claim content — hero of the card; compact on mobile, comfortable on desktop */
 .mark-text {
-  font-family: var(--font-body), system-ui, sans-serif;
-  font-size: 15px;
-  font-weight: 400;
-  line-height: 1.45;
+  font-family: Georgia, serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.6;
   color: var(--text-primary);
   word-break: break-word;
   overflow-wrap: break-word;
@@ -236,8 +267,8 @@ h1, h2, h3, .display-text {
 }
 @media (min-width: 768px) {
   .mark-text {
-    font-size: 17px;
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.6;
   }
 }
 
@@ -251,6 +282,7 @@ h1, h2, h3, .display-text {
   cursor: default;
   transition: border-color 0.15s ease, background 0.15s ease;
   overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
 }
 @media (min-width: 768px) {
   .mark-card {
@@ -260,6 +292,20 @@ h1, h2, h3, .display-text {
 .mark-card:hover {
   background: var(--bg-card-hover);
   border-color: var(--border);
+}
+
+/* Ownership accent bar for challenging records */
+.mark-card[data-status="CHALLENGED"],
+.mark-card[data-status="DISPUTED"],
+.mark-card[data-status="CHAMPION"] {
+  border-left: 3px solid var(--accent);
+}
+
+/* Also apply ownership accent bar to mark detail surfaces */
+[data-status="CHALLENGED"],
+[data-status="DISPUTED"],
+[data-status="CHAMPION"] {
+  border-left: 3px solid var(--accent);
 }
 .mark-card.witness-glow {
   animation: witness-pulse 1.2s ease-out;
@@ -289,11 +335,11 @@ h1, h2, h3, .display-text {
   flex-shrink: 0;
   padding: 2px 8px;
   border-radius: 4px;
-  border: 1px solid var(--accent-dim);
+  border: 1px solid var(--accent);
   color: var(--accent);
   background: transparent;
   font-size: 10px;
-  font-weight: 700;
+  font-weight: 800;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   font-family: var(--font-body);
@@ -322,6 +368,12 @@ h1, h2, h3, .display-text {
   }
 }
 
+/* Engagement counts: always in gold */
+.mark-card .engagement-row a span:not([aria-hidden]),
+.mark-card .engagement-row button span:not([aria-hidden]) {
+  color: var(--accent);
+}
+
 /* Global badge (status, etc.) */
 .badge {
   display: inline-flex;
@@ -345,6 +397,7 @@ h1, h2, h3, .display-text {
   font-size: 0.6rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
+  font-weight: 900;
 }
 .status-withdrawn {
   background: rgba(100, 100, 120, 0.15);

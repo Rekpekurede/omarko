@@ -35,8 +35,8 @@ export const metadata: Metadata = {
   },
   formatDetection: { telephone: false },
   icons: {
-    icon: "/omarko-icon.png",
-    apple: "/omarko-icon.png",
+    icon: "/omarko-logo-dark.png",
+    apple: "/omarko-logo-dark.png",
   },
 };
 

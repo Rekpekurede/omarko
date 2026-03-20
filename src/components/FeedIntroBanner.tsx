@@ -16,11 +16,11 @@ export function FeedIntroBanner() {
           style={{
             width: 120,
             height: 120,
-            backgroundImage: 'url(/omarko-icon.png)',
             backgroundSize: '140%',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
+          className="omarko-hero-mark"
           aria-label="OMarko"
         />
       </div>

@@ -22,8 +22,8 @@ export function FeedTabs() {
         href={forYouHref}
         className={`feed-tab-link tap-press font-body min-h-[44px] flex-1 rounded-lg border border-transparent px-4 py-3 text-center text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 ${
           tab === 'for_you'
-            ? 'feed-tab-active bg-gradient-to-br from-[#e8c66a] to-[#d4a93a] text-[#0a0a0a] shadow-md'
-            : 'bg-transparent text-text-muted hover:text-text-secondary hover:border-[rgba(255,255,255,0.08)]'
+            ? 'feed-tab-active bg-[var(--accent)] text-[#0A0B0E] shadow-md'
+            : 'bg-transparent text-[var(--accent-dim)] hover:text-[var(--accent)] hover:border-[var(--accent-dim)]'
         }`}
       >
         FOR YOU
@@ -32,8 +32,8 @@ export function FeedTabs() {
         href={followingHref}
         className={`feed-tab-link tap-press font-body min-h-[44px] flex-1 rounded-lg border border-transparent px-4 py-3 text-center text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 ${
           tab === 'following'
-            ? 'feed-tab-active bg-gradient-to-br from-[#e8c66a] to-[#d4a93a] text-[#0a0a0a] shadow-md'
-            : 'bg-transparent text-text-muted hover:text-text-secondary hover:border-[rgba(255,255,255,0.08)]'
+            ? 'feed-tab-active bg-[var(--accent)] text-[#0A0B0E] shadow-md'
+            : 'bg-transparent text-[var(--accent-dim)] hover:text-[var(--accent)] hover:border-[var(--accent-dim)]'
         }`}
       >
         FOLLOWING

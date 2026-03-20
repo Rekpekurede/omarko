@@ -142,6 +142,7 @@ export function MarkCard({
   return (
     <article
       className={`mark-card relative z-0 cursor-pointer ${witnessGlow ? 'witness-glow' : ''}`}
+      data-status={mark.status}
       onClick={goToMark}
       role="button"
       tabIndex={0}
