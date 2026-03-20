@@ -47,8 +47,11 @@ export async function Header() {
             OMarko
           </span>
         </Link>
-        <div className="hidden min-w-0 flex-1 sm:block">
-          <SearchBar />
+        {/* Responsive search bar: wide on desktop, fluid on mobile */}
+        <div className="min-w-0 flex-1">
+          <div className="mx-auto w-full max-w-[500px] md:max-w-[460px] lg:max-w-[500px] px-2">
+            <SearchBar />
+          </div>
         </div>
         <div className="ml-auto flex items-center gap-1.5">
           {user && (
@@ -62,16 +65,7 @@ export async function Header() {
               </svg>
             </Link>
           )}
-          <Link
-            href="/search"
-            className="header-icon inline-flex h-9 w-9 cursor-pointer items-center justify-center rounded-lg text-text-secondary transition-colors hover:text-text-primary sm:hidden"
-            aria-label="Search"
-          >
-            <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" />
-              <path d="m21 21-4.3-4.3" />
-            </svg>
-          </Link>
+          {/* Search icon is replaced by the full SearchBar above */}
           <ThemeToggle />
           <nav className="header-nav hidden items-center gap-3 sm:flex">
             <Link href="/" className="header-nav-link cursor-pointer text-sm text-text-secondary transition-colors hover:text-text-primary">

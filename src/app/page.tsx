@@ -6,6 +6,7 @@ import { FeedTabs } from '@/components/FeedTabs';
 import { FollowingFeedList } from '@/components/FollowingFeedList';
 import { DOMAINS, CLAIM_TYPES, type Mark } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
+import { redirect } from 'next/navigation';
 
 export const revalidate = 0;
 
@@ -26,6 +27,13 @@ export default async function FeedPage({ searchParams }: PageProps) {
   const source: FeedSource = params.source === 'historical' ? 'historical' : params.source === 'user' ? 'user' : 'all';
 
   const supabase = await createClient();
+
+  // Gate the feed: unauthenticated users should land on /auth.
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) {
+    redirect('/auth');
+  }
+
   let query = supabase
     .from('marks')
     .select(MARK_WITH_OWNER_USERNAME_SELECT)
@@ -102,7 +110,6 @@ export default async function FeedPage({ searchParams }: PageProps) {
     latest_comments: latestCommentsMap[m.id] ?? [],
   }));
 
-  const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
   if (user) {
