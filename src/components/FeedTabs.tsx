@@ -17,7 +17,7 @@ export function FeedTabs() {
   const followingHref = `/?${pFollowing.toString()}`;
 
   return (
-    <div className="feed-tabs-container mb-5 flex gap-0 rounded-xl border border-[rgba(255,255,255,0.06)] bg-bg-secondary/80 p-1">
+    <div className="feed-tabs-container mb-4 flex gap-0 rounded-xl border border-[rgba(255,255,255,0.06)] bg-bg-secondary/80 p-1">
       <Link
         href={forYouHref}
         className={`feed-tab-link tap-press font-body min-h-[44px] flex-1 rounded-lg border border-transparent px-4 py-3 text-center text-[0.8rem] font-semibold uppercase tracking-[0.08em] transition-all duration-200 ${

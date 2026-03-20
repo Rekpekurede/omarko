@@ -31,7 +31,7 @@ export async function Header() {
               borderRadius: '6px',
               flexShrink: 0,
             }}
-            className="omarko-logo-mark"
+            className="omarko-logo-mark bg-[var(--bg-primary)]"
             aria-hidden
           />
           <span
@@ -49,7 +49,7 @@ export async function Header() {
         </Link>
         {/* Responsive search bar: wide on desktop, fluid on mobile */}
         <div className="min-w-0 flex-1">
-          <div className="mx-auto w-full max-w-[500px] md:max-w-[460px] lg:max-w-[500px] px-2">
+          <div className="mx-auto w-full max-w-[380px] md:max-w-[460px] lg:max-w-[500px] px-2">
             <SearchBar />
           </div>
         </div>

@@ -3,24 +3,24 @@ const SHOW_HERO_SUBTEXT = true;
 
 export function FeedIntroBanner() {
   return (
-    <section className="hero-banner rounded-2xl border border-border bg-bg-card px-4 py-10 text-center sm:px-6 sm:py-12">
+    <section className="hero-banner rounded-2xl border border-border bg-bg-card px-4 py-8 text-center sm:px-6 sm:py-10">
       <div
         style={{
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
-          marginBottom: '20px',
+          marginBottom: '16px',
         }}
       >
         <div
           style={{
             width: 120,
             height: 120,
-            backgroundSize: '140%',
+            backgroundSize: 'contain',
             backgroundPosition: 'center',
             backgroundRepeat: 'no-repeat',
           }}
-          className="omarko-hero-mark"
+          className="omarko-hero-mark bg-[var(--bg-primary)]"
           aria-label="OMarko"
         />
       </div>

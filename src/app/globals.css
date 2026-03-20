@@ -60,18 +60,22 @@
   background-size: 140%;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: var(--bg-primary);
 }
 [data-theme="light"] .omarko-logo-mark {
   background-image: url('/omarko-logo-light.png');
+  background-color: var(--bg-primary);
 }
 .omarko-hero-mark {
   background-image: url('/omarko-logo-dark.png');
-  background-size: 140%;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
+  background-color: var(--bg-primary);
 }
 [data-theme="light"] .omarko-hero-mark {
   background-image: url('/omarko-logo-light.png');
+  background-color: var(--bg-primary);
 }
 
 /* Light: navbar — warm taupe, not dark grey */
@@ -169,6 +173,12 @@
   border-color: rgba(192, 132, 252, 0.35);
 }
 
+/* Light: ensure readable domain tag contrast (including domains without per-domain overrides) */
+[data-theme="light"] .mark-card .badge-domain {
+  color: var(--accent-dim) !important;
+  border-color: var(--accent-dim) !important;
+}
+
 /* Light: engagement row */
 [data-theme="light"] .engagement-row {
   color: var(--text-muted);
@@ -258,7 +268,7 @@ h1, h2, h3, .display-text {
 .mark-text {
   font-family: Georgia, serif;
   font-size: 16px;
-  font-weight: 600;
+  font-weight: 400;
   line-height: 1.6;
   color: var(--text-primary);
   word-break: break-word;
