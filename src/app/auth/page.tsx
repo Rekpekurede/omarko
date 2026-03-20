@@ -66,7 +66,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   The Community Decides
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  If anyone believes your claim isn't genuine, they can challenge it with evidence. The
+                  If anyone believes your claim isn&apos;t genuine, they can challenge it with evidence. The
                   public votes. Truth wins over volume — not whoever shouts loudest.
                 </p>
               </div>
@@ -77,7 +77,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
                   Win a challenge and your mark is permanent. Lose one and it is supplanted. Your
-                  profile reflects everything — what stood and what didn't.
+                  profile reflects everything — what stood and what didn&apos;t.
                 </p>
               </div>
             </div>
