@@ -23,7 +23,7 @@
 }
 
 [data-theme="light"] {
-  --bg-primary: #F5F0E8;
+  --bg-primary: #F8F6F2;
   --bg-secondary: #FFFFFF;
   --bg-card: #FFFFFF;
   --bg-card-hover: #F7F3EA;
@@ -119,12 +119,19 @@
 /* Light: cards */
 [data-theme="light"] .mark-card {
   background: var(--bg-card);
-  border: 1px solid var(--border);
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  border: 0;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  margin-bottom: 10px;
+  padding: 11px 16px;
+}
+@media (min-width: 768px) {
+  [data-theme="light"] .mark-card {
+    padding: 14px 20px;
+  }
 }
 [data-theme="light"] .mark-card:hover {
   background: var(--bg-card-hover);
-  border-color: var(--border);
+  border-color: transparent;
 }
 [data-theme="light"] .mark-card .mark-text {
   color: var(--text-primary);
@@ -176,13 +183,49 @@
 /* Light: ensure readable domain tag contrast (including domains without per-domain overrides) */
 [data-theme="light"] .mark-card .badge-domain {
   color: var(--accent-dim) !important;
-  border-color: var(--accent-dim) !important;
+  border: 0.8px solid var(--accent) !important;
+  background: transparent !important;
+}
+
+/* Light: refine tag visual weight */
+[data-theme="light"] .mark-card .badge-claim-type,
+[data-theme="light"] .mark-card .badge-domain {
+  font-size: 9px;
+  padding: 2px 6px;
+  letter-spacing: 0.06em;
+}
+[data-theme="light"] .mark-card .badge-claim-type {
+  border: 0.8px solid var(--accent);
+}
+
+/* Light: slightly larger avatar and stronger identity line */
+[data-theme="light"] .mark-card .mark-card-avatar {
+  width: 44px;
+  height: 53px;
+}
+[data-theme="light"] .mark-card .mark-card-display-name {
+  font-weight: 700;
 }
 
 /* Light: engagement row */
 [data-theme="light"] .engagement-row {
-  color: var(--text-muted);
+  color: #9A9080;
   border-top-color: var(--border-subtle);
+  font-size: 12px;
+  gap: 16px;
+}
+[data-theme="light"] .mark-card .engagement-row {
+  font-size: 12px;
+  gap: 16px;
+}
+[data-theme="light"] .mark-card .engagement-row a,
+[data-theme="light"] .mark-card .engagement-row button,
+[data-theme="light"] .mark-card .engagement-row span {
+  color: #9A9080;
+}
+[data-theme="light"] .mark-card .engagement-row a span:not([aria-hidden]),
+[data-theme="light"] .mark-card .engagement-row button span:not([aria-hidden]) {
+  color: #9A9080 !important;
 }
 [data-theme="light"] .engagement-row a:hover,
 [data-theme="light"] .engagement-row button:hover:not(:disabled) {

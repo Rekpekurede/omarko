@@ -154,12 +154,12 @@ export function MarkCard({
           {isHistorical ? (
             <>
               <Link href={`/historical/profile/${mark.historical_profile_id}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5" onClick={(e) => e.stopPropagation()}>
-                <Avatar username={historicalName} avatarUrl={null} size="card" variant="certificate" />
+                <Avatar username={historicalName} avatarUrl={null} size="card" variant="certificate" className="mark-card-avatar" />
               </Link>
               <div className="min-w-0 flex-1 flex flex-col">
                 <div className="flex items-baseline justify-between gap-2">
                   <span className="flex items-center gap-2 min-w-0">
-                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer truncate" onClick={(e) => e.stopPropagation()}>
+                    <Link href={`/historical/profile/${mark.historical_profile_id}`} className="mark-card-display-name font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer truncate" onClick={(e) => e.stopPropagation()}>
                       {historicalName}
                     </Link>
                     <span className="badge border border-[rgba(255,215,0,0.3)] text-accent bg-transparent shrink-0">
@@ -173,11 +173,11 @@ export function MarkCard({
           ) : (
             <>
               <Link href={`/profile/${encodeURIComponent(username)}`} className="shrink-0 cursor-pointer block transition-transform duration-200 ease-out hover:-translate-y-0.5" onClick={(e) => e.stopPropagation()}>
-                <Avatar username={username} avatarUrl={avatarUrl} size="card" variant="certificate" />
+                <Avatar username={username} avatarUrl={avatarUrl} size="card" variant="certificate" className="mark-card-avatar" />
               </Link>
               <div className="min-w-0 flex-1">
                 <div className="flex items-baseline justify-between gap-2">
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate" onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="mark-card-display-name font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate" onClick={(e) => e.stopPropagation()}>
                     {displayPrimary}
                   </Link>
                   <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
