@@ -143,8 +143,6 @@ export function VoteButtons({
   );
 
   if (isWithdrawn || !canVote) {
-    const s = initialSupportVotes;
-    const o = initialOpposeVotes;
     return (
       <div className="mt-6 space-y-2">
         <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
