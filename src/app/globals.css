@@ -49,18 +49,20 @@
   --text-primary: #F0F0F0;
   --text-secondary: #B0B0C0;
   --text-muted: #707080;
-  --accent: #00B4C8;
-  --accent-dim: #008FA0;
-  --accent-glow: rgba(0, 180, 200, 0.10);
+  /* Keep cyan theme clearly secondary to the gold brand identity. */
+  --accent: #6BB7C2;
+  --accent-dim: #4C8E9A;
+  --accent-glow: rgba(107, 183, 194, 0.08);
 }
 
 /* Logo: theme-safe background (no checker transparency artefact) */
 .omarko-logo-mark {
   background-image: url('/omarko-logo-dark.png');
-  background-size: 140%;
+  background-size: contain;
   background-position: center;
   background-repeat: no-repeat;
   background-color: var(--bg-primary);
+  overflow: hidden;
 }
 [data-theme="light"] .omarko-logo-mark {
   background-image: url('/omarko-logo-light.png');
@@ -190,11 +192,10 @@
 }
 
 /* Light: ensure readable domain tag contrast (including domains without per-domain overrides) */
-[data-theme="light"] .mark-card .badge-domain,
-[data-theme="light"] .mark-detail-header .badge-domain {
+[data-theme="light"] .mark-card .badge-domain:not([data-domain="Technology"]):not([data-domain="Music"]):not([data-domain="Science"]):not([data-domain="Sport"]):not([data-domain="General"]):not([data-domain="Philosophy"]):not([data-domain="Visual Art"]):not([data-domain="Religion"]),
+[data-theme="light"] .mark-detail-header .badge-domain:not([data-domain="Technology"]):not([data-domain="Music"]):not([data-domain="Science"]):not([data-domain="Sport"]):not([data-domain="General"]):not([data-domain="Philosophy"]):not([data-domain="Visual Art"]):not([data-domain="Religion"]) {
   color: var(--accent-dim) !important;
   border: 0.8px solid var(--accent) !important;
-  background: transparent !important;
 }
 
 /* Light: refine tag visual weight */
@@ -341,6 +342,32 @@ h1, h2, h3, .display-text {
   .mark-text {
     font-size: 16px;
     line-height: 1.6;
+  }
+}
+
+@media (max-width: 639px) {
+  /* Slightly larger claim text on mobile so it remains the primary focal point. */
+  .mark-text {
+    font-size: 17px;
+    line-height: 1.65;
+  }
+
+  /* Improve small-pill readability without making them loud. */
+  .mark-card .badge-claim-type,
+  .mark-card .badge-domain,
+  .mark-detail-header .badge-claim-type,
+  .mark-detail-header .badge-domain {
+    letter-spacing: 0.06em;
+  }
+
+  /* Preserve spacious hierarchy on mobile: give the claim and metrics breathing room. */
+  .mark-card .mark-text {
+    margin-top: 14px !important;
+  }
+
+  .mark-card .engagement-row {
+    margin-top: 18px !important;
+    padding-top: 14px !important;
   }
 }
 

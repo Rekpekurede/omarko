@@ -134,10 +134,6 @@ export function VoteButtons({
 
   const statsRow = (
     <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
-      <span className="tabular-nums">Support: {supportVotes}</span>
-      <StatSep />
-      <span className="tabular-nums">Oppose: {opposeVotes}</span>
-      <StatSep />
       <span className="tabular-nums">Challenges: {challengeCount}</span>
       <StatSep />
       <span className="tabular-nums">Survived: {disputesSurvived}</span>
@@ -152,10 +148,6 @@ export function VoteButtons({
     return (
       <div className="mt-6 space-y-2">
         <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
-          <span className="tabular-nums">Support: {s}</span>
-          <StatSep />
-          <span className="tabular-nums">Oppose: {o}</span>
-          <StatSep />
           <span className="tabular-nums">Challenges: {challengeCount}</span>
           <StatSep />
           <span className="tabular-nums">Survived: {disputesSurvived}</span>
@@ -183,7 +175,10 @@ export function VoteButtons({
             vote === 'SUPPORT' ? 'shadow-sm ring-2 ring-[#8A6E2F]/50' : ''
           }`}
         >
-          Support
+          <span className="inline-flex items-baseline gap-2">
+            <span aria-hidden>Support</span>
+            <span className="text-[11px] font-semibold opacity-90 tabular-nums">({supportVotes})</span>
+          </span>
         </button>
         <button
           type="button"
@@ -195,7 +190,10 @@ export function VoteButtons({
               : 'border-[#C9A84C]/35 text-muted-foreground hover:border-[#C9A84C]/55 hover:text-foreground dark:border-[#C9A84C]/28 dark:text-[#9A8A6A] dark:hover:border-[#C9A84C]/45 dark:hover:text-[#C9A84C]/90'
           }`}
         >
-          Oppose
+          <span className="inline-flex items-baseline gap-2">
+            <span aria-hidden>Oppose</span>
+            <span className="text-[11px] font-semibold opacity-90 tabular-nums">({opposeVotes})</span>
+          </span>
         </button>
       </div>
       {vote && (

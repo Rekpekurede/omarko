@@ -437,7 +437,7 @@ export function CreateMarkModal() {
           <div className="relative w-full max-h-[90vh] overflow-y-auto rounded-t-[16px] border border-[var(--border)] bg-[var(--bg-secondary)] p-7 shadow-xl sm:max-w-[520px] sm:rounded-2xl">
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h2 className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
+                <h2 id="create-mark-textarea-label" className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
                   What is your mark?
                 </h2>
                 <p className="mt-1 font-body text-[0.85rem] italic text-[var(--text-secondary)]">
@@ -551,14 +551,11 @@ export function CreateMarkModal() {
 
               {/* What's your Mark? */}
               <div className="flex flex-col gap-2">
-                <label htmlFor="composer-content" className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
-                  What&apos;s your Mark?
-                </label>
                 <textarea
                   id="composer-content"
                   value={content}
                   onChange={(e) => setContent(e.target.value)}
-                  placeholder="Describe what you're claiming as yours..."
+                  aria-labelledby="create-mark-textarea-label"
                   className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 font-display text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
                   rows={4}
                 />

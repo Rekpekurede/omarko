@@ -204,7 +204,6 @@ export function MarkCard({
                 onClick={(e) => { e.stopPropagation(); setMenuOpen((o) => !o); }}
                 className="cursor-pointer rounded p-1 text-text-muted transition-colors duration-150 hover:text-text-primary"
                 aria-label="More options"
-                aria-expanded={menuOpen ? 'true' : 'false'}
               >
                 <span className="text-lg leading-none">⋯</span>
               </button>
@@ -312,8 +311,8 @@ export function MarkCard({
         onClose={() => setLightboxOpen(false)}
       />
 
-      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-nowrap items-center justify-between gap-3 text-text-muted md:pt-3.5 md:gap-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex min-w-0 flex-1 flex-nowrap items-center gap-3 md:justify-between md:gap-4">
+      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-wrap items-center justify-between gap-2 text-text-muted md:flex-nowrap md:pt-3.5 md:gap-4" onClick={(e) => e.stopPropagation()}>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 md:flex-nowrap md:justify-between md:gap-4">
           <TooltipGuide
             tooltipKey="support"
             tooltipText="Support this Mark — you believe this claim is valid"
@@ -329,7 +328,9 @@ export function MarkCard({
               }`}
               aria-label="Support"
             >
-              <span aria-hidden>👍</span>
+              <span aria-hidden className="text-[13px] leading-none">
+                👍
+              </span>
               <span>{supportVotes}</span>
             </button>
           </TooltipGuide>
@@ -345,7 +346,9 @@ export function MarkCard({
             ) : isOwner ? (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
                 <Link href={`/mark/${mark.id}`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
-                  <span aria-hidden>⚔️ Challenge</span>
+                  <span aria-hidden className="text-[13px] leading-none">
+                    ⚔️ Challenge
+                  </span>
                   <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
                 </Link>
@@ -353,7 +356,9 @@ export function MarkCard({
             ) : (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
                 <Link href={`/mark/${mark.id}?tab=challenges`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
-                  <span aria-hidden>⚔️ Challenge</span>
+                  <span aria-hidden className="text-[13px] leading-none">
+                    ⚔️ Challenge
+                  </span>
                   <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
                 </Link>
@@ -362,7 +367,9 @@ export function MarkCard({
           )}
           {!showChallenge && (
             <span className="engagement-challenge flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)]">
-              <span aria-hidden>⚔️ Challenge</span>
+              <span aria-hidden className="text-[13px] leading-none">
+                ⚔️ Challenge
+              </span>
               <span className="hidden md:inline" aria-hidden> · </span>
               <span>{challengeCount}</span>
             </span>
@@ -388,13 +395,17 @@ export function MarkCard({
               }`}
               aria-label="Oppose"
             >
-              <span aria-hidden>👎</span>
+              <span aria-hidden className="text-[13px] leading-none">
+                👎
+              </span>
               <span>{opposeVotes}</span>
             </button>
           </TooltipGuide>
           <TooltipGuide tooltipKey="comment" tooltipText="Comment on this Mark">
             <Link href={`/mark/${mark.id}?tab=comments`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 hover:text-accent">
-              <span aria-hidden>💬</span>
+              <span aria-hidden className="text-[13px] leading-none">
+                💬
+              </span>
               <span>{commentsCount}</span>
             </Link>
           </TooltipGuide>
@@ -406,7 +417,7 @@ export function MarkCard({
             requiresAuth
             currentUserId={currentUserId}
           >
-            <span className="engagement-bookmark ml-auto flex shrink-0 items-center" title={bookmarked ? 'Saved' : 'Save'}>
+            <span className="engagement-bookmark ml-auto flex w-full justify-end sm:w-auto sm:ml-auto flex-shrink-0 items-center" title={bookmarked ? 'Saved' : 'Save'}>
               <BookmarkButton markId={mark.id} bookmarked={bookmarked} iconOnly />
             </span>
           </TooltipGuide>
