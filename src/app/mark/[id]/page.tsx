@@ -28,14 +28,14 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, moderation_status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name), historical_profiles(name)')
+    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name), historical_profiles(name)')
     .eq('id', id)
     .single();
 
   if (error || !mark) notFound();
 
   const isWithdrawn = !!mark.withdrawn_at;
-  const isRemovedNotAMark = mark.moderation_status === 'removed_not_a_mark';
+  const isRemovedNotAMark = false;
   let withdrawnByUsername: string | null = null;
   if (isWithdrawn && mark.withdrawn_by) {
     const { data: withdrawnByProfile } = await supabase
@@ -233,7 +233,6 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             {(mark.status !== 'ACTIVE' || isRemovedNotAMark) && (
               <MarkStatusLabel
                 status={mark.status as import('@/lib/types').MarkStatus}
-                moderationStatus={mark.moderation_status}
               />
             )}
             {isWithdrawn && <span className="text-xs text-muted-foreground sm:whitespace-nowrap">Withdrawn</span>}
