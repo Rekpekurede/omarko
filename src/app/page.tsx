@@ -129,7 +129,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
       <h1 className="display-text mb-4 mt-4 text-2xl font-semibold text-text-primary">Marks</h1>
       {error && (
         <div className="mb-4 rounded-lg border border-red-200 bg-red-50 p-3 text-sm text-red-800">
-          {error.message}
+          We couldn&apos;t load the feed right now. Please refresh and try again.
         </div>
       )}
       <FeedTabs />

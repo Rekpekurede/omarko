@@ -8,16 +8,41 @@ export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
   const domain = searchParams.get('domain');
   const claimType = searchParams.get('claim_type');
+  const followingOnly = searchParams.get('following') === 'true';
   const source = searchParams.get('source');
   const disputedOnly = searchParams.get('disputed_only') === 'true';
   const cursor = searchParams.get('cursor');
   const limit = Math.min(Math.max(parseInt(searchParams.get('limit') ?? '20', 10), 1), 100);
+
+  const { data: { user } } = await supabase.auth.getUser();
 
   let query = supabase
     .from('marks')
     .select(MARK_WITH_OWNER_USERNAME_SELECT)
     .is('withdrawn_at', null)
     .order('created_at', { ascending: false });
+
+  if (followingOnly) {
+    if (!user) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+    }
+
+    // Critical guard: when the follow list is empty, return an empty feed (never global fallback).
+    const { data: follows, error: followsError } = await supabase
+      .from('follows')
+      .select('following_id')
+      .eq('follower_id', user.id);
+    if (followsError) {
+      console.error('[feed.GET] failed to fetch follows', followsError.message);
+      return NextResponse.json({ error: 'Failed to load following feed' }, { status: 500 });
+    }
+
+    const followedUserIds = Array.from(new Set((follows ?? []).map((f) => f.following_id).filter(Boolean)));
+    if (followedUserIds.length === 0) {
+      return NextResponse.json({ marks: [], nextCursor: null, bookmarkIds: [], voteMap: {} });
+    }
+    query = query.in('user_id', followedUserIds);
+  }
 
   if (source === 'historical') {
     query = query.not('historical_profile_id', 'is', null);
@@ -50,7 +75,8 @@ export async function GET(request: Request) {
   const { data: marks, error } = await query;
 
   if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
+    console.error('[feed.GET] query failed', error.message);
+    return NextResponse.json({ error: 'Failed to load feed' }, { status: 500 });
   }
   const list = marks ?? [];
   const nextCursor = list.length === limit && list[list.length - 1]
@@ -102,7 +128,6 @@ export async function GET(request: Request) {
     latest_comments: latestCommentsMap[m.id] ?? [],
   }));
 
-  const { data: { user } } = await supabase.auth.getUser();
   let bookmarkIds: string[] = [];
   let voteMap: Record<string, 'SUPPORT' | 'OPPOSE'> = {};
   if (user && listWithComments.length > 0) {
