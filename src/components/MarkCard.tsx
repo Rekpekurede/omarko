@@ -73,6 +73,7 @@ export function MarkCard({
   const username = profile?.username ?? 'unknown';
   const avatarUrl = profile?.avatar_url ?? null;
   const isWithdrawn = !!mark.withdrawn_at;
+  const isRemovedNotAMark = mark.moderation_status === 'removed_not_a_mark';
   const isOwner = !!currentUserId && currentUserId === mark.user_id;
   const challengeCount = mark.dispute_count ?? 0;
   const hasChallenges = challengeCount > 0;
@@ -192,9 +193,13 @@ export function MarkCard({
           )}
         </div>
         <div className="flex shrink-0 items-center gap-4" onClick={(e) => e.stopPropagation()}>
-          {(mark.status !== 'ACTIVE' || mark.withdrawn_at) && (
+          {(mark.status !== 'ACTIVE' || mark.withdrawn_at || isRemovedNotAMark) && (
             <span className="ml-2 flex items-center">
-              <MarkStatusLabel status={mark.status} withdrawnAt={mark.withdrawn_at} />
+              <MarkStatusLabel
+                status={mark.status}
+                withdrawnAt={mark.withdrawn_at}
+                moderationStatus={mark.moderation_status}
+              />
             </span>
           )}
           {isOwner && !isHistorical && (
@@ -264,7 +269,16 @@ export function MarkCard({
         )}
       </div>
 
-      {(mark.image_url || mark.content) && (
+      {isRemovedNotAMark ? (
+        <div className="mt-3 space-y-2">
+          <p className="text-sm text-muted-foreground">
+            This post was removed because it did not qualify as a mark on OMarko.
+          </p>
+          <p className="text-xs text-muted-foreground/80">
+            Marks on OMarko should clearly express a claim, contribution, prediction, argument, observation, naming, diagnosis, question, rule, petition, or creation.
+          </p>
+        </div>
+      ) : (mark.image_url || mark.content) && (
         <>
           {mark.content && (
             <p className="mark-text mt-3 text-text-primary min-w-0 break-words">

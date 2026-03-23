@@ -28,13 +28,14 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   const { data: mark, error } = await supabase
     .from('marks')
-    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name), historical_profiles(name)')
+    .select('id, user_id, historical_profile_id, content, image_url, category, domain, claim_type, status, moderation_status, support_votes, oppose_votes, dispute_count, disputes_survived, withdrawn_at, withdrawn_by, owner_response, created_at, updated_at, profiles!marks_user_id_fkey(username, avatar_url, display_name), historical_profiles(name)')
     .eq('id', id)
     .single();
 
   if (error || !mark) notFound();
 
   const isWithdrawn = !!mark.withdrawn_at;
+  const isRemovedNotAMark = mark.moderation_status === 'removed_not_a_mark';
   let withdrawnByUsername: string | null = null;
   if (isWithdrawn && mark.withdrawn_by) {
     const { data: withdrawnByProfile } = await supabase
@@ -99,7 +100,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
   const displayPrimary = !isHistorical && displayNameTrimmed ? displayNameTrimmed : `@${displayUsername}`;
   const showSecondaryUsername = !isHistorical && !!displayNameTrimmed;
   const avatarUrl = profileObj?.avatar_url ?? null;
-  const showOwnerActions = isOwner && !isWithdrawn && !isHistorical;
+  const showOwnerActions = isOwner && !isWithdrawn && !isHistorical && !isRemovedNotAMark;
   const content = (mark as { content?: string }).content ?? '';
   const imageUrl = (mark as { image_url?: string | null }).image_url ?? null;
   const domainLabel = (mark as { domain?: string }).domain;
@@ -109,7 +110,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
     mark.updated_at &&
     new Date(mark.updated_at).getTime() !== new Date(mark.created_at).getTime()
   );
-  const canEditMark = isOwner && !hasChallenges && !isWithdrawn;
+  const canEditMark = isOwner && !hasChallenges && !isWithdrawn && !isRemovedNotAMark;
   const mediaByMarkId = await getSignedMediaForMarkIds(supabase, [id]);
   const media = mediaByMarkId[id] ?? [];
 
@@ -229,8 +230,11 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             {user && (
               <BookmarkButton markId={mark.id} bookmarked={isBookmarked} iconOnly className="-mr-1 sm:mr-0" />
             )}
-            {mark.status !== 'ACTIVE' && (
-              <MarkStatusLabel status={mark.status as import('@/lib/types').MarkStatus} />
+            {(mark.status !== 'ACTIVE' || isRemovedNotAMark) && (
+              <MarkStatusLabel
+                status={mark.status as import('@/lib/types').MarkStatus}
+                moderationStatus={mark.moderation_status}
+              />
             )}
             {isWithdrawn && <span className="text-xs text-muted-foreground sm:whitespace-nowrap">Withdrawn</span>}
           </div>
@@ -242,15 +246,26 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
         {/* Section 2: content only */}
         <div className="mt-8 md:mt-10">
-          <MarkContentWithEdit
-            content={content}
-            imageUrl={imageUrl}
-            media={media}
-            markId={mark.id}
-            canEdit={canEditMark}
-            initialEdit={tab === 'edit' || edit === '1'}
-            hideInlineEditButton={canEditMark}
-          />
+          {isRemovedNotAMark ? (
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">
+                This post was removed because it did not qualify as a mark on OMarko.
+              </p>
+              <p className="text-xs text-muted-foreground/80">
+                Marks on OMarko should clearly express a claim, contribution, prediction, argument, observation, naming, diagnosis, question, rule, petition, or creation.
+              </p>
+            </div>
+          ) : (
+            <MarkContentWithEdit
+              content={content}
+              imageUrl={imageUrl}
+              media={media}
+              markId={mark.id}
+              canEdit={canEditMark}
+              initialEdit={tab === 'edit' || edit === '1'}
+              hideInlineEditButton={canEditMark}
+            />
+          )}
           {versionCount > 0 && (
             <p className="mt-4">
               <Link

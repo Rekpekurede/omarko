@@ -30,6 +30,70 @@ function uploadErrorMessage(raw: string): string {
   return 'Something went wrong with the upload. You can still post without an image.';
 }
 
+const REACTION_PATTERNS = [
+  'fire',
+  'this is fire',
+  'love this',
+  'nice one',
+  'wow',
+  'amazing',
+  'great',
+  'lol',
+  'haha',
+  'facts',
+  'real',
+  'based',
+  'so true',
+  'ikr',
+  'this is it',
+  'exactly',
+  'yes',
+  'no',
+  'ok',
+  'okay',
+  'omg',
+  'literally',
+  'same',
+  'mood',
+  'period',
+  '👏',
+  '🔥',
+  '💯',
+] as const;
+
+const SIMPLE_ACTION_WORDS = [
+  'is', 'are', 'was', 'were', 'be', 'being', 'been',
+  'have', 'has', 'had', 'do', 'does', 'did',
+  'built', 'build', 'created', 'create', 'invented', 'invent',
+  'predicted', 'predict', 'argue', 'argued', 'observed', 'observe',
+  'named', 'name', 'diagnosed', 'diagnose', 'question', 'questioned',
+  'propose', 'proposed', 'rule', 'ruled', 'petition', 'petitioned',
+  'discover', 'discovered', 'designed', 'design',
+] as const;
+
+type SoftValidationResult = {
+  tooShort: boolean;
+  genericReaction: boolean;
+  noVerb: boolean;
+};
+
+function evaluateSoftMarkHeuristic(raw: string): SoftValidationResult {
+  const text = raw.trim();
+  const words = text ? text.split(/\s+/).filter(Boolean) : [];
+  const normalized = text.toLowerCase().replace(/[^\p{L}\p{N}\s]/gu, ' ').replace(/\s+/g, ' ').trim();
+  const normalizedWords = normalized ? normalized.split(' ') : [];
+
+  const tooShort = words.length < 8 || text.length < 50;
+  const genericReaction = REACTION_PATTERNS.some((pattern) => {
+    const p = pattern.toLowerCase().trim();
+    if (!p) return false;
+    return normalized === p || normalized.includes(` ${p} `) || normalized.startsWith(`${p} `) || normalized.endsWith(` ${p}`);
+  });
+  const noVerb = !normalizedWords.some((w) => SIMPLE_ACTION_WORDS.includes(w as (typeof SIMPLE_ACTION_WORDS)[number]));
+
+  return { tooShort, genericReaction, noVerb };
+}
+
 export function CreateMarkModal() {
   const router = useRouter();
   const { isOpen, closeCreateModal } = useCreateMarkModal();
@@ -56,6 +120,9 @@ export function CreateMarkModal() {
   const [soiUrls, setSoiUrls] = useState<string[]>([]);
   const [soiUrlInput, setSoiUrlInput] = useState('');
   const [claimTypeOptions, setClaimTypeOptions] = useState<{ id: string; name: string }[]>([]);
+  const [showSoftValidationModal, setShowSoftValidationModal] = useState(false);
+  const [bypassSoftValidation, setBypassSoftValidation] = useState(false);
+  const [examplesOpen, setExamplesOpen] = useState(false);
 
   /** Exactly 3 distinct random claim types whenever the modal opens (not tied to API load). */
   const randomClaimSuggestions = useMemo(
@@ -139,6 +206,9 @@ export function CreateMarkModal() {
     setIsClaimTypePickerOpen(false);
     setSoiUrls([]);
     setSoiUrlInput('');
+    setShowSoftValidationModal(false);
+    setBypassSoftValidation(false);
+    setExamplesOpen(false);
     if (inputRef.current) inputRef.current.value = '';
   };
 
@@ -269,22 +339,7 @@ export function CreateMarkModal() {
     setAiSuggestionDismissed(true);
   };
 
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (submitting) return;
-
-    setError(null);
-    setUploadNotice(null);
-    const trimmed = content.trim();
-    if (!trimmed && !attachmentFile) {
-      setError('Add text or an attachment.');
-      return;
-    }
-    if (!selectedClaimType) {
-      setError('Select a claim type');
-      return;
-    }
-
+  const submitMark = async (trimmed: string) => {
     setSubmitting(true);
     const isImageAttachment = attachmentFile && attachmentMeta?.kind === 'image';
     let imageUrl: string | null = null;
@@ -418,6 +473,34 @@ export function CreateMarkModal() {
     setToast('Posted');
     setTimeout(() => setToast(null), TOAST_MS);
     router.refresh();
+  };
+
+  const onSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (submitting) return;
+
+    setError(null);
+    setUploadNotice(null);
+    const trimmed = content.trim();
+    if (!trimmed && !attachmentFile) {
+      setError('Add text or an attachment.');
+      return;
+    }
+    if (!selectedClaimType) {
+      setError('Select a claim type');
+      return;
+    }
+
+    // Soft guardrail only: warn before posting likely non-mark reactions.
+    if (!bypassSoftValidation) {
+      const soft = evaluateSoftMarkHeuristic(trimmed);
+      if (soft.tooShort || soft.genericReaction || soft.noVerb) {
+        setShowSoftValidationModal(true);
+        return;
+      }
+    }
+
+    await submitMark(trimmed);
   };
 
   return (
@@ -554,11 +637,38 @@ export function CreateMarkModal() {
                 <textarea
                   id="composer-content"
                   value={content}
-                  onChange={(e) => setContent(e.target.value)}
+                  onChange={(e) => {
+                    setContent(e.target.value);
+                    setBypassSoftValidation(false);
+                  }}
                   aria-labelledby="create-mark-textarea-label"
                   className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 font-display text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
                   rows={4}
                 />
+                <p className="font-body text-[0.82rem] text-[var(--text-secondary)]">
+                  Post a claim, contribution, or creation that came from you.
+                </p>
+                <p className="font-body text-[0.72rem] text-[var(--text-muted)]">
+                  Generic reactions, praise posts, status updates, ads, and spam may be removed as not a mark.
+                </p>
+                <div className="pt-1">
+                  <button
+                    type="button"
+                    onClick={() => setExamplesOpen((v) => !v)}
+                    className="font-body text-[0.78rem] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
+                  >
+                    {examplesOpen ? 'Examples of marks ↑' : 'Examples of marks ↓'}
+                  </button>
+                  {examplesOpen && (
+                    <ul className="mt-2 space-y-1 font-body text-[0.76rem] text-[var(--text-muted)]">
+                      <li>&quot;Arsenal will win the league with 83 points.&quot;</li>
+                      <li>&quot;This naming framework for creator attribution is mine.&quot;</li>
+                      <li>&quot;People trust visible timestamps more than platform memory.&quot;</li>
+                      <li>&quot;The best food anyone eats is the food they grew up with.&quot;</li>
+                      <li>&quot;I predicted this market correction in January 2024.&quot;</li>
+                    </ul>
+                  )}
+                </div>
               </div>
 
               {/* AI suggestion — below textarea, only when loading or high/medium suggestion, not dismissed */}
@@ -760,6 +870,41 @@ export function CreateMarkModal() {
                 setClaimTypeTouched(true);
               }}
             />
+            {showSoftValidationModal && (
+              <div className="absolute inset-0 z-[75] flex items-center justify-center bg-black/45 p-4">
+                <div className="w-full max-w-[420px] rounded-xl border border-[var(--border)] bg-[var(--bg-secondary)] p-5 shadow-xl">
+                  <h3 className="font-display text-lg font-semibold text-[var(--text-primary)]">
+                    This doesn&apos;t yet read like a clear mark
+                  </h3>
+                  <p className="mt-2 font-body text-sm leading-relaxed text-[var(--text-secondary)]">
+                    OMarko is for claims, predictions, arguments, observations, creations, and other identifiable contributions. You can still post this, but posts that are not marks may be removed.
+                  </p>
+                  <div className="mt-4 flex flex-col-reverse gap-2 sm:flex-row sm:justify-end">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setShowSoftValidationModal(false);
+                        setBypassSoftValidation(false);
+                      }}
+                      className="min-h-[40px] rounded-lg bg-[var(--accent)] px-4 py-2 font-body text-sm font-semibold text-[var(--bg-primary)] transition hover:bg-[var(--accent-dim)]"
+                    >
+                      Edit post
+                    </button>
+                    <button
+                      type="button"
+                      onClick={async () => {
+                        setShowSoftValidationModal(false);
+                        setBypassSoftValidation(true);
+                        await submitMark(content.trim());
+                      }}
+                      className="min-h-[40px] rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-2 font-body text-sm font-medium text-[var(--text-primary)] transition-colors hover:bg-[var(--bg-card-hover)]"
+                    >
+                      Post anyway
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

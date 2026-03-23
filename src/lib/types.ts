@@ -7,6 +7,13 @@ export type MarkStatus =
   | 'CONCEDED'
   | 'WITHDRAWN';
 
+export type ModerationStatus =
+  | 'active'
+  | 'removed_not_a_mark'
+  | 'removed_spam'
+  | 'removed_abuse'
+  | 'removed_impersonation';
+
 export type VoteType = 'SUPPORT' | 'OPPOSE';
 
 export interface Profile {
@@ -136,6 +143,7 @@ export interface Mark {
   domain: string;
   claim_type: string;
   status: MarkStatus;
+  moderation_status?: ModerationStatus;
   endorsements_count?: number;
   support_votes?: number;
   oppose_votes?: number;

@@ -13,10 +13,15 @@ const BADGE_CONFIG: Record<Exclude<MarkStatus, 'ACTIVE'>, { label: string; class
 export function MarkStatusLabel({
   status,
   withdrawnAt,
+  moderationStatus,
 }: {
   status: MarkStatus;
   withdrawnAt?: string | null;
+  moderationStatus?: string | null;
 }) {
+  if (moderationStatus === 'removed_not_a_mark') {
+    return <span className="status-conceded">REMOVED</span>;
+  }
   if (withdrawnAt) {
     return <span className="status-withdrawn">WITHDRAWN</span>;
   }
