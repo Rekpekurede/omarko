@@ -89,6 +89,9 @@ export function MarkCard({
   const [imageLoadError, setImageLoadError] = useState(false);
   const [witnessGlow, setWitnessGlow] = useState(false);
   const [lightboxOpen, setLightboxOpen] = useState(false);
+  const [reportOpen, setReportOpen] = useState(false);
+  const [reportPending, setReportPending] = useState(false);
+  const [reportError, setReportError] = useState<string | null>(null);
 
   useEffect(() => {
     setImageLoadError(false);
@@ -139,6 +142,24 @@ export function MarkCard({
   const showSecondaryUsername = !!displayNameTrimmed;
 
   const goToMark = () => router.push(`/mark/${mark.id}`);
+
+  const submitReport = async (reason: 'not_a_mark' | 'spam' | 'abuse' | 'impersonation') => {
+    setReportPending(true);
+    setReportError(null);
+    const res = await fetch(`/api/marks/${mark.id}/report`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ reason }),
+    });
+    const data = await res.json().catch(() => ({}));
+    setReportPending(false);
+    if (!res.ok) {
+      setReportError(data.error ?? 'Failed to submit report');
+      return;
+    }
+    setReportOpen(false);
+    setMenuOpen(false);
+  };
 
   return (
     <article
@@ -202,7 +223,7 @@ export function MarkCard({
               />
             </span>
           )}
-          {isOwner && !isHistorical && (
+          {!!currentUserId && (
             <div className="relative" ref={menuRef}>
               <button
                 type="button"
@@ -214,27 +235,29 @@ export function MarkCard({
               </button>
               {menuOpen && (
                 <div className="absolute right-0 top-full z-10 mt-1 min-w-[180px] rounded-lg border border-border bg-bg-card py-1 shadow-lg" onClick={(e) => e.stopPropagation()}>
-                  <Link
-                    href={`/mark/${mark.id}?edit=1`}
-                    onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
-                    className="block cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
-                  >
-                    Edit
-                  </Link>
-                  {!isWithdrawn && (
+                  {isOwner && !isHistorical && (
                     <>
-                      <button
-                        type="button"
-                        onClick={async () => {
-                          setMenuOpen(false);
-                          const res = await fetch(`/api/marks/${mark.id}/withdraw`, { method: 'POST' });
-                          if (res.ok) router.refresh();
-                        }}
-                        className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
+                      <Link
+                        href={`/mark/${mark.id}?edit=1`}
+                        onClick={(e) => { e.stopPropagation(); setMenuOpen(false); }}
+                        className="block cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
                       >
-                        Withdraw Claim
-                      </button>
-                      {hasChallenges && (
+                        Edit
+                      </Link>
+                      {!isWithdrawn && (
+                        <button
+                          type="button"
+                          onClick={async () => {
+                            setMenuOpen(false);
+                            const res = await fetch(`/api/marks/${mark.id}/withdraw`, { method: 'POST' });
+                            if (res.ok) router.refresh();
+                          }}
+                          className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover"
+                        >
+                          Withdraw Claim
+                        </button>
+                      )}
+                      {!isWithdrawn && hasChallenges && (
                         <button
                           type="button"
                           onClick={async () => {
@@ -247,8 +270,17 @@ export function MarkCard({
                           Concede to Challenge
                         </button>
                       )}
+                      <div className="my-1 h-px bg-border" />
                     </>
                   )}
+                  <button
+                    type="button"
+                    disabled={isOwner}
+                    onClick={() => setReportOpen(true)}
+                    className="block w-full cursor-pointer px-4 py-2 text-left text-sm text-text-primary hover:bg-bg-card-hover disabled:cursor-not-allowed disabled:opacity-50"
+                  >
+                    {isOwner ? 'Report (not available on your mark)' : 'Report'}
+                  </button>
                 </div>
               )}
             </div>
@@ -324,6 +356,41 @@ export function MarkCard({
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
       />
+      {reportOpen && (
+        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4" onClick={() => setReportOpen(false)}>
+          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold text-foreground">Report this mark</h3>
+            <div className="mt-3 grid gap-2">
+              {(
+                [
+                  { id: 'not_a_mark', label: 'Not a mark' },
+                  { id: 'spam', label: 'Spam' },
+                  { id: 'abuse', label: 'Abuse' },
+                  { id: 'impersonation', label: 'Impersonation' },
+                ] as const
+              ).map((reason) => (
+                <button
+                  key={reason.id}
+                  type="button"
+                  disabled={reportPending}
+                  onClick={() => submitReport(reason.id)}
+                  className="rounded-lg border border-border px-3 py-2 text-left text-sm text-foreground hover:bg-accent/70 disabled:opacity-50"
+                >
+                  {reason.label}
+                </button>
+              ))}
+            </div>
+            {reportError && <p className="mt-2 text-xs text-red-600">{reportError}</p>}
+            <button
+              type="button"
+              onClick={() => setReportOpen(false)}
+              className="mt-3 text-xs text-muted-foreground hover:underline"
+            >
+              Cancel
+            </button>
+          </div>
+        </div>
+      )}
 
       <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-wrap items-center justify-between gap-2 text-text-muted md:flex-nowrap md:pt-3.5 md:gap-4" onClick={(e) => e.stopPropagation()}>
         <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 md:flex-nowrap md:justify-between md:gap-4">

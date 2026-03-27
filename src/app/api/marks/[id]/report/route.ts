@@ -6,9 +6,8 @@ const ALLOWED_REASONS = new Set([
   'spam',
   'abuse',
   'impersonation',
-  'other',
 ] as const);
-type ReportReason = 'not_a_mark' | 'spam' | 'abuse' | 'impersonation' | 'other';
+type ReportReason = 'not_a_mark' | 'spam' | 'abuse' | 'impersonation';
 
 export async function POST(
   request: Request,
@@ -26,11 +25,14 @@ export async function POST(
 
   const { data: markExists } = await supabase
     .from('marks')
-    .select('id')
+    .select('id, user_id')
     .eq('id', markId)
     .maybeSingle();
   if (!markExists) {
     return NextResponse.json({ error: 'Mark not found' }, { status: 404 });
+  }
+  if (markExists.user_id === user.id) {
+    return NextResponse.json({ error: 'You cannot report your own mark' }, { status: 400 });
   }
 
   let body: { reason?: string } = {};
@@ -40,7 +42,7 @@ export async function POST(
     body = {};
   }
 
-  const reason = String(body.reason ?? 'other').trim().toLowerCase();
+  const reason = String(body.reason ?? '').trim().toLowerCase();
   if (!ALLOWED_REASONS.has(reason as ReportReason)) {
     return NextResponse.json({ error: 'Invalid report reason' }, { status: 400 });
   }

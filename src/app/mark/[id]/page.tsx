@@ -13,6 +13,7 @@ import { PageContainer } from '@/components/PageContainer';
 import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 import { DOMAIN_BADGE_CLASS, DOMAIN_DEFAULT } from '@/lib/markDomainBadge';
 import { EventTracker } from '@/components/EventTracker';
+import { MarkDetailActionsMenu } from '@/components/MarkDetailActionsMenu';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -232,6 +233,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
             {user && (
               <BookmarkButton markId={mark.id} bookmarked={isBookmarked} iconOnly className="-mr-1 sm:mr-0" />
             )}
+            {!!user && <MarkDetailActionsMenu markId={mark.id} canReport={!isOwner} />}
             {(mark.status !== 'ACTIVE' || isRemovedNotAMark) && (
               <MarkStatusLabel
                 status={mark.status as import('@/lib/types').MarkStatus}

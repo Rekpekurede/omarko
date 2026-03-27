@@ -130,3 +130,36 @@ Status and tallies are recomputed in DB via `compute_mark_status(mark_uuid)` aft
 3. **User B follows User A** – User A should receive a follow alert.
 4. **No self notification** – As User A, support/comment on your own mark (if allowed). No alert should be created for User A.
 5. **Unread count** – Bell badge should show unread count; opening Alerts marks items read and updates the badge.
+
+## Analytics (PostHog)
+
+OMarko uses **PostHog** (`posthog-js`) for product analytics.
+
+- Config key: `NEXT_PUBLIC_POSTHOG_KEY` in `.env.local`
+- Provider/init: `src/components/PostHogProvider.tsx`
+- Event helper: `src/lib/posthog-client.ts`
+- Page views: captured automatically on route changes as `$pageview`
+
+Tracked custom events:
+
+- `user_signed_up`
+- `user_signed_in`
+- `mark_created` (properties: `claim_type`, `domain`)
+- `mark_challenged`
+- `mark_viewed`
+- `soi_submitted`
+- `feed_viewed`
+- `profile_viewed`
+
+Where to view data:
+
+- Daily traffic: PostHog **Insights** (trend of `$pageview`)
+- Sign-up activity: PostHog **Insights** (trend of `user_signed_up`)
+
+## Reporting and moderation queue
+
+- Users can report marks from the three-dot menu on feed cards and mark detail.
+- Reasons: `Not a mark`, `Spam`, `Abuse`, `Impersonation`.
+- Reports are saved to `reports` with `mark_id`, `reporter_id`, `reason`, and moderation workflow status.
+- Admin queue: `/admin/reports` (admin-only), where reports can be marked `reviewed` or `resolved` and moderation can be applied.
+- Reports do **not** auto-remove marks on first report.

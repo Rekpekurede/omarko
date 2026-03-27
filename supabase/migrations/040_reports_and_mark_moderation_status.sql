@@ -17,8 +17,16 @@ END $$;
 DO $$
 BEGIN
   IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'report_status') THEN
-    CREATE TYPE public.report_status AS ENUM ('pending', 'reviewed');
+    CREATE TYPE public.report_status AS ENUM ('pending', 'reviewed', 'resolved');
   END IF;
+END $$;
+DO $$
+BEGIN
+  BEGIN
+    ALTER TYPE public.report_status ADD VALUE IF NOT EXISTS 'resolved';
+  EXCEPTION
+    WHEN duplicate_object THEN NULL;
+  END;
 END $$;
 
 DO $$
@@ -43,8 +51,12 @@ CREATE TABLE IF NOT EXISTS public.reports (
   reporter_id UUID NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   reason public.report_reason NOT NULL,
   created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
-  status public.report_status NOT NULL DEFAULT 'pending'
+  status public.report_status NOT NULL DEFAULT 'pending',
+  reviewed_at TIMESTAMPTZ NULL,
+  resolved_at TIMESTAMPTZ NULL
 );
+ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS reviewed_at TIMESTAMPTZ NULL;
+ALTER TABLE public.reports ADD COLUMN IF NOT EXISTS resolved_at TIMESTAMPTZ NULL;
 
 CREATE UNIQUE INDEX IF NOT EXISTS idx_reports_mark_reporter_unique
   ON public.reports(mark_id, reporter_id);
