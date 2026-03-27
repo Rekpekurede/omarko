@@ -4,6 +4,7 @@ import { FeedIntroBanner } from '@/components/FeedIntroBanner';
 import { FeedList } from '@/components/FeedList';
 import { FeedTabs } from '@/components/FeedTabs';
 import { FollowingFeedList } from '@/components/FollowingFeedList';
+import { EventTracker } from '@/components/EventTracker';
 import { DOMAINS, CLAIM_TYPES, type Mark } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
 import { redirect } from 'next/navigation';
@@ -125,6 +126,7 @@ export default async function FeedPage({ searchParams }: PageProps) {
 
   return (
     <div className="mx-auto max-w-feed w-full px-3 pt-4 sm:px-4">
+      <EventTracker event="feed_viewed" properties={{ tab }} />
       <FeedIntroBanner />
       <h1 className="display-text mb-4 mt-4 text-2xl font-semibold text-text-primary">Marks</h1>
       {error && (

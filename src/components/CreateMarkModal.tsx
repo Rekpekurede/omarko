@@ -7,6 +7,7 @@ import { DOMAINS, CLAIM_TYPES, type ClaimType } from '@/lib/types';
 import { useCreateMarkModal } from '@/context/CreateMarkModalContext';
 import { ClaimTypePickerSheet } from './ClaimTypePickerSheet';
 import { compressImage } from '@/lib/compressImage';
+import { captureEvent } from '@/lib/posthog-client';
 
 const TOAST_MS = 1800;
 
@@ -454,6 +455,7 @@ export function CreateMarkModal() {
           body: JSON.stringify({ url: u }),
         });
       }
+      captureEvent('soi_submitted', { source: 'create_mark', count: soiUrls.length });
     }
 
     if (saveAsDefault && selectedClaimType) {
@@ -468,6 +470,10 @@ export function CreateMarkModal() {
     }
 
     setSubmitting(false);
+    captureEvent('mark_created', {
+      claim_type: selectedClaimType?.name ?? null,
+      domain,
+    });
     closeCreateModal();
     resetForm();
     setToast('Posted');

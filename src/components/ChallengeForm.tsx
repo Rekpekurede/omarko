@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
+import { captureEvent } from '@/lib/posthog-client';
 
 interface ChallengeFormProps {
   markId: string;
@@ -56,6 +57,7 @@ export function ChallengeForm({ markId, canChallenge, challengeDisabledReason }:
       return;
     }
     form.reset();
+    captureEvent('mark_challenged');
     router.refresh();
     setIsPending(false);
   };

@@ -12,6 +12,7 @@ import { RelativeTime } from '@/components/RelativeTime';
 import { PageContainer } from '@/components/PageContainer';
 import { getSignedMediaForMarkIds } from '@/lib/markMedia';
 import { DOMAIN_BADGE_CLASS, DOMAIN_DEFAULT } from '@/lib/markDomainBadge';
+import { EventTracker } from '@/components/EventTracker';
 
 interface PageProps {
   params: Promise<{ id: string }>;
@@ -144,6 +145,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
 
   return (
     <PageContainer className="space-y-8">
+      <EventTracker event="mark_viewed" />
       {/* Section 1–5: main mark card */}
       <div
         className="overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-5 md:p-6"

@@ -6,6 +6,7 @@ import { ProfileTabs } from '@/components/ProfileTabs';
 import { ProfileHeader } from '@/components/profile/ProfileHeader';
 import { ProfileStats } from '@/components/profile/ProfileStats';
 import { PostingDefaultsSection } from '@/components/profile/PostingDefaultsSection';
+import { EventTracker } from '@/components/EventTracker';
 import { PageContainer } from '@/components/PageContainer';
 import { DOMAINS } from '@/lib/types';
 import { MARK_WITH_OWNER_USERNAME_SELECT } from '@/lib/dbSelects';
@@ -342,6 +343,7 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
 
     return (
       <PageContainer className="space-y-6">
+        <EventTracker event="profile_viewed" />
         <ProfileHeader
           username={profile.username}
           displayName={profile.display_name ?? null}

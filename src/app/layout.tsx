@@ -8,6 +8,7 @@ import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
 import { PwaRegister } from "@/components/PwaRegister";
 import { createClient } from "@/lib/supabase/server";
+import { PostHogProvider } from "@/components/PostHogProvider";
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -75,14 +76,16 @@ export default async function RootLayout({
       </head>
       <body className="min-h-screen bg-[var(--bg-primary)] text-[var(--text-primary)] antialiased">
         <PwaRegister />
-        <ThemeProvider>
-          <CreateMarkModalProvider>
-            <AppShell header={<Header />} username={username} avatarUrl={avatarUrl} isSignedIn={isSignedIn}>
-              {children}
-            </AppShell>
-            <CreateMarkModal />
-          </CreateMarkModalProvider>
-        </ThemeProvider>
+        <PostHogProvider>
+          <ThemeProvider>
+            <CreateMarkModalProvider>
+              <AppShell header={<Header />} username={username} avatarUrl={avatarUrl} isSignedIn={isSignedIn}>
+                {children}
+              </AppShell>
+              <CreateMarkModal />
+            </CreateMarkModalProvider>
+          </ThemeProvider>
+        </PostHogProvider>
       </body>
     </html>
   );

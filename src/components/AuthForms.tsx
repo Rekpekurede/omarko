@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useFormState } from 'react-dom';
 import { signIn, signUp } from '@/lib/actions';
+import { captureEvent } from '@/lib/posthog-client';
 
 const inputClass =
   'w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-4 py-3 font-body text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none';
@@ -69,7 +70,11 @@ export function AuthForms({ message, error }: AuthFormsProps) {
       </div>
 
       {tab === 'signin' && (
-        <form action={signInAction} className="mt-6 space-y-4">
+        <form
+          action={signInAction}
+          className="mt-6 space-y-4"
+          onSubmit={() => captureEvent('user_signed_in')}
+        >
           <input
             name="email"
             type="email"
@@ -99,7 +104,11 @@ export function AuthForms({ message, error }: AuthFormsProps) {
       )}
 
       {tab === 'signup' && (
-        <form action={signUpAction} className="mt-6 space-y-4">
+        <form
+          action={signUpAction}
+          className="mt-6 space-y-4"
+          onSubmit={() => captureEvent('user_signed_up')}
+        >
           <input
             name="username"
             type="text"

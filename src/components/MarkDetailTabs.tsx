@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { ChallengeForm } from './ChallengeForm';
 import { ChallengeEditEvidence } from './ChallengeEditEvidence';
 import { VersionsTab } from './VersionsTab';
+import { captureEvent } from '@/lib/posthog-client';
 
 interface ChallengeRow {
   id: string;
@@ -205,6 +206,7 @@ export function MarkDetailTabs({
                 }
                 setSoiList((prev) => [...prev, data]);
                 setSoiUrl('');
+                captureEvent('soi_submitted', { source: 'mark_detail' });
                 router.refresh();
                 setSoiSubmitting(false);
               }}
