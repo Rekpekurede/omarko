@@ -8,6 +8,7 @@ import { CreateMarkModalProvider } from "@/context/CreateMarkModalContext";
 import { CreateMarkModal } from "@/components/CreateMarkModal";
 import { PwaRegister } from "@/components/PwaRegister";
 import { createClient } from "@/lib/supabase/server";
+import { Analytics } from '@vercel/analytics/next';
 
 const playfair = Playfair_Display({
   subsets: ["latin"],
@@ -83,6 +84,7 @@ export default async function RootLayout({
             <CreateMarkModal />
           </CreateMarkModalProvider>
         </ThemeProvider>
+        <Analytics />
       </body>
     </html>
   );
