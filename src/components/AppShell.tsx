@@ -3,6 +3,7 @@
 import { DrawerProvider } from '@/context/DrawerContext';
 import { SideDrawer } from './SideDrawer';
 import { MobileBottomNav } from './MobileBottomNav';
+import { FloatingCreateButton } from './FloatingCreateButton';
 import { usePathname } from 'next/navigation';
 
 interface AppShellProps {
@@ -29,6 +30,7 @@ export function AppShell({ header, username, avatarUrl, isSignedIn, children }: 
       <SideDrawer username={username} avatarUrl={avatarUrl} />
       <main className="pb-24 pt-8 sm:pb-8 sm:pt-8">{children}</main>
       <MobileBottomNav isSignedIn={isSignedIn} username={username} />
+      <FloatingCreateButton isSignedIn={isSignedIn} username={username} />
     </DrawerProvider>
   );
 }

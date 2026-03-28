@@ -82,7 +82,7 @@ export default async function RootLayout({
               <AppShell header={<Header />} username={username} avatarUrl={avatarUrl} isSignedIn={isSignedIn}>
                 {children}
               </AppShell>
-              <CreateMarkModal />
+              <CreateMarkModal username={username} />
             </CreateMarkModalProvider>
           </ThemeProvider>
         </PostHogProvider>

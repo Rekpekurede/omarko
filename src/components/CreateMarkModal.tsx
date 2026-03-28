@@ -95,7 +95,7 @@ function evaluateSoftMarkHeuristic(raw: string): SoftValidationResult {
   return { tooShort, genericReaction, noVerb };
 }
 
-export function CreateMarkModal() {
+export function CreateMarkModal({ username }: { username?: string | null } = {}) {
   const router = useRouter();
   const { isOpen, closeCreateModal } = useCreateMarkModal();
   const inputRef = useRef<HTMLInputElement>(null);
@@ -529,6 +529,11 @@ export function CreateMarkModal() {
                 <h2 id="create-mark-textarea-label" className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
                   Create mark
                 </h2>
+                {username ? (
+                  <p className="mt-1 font-body text-sm text-[var(--text-muted)]">
+                    From @{username}
+                  </p>
+                ) : null}
               </div>
               <button
                 type="button"
@@ -646,7 +651,7 @@ export function CreateMarkModal() {
                   }}
                   aria-labelledby="create-mark-textarea-label"
                   className="mark-composer-text min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] placeholder:opacity-45 focus:border-[var(--accent)] focus:outline-none"
-                  placeholder="State your claim..."
+                  placeholder="What's from you?"
                   rows={4}
                 />
                 <div className="pt-1">
