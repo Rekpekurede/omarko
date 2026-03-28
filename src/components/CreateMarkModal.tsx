@@ -660,15 +660,19 @@ export function CreateMarkModal({ username }: { username?: string | null } = {})
                     onClick={() => setExamplesOpen((v) => !v)}
                     className="font-body text-[0.78rem] text-[var(--text-muted)] transition-colors hover:text-[var(--text-secondary)]"
                   >
-                    {examplesOpen ? 'Examples of marks ↑' : 'Examples of marks ↓'}
+                    {examplesOpen ? 'What a mark looks like ↑' : 'What a mark looks like ↓'}
                   </button>
                   {examplesOpen && (
-                    <ul className="mt-2 space-y-1 font-body text-[0.76rem] text-[var(--text-muted)]">
-                      <li>&quot;Arsenal will win the league with 83 points.&quot;</li>
-                      <li>&quot;This naming framework for creator attribution is mine.&quot;</li>
-                      <li>&quot;People trust visible timestamps more than platform memory.&quot;</li>
-                      <li>&quot;The best food anyone eats is the food they grew up with.&quot;</li>
-                      <li>&quot;I predicted this market correction in January 2024.&quot;</li>
+                    <ul className="mt-3 space-y-2.5 border-l-2 border-[var(--border-subtle)] pl-3">
+                      <li className="mark-composer-text text-[0.88rem] leading-snug text-[var(--text-primary)]">
+                        Arsenal will win the league with 83 points.
+                      </li>
+                      <li className="mark-composer-text text-[0.88rem] leading-snug text-[var(--text-primary)]">
+                        Virality is not authorship.
+                      </li>
+                      <li className="mark-composer-text text-[0.88rem] leading-snug text-[var(--text-primary)]">
+                        Public timestamp first, dispute second, influence tracking third.
+                      </li>
                     </ul>
                   )}
                 </div>
