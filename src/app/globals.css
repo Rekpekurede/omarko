@@ -7,35 +7,47 @@
   Dark default; light via [data-theme="light"].
 */
 :root {
-  --bg-primary: #0A0B0E;
-  --bg-secondary: #111318;
-  --bg-card: #111318;
-  --bg-card-hover: #16161E;
-  --border: #8A6E2F;
-  --border-subtle: rgba(138, 110, 47, 0.35);
-  --text-primary: #FFFFFF;
-  --text-secondary: #E8E0D0;
-  --text-muted: #8A8878;
-  --accent: #C9A84C;
-  --accent-dim: #8A6E2F;
-  --accent-glow: rgba(201, 168, 76, 0.10);
-  --certificate-border: #8A6E2F;
+  /* Ledger / publication palette — dark */
+  --bg-primary: #09090b;
+  --bg-secondary: #0c0c0e;
+  --bg-card: #18181b;
+  --bg-card-hover: #1f1f23;
+  --border: rgba(212, 176, 92, 0.22);
+  --border-subtle: rgba(255, 255, 255, 0.06);
+  --border-card: rgba(255, 255, 255, 0.05);
+  --text-primary: #fafafa;
+  --text-secondary: #e4e4e7;
+  --text-muted: #a1a1aa;
+  --accent: #d4b55e;
+  --accent-dim: #9a7d3a;
+  --accent-glow: rgba(212, 176, 92, 0.14);
+  --certificate-border: rgba(255, 255, 255, 0.05);
+  /* Typography v2 (reversible): single place to tune or rollback */
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --type-meta: 12px;
+  --type-mark-mobile: 21px;
+  --type-mark-desktop: 23px;
 }
 
 [data-theme="light"] {
-  --bg-primary: #F8F6F2;
-  --bg-secondary: #FFFFFF;
-  --bg-card: #FFFFFF;
-  --bg-card-hover: #F7F3EA;
-  --border: #D4AF5A;
-  --border-subtle: rgba(212, 175, 90, 0.35);
-  --text-primary: #0A0B0E;
-  --text-secondary: #2C2820;
-  --text-muted: #7A7060;
-  --accent: #B8912A;
-  --accent-dim: #8A6E2F;
-  --accent-glow: rgba(184, 145, 42, 0.12);
-  --certificate-border: #D4AF5A;
+  --bg-primary: #fafafa;
+  --bg-secondary: #fcfcfc;
+  --bg-card: #ffffff;
+  --bg-card-hover: #f4f4f5;
+  --border: rgba(180, 140, 50, 0.28);
+  --border-subtle: rgba(0, 0, 0, 0.06);
+  --border-card: rgba(0, 0, 0, 0.06);
+  --text-primary: #18181b;
+  --text-secondary: #3f3f46;
+  --text-muted: #71717a;
+  --accent: #c9a227;
+  --accent-dim: #8a7020;
+  --accent-glow: rgba(201, 162, 39, 0.12);
+  --certificate-border: rgba(0, 0, 0, 0.08);
 }
 
 /* Experimental: Cobrain theme (easily reversible — remove this block to revert) */
@@ -80,10 +92,9 @@
   background-color: var(--bg-primary);
 }
 
-/* Light: navbar — warm taupe, not dark grey */
+/* Light: header uses glass bar (see .site-header in component); subtle divider */
 [data-theme="light"] .site-header {
-  background: var(--bg-secondary) !important;
-  border-bottom: 1px solid var(--border);
+  border-bottom-color: var(--border-subtle);
 }
 [data-theme="light"] .site-header .header-wordmark {
   color: var(--accent);
@@ -118,34 +129,35 @@
   border-color: var(--accent-dim);
 }
 
-/* Light: cards */
+/* Light: cards — white surface, soft shadow */
 [data-theme="light"] .mark-card {
   background: var(--bg-card);
-  border: 0;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  margin-bottom: 10px;
-  padding: 11px 16px;
+  border: 1px solid var(--border-card);
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+  margin-bottom: 18px;
+  padding: 22px 20px;
 }
 @media (min-width: 768px) {
   [data-theme="light"] .mark-card {
-    padding: 14px 20px;
+    padding: 26px 24px;
   }
 }
 [data-theme="light"] .mark-card:hover {
   background: var(--bg-card-hover);
-  border-color: transparent;
+  border-color: var(--border-card);
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.06), 0 4px 6px -4px rgba(0, 0, 0, 0.04);
 }
 [data-theme="light"] .mark-card .mark-text {
   color: var(--text-primary);
   font-weight: 400;
 }
 
-/* Light: claim type badge — no white/grey background */
+/* Light: claim type pill — subtle edge */
 [data-theme="light"] .mark-card .badge-claim-type,
 [data-theme="light"] .mark-detail-header .badge-claim-type {
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  background: transparent;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.03);
 }
 /* Light: domain badges — slightly more saturated (same hues, stronger) */
 [data-theme="light"] .mark-card .badge-domain[data-domain="Technology"],
@@ -198,18 +210,15 @@
   border: 0.8px solid var(--accent) !important;
 }
 
-/* Light: refine tag visual weight */
+/* Light: pill scale */
 [data-theme="light"] .mark-card .badge-claim-type,
 [data-theme="light"] .mark-card .badge-domain,
 [data-theme="light"] .mark-detail-header .badge-claim-type,
 [data-theme="light"] .mark-detail-header .badge-domain {
-  font-size: 9px;
-  padding: 2px 6px;
-  letter-spacing: 0.06em;
-}
-[data-theme="light"] .mark-card .badge-claim-type,
-[data-theme="light"] .mark-detail-header .badge-claim-type {
-  border: 0.8px solid var(--accent);
+  font-size: 10px;
+  padding: 5px 12px;
+  letter-spacing: 0.04em;
+  border-radius: 9999px;
 }
 
 /* Light: slightly larger avatar and stronger identity line */
@@ -224,6 +233,7 @@
 }
 [data-theme="light"] .mark-card .mark-card-display-name {
   font-weight: 700;
+  color: var(--text-primary);
 }
 
 /* Light: engagement row */
@@ -309,30 +319,32 @@ body {
   font-family: var(--font-body), system-ui, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
+  line-height: 1.45;
 }
 
-/* Subtle background depth — dark theme atmosphere */
+/* Subtle background depth — dark ledger atmosphere */
 body::before {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
-  background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(255, 215, 0, 0.04), transparent 60%);
+  background: radial-gradient(ellipse 70% 45% at 50% -10%, rgba(212, 176, 92, 0.035), transparent 55%);
   z-index: 0;
 }
 
-/* Headings: premium tracking */
+/* Headings: authoritative serif, slightly tighter tracking */
 h1, h2, h3, .display-text {
-  font-family: var(--font-display), var(--font-body), system-ui, sans-serif;
-  letter-spacing: -0.02em;
+  font-family: var(--font-display), Georgia, serif;
+  letter-spacing: -0.025em;
 }
 
-/* Mark claim content — hero of the card; compact on mobile, comfortable on desktop */
+/* Mark claim content — primary readable serif */
 .mark-text {
   font-family: Georgia, serif;
-  font-size: 16px;
-  font-weight: 400;
-  line-height: 1.6;
+  font-size: 18px;
+  font-weight: 500;
+  line-height: 1.68;
+  letter-spacing: -0.012em;
   color: var(--text-primary);
   word-break: break-word;
   overflow-wrap: break-word;
@@ -340,17 +352,14 @@ h1, h2, h3, .display-text {
 }
 @media (min-width: 768px) {
   .mark-text {
-    font-size: 16px;
-    line-height: 1.6;
+    font-size: 20px;
+    line-height: 1.7;
   }
 }
 
 @media (max-width: 639px) {
   /* Slightly larger claim text on mobile so it remains the primary focal point. */
-  .mark-text {
-    font-size: 17px;
-    line-height: 1.65;
-  }
+  .mark-text { font-size: 18px; line-height: 1.68; }
 
   /* Improve small-pill readability without making them loud. */
   .mark-card .badge-claim-type,
@@ -361,14 +370,9 @@ h1, h2, h3, .display-text {
   }
 
   /* Preserve spacious hierarchy on mobile: give the claim and metrics breathing room. */
-  .mark-card .mark-text {
-    margin-top: 14px !important;
-  }
+  .mark-card .mark-text { margin-top: var(--space-4) !important; margin-bottom: var(--space-2) !important; }
 
-  .mark-card .engagement-row {
-    margin-top: 18px !important;
-    padding-top: 14px !important;
-  }
+  .mark-card .engagement-row { margin-top: var(--space-4) !important; padding-top: var(--space-3) !important; }
 }
 
 /* Light: mark body — explicit regular weight (detail pages and anywhere .mark-text is used) */
@@ -376,40 +380,45 @@ h1, h2, h3, .display-text {
   font-weight: 400;
 }
 
-/* Mark card — padding and containment */
+/* Mark card — spacious ledger surface, subtle edge, lift on hover */
 .mark-card {
   background: var(--bg-card);
-  border: 1px solid var(--certificate-border);
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin-bottom: 24px;
+  border: 1px solid var(--border-card);
+  border-radius: 18px;
+  padding: 22px 20px;
+  margin-bottom: 20px;
   cursor: default;
-  transition: border-color 0.15s ease, background 0.15s ease;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease;
   overflow: hidden;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.4);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(255, 255, 255, 0.03);
 }
 @media (min-width: 768px) {
   .mark-card {
-    padding: 18px 20px;
+    padding: 26px 24px;
   }
 }
 .mark-card:hover {
   background: var(--bg-card-hover);
-  border-color: var(--border);
+  border-color: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.45), 0 0 0 1px rgba(255, 255, 255, 0.06);
+}
+[data-theme="light"] .mark-card:hover {
+  transform: translateY(-2px);
 }
 
 /* Ownership accent bar for challenging records */
 .mark-card[data-status="CHALLENGED"],
 .mark-card[data-status="DISPUTED"],
 .mark-card[data-status="CHAMPION"] {
-  border-left: 3px solid var(--accent);
+  border-left: 2px solid color-mix(in srgb, var(--accent) 80%, transparent);
 }
 
-/* Also apply ownership accent bar to mark detail surfaces */
-[data-status="CHALLENGED"],
-[data-status="DISPUTED"],
-[data-status="CHAMPION"] {
-  border-left: 3px solid var(--accent);
+/* Mark detail card accent — slightly quieter than feed */
+.mark-detail-card[data-status="CHALLENGED"],
+.mark-detail-card[data-status="DISPUTED"],
+.mark-detail-card[data-status="CHAMPION"] {
+  border-left: 2px solid color-mix(in srgb, var(--accent) 75%, transparent);
 }
 .mark-card.witness-glow {
   animation: witness-pulse 1.2s ease-out;
@@ -426,7 +435,7 @@ h1, h2, h3, .display-text {
   display: flex;
   flex-wrap: nowrap;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   overflow-x: auto;
   scrollbar-width: none;
   -webkit-overflow-scrolling: touch;
@@ -440,67 +449,178 @@ h1, h2, h3, .display-text {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: 4px;
-  border: 1px solid var(--accent);
-  color: var(--accent);
-  background: transparent;
+  padding: 5px 12px;
+  border-radius: 9999px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text-secondary);
+  background: rgba(255, 255, 255, 0.04);
   font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.05em;
   text-transform: uppercase;
-  font-family: var(--font-body);
+  font-family: var(--font-body), system-ui, sans-serif;
+}
+[data-theme="light"] .mark-card .badge-claim-type,
+[data-theme="light"] .mark-detail-header .badge-claim-type {
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  background: rgba(0, 0, 0, 0.03);
+  color: var(--text-secondary);
 }
 .mark-card .badge-domain,
 .mark-detail-header .badge-domain {
   display: inline-flex;
   align-items: center;
   flex-shrink: 0;
-  padding: 2px 8px;
-  border-radius: 4px;
+  padding: 5px 12px;
+  border-radius: 9999px;
   font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.08em;
+  font-weight: 600;
+  letter-spacing: 0.04em;
   text-transform: uppercase;
-  font-family: var(--font-body);
+  font-family: var(--font-body), system-ui, sans-serif;
+  border: none;
 }
 
-/* Dark-mode domain tags: match claim-type "stamp" system */
-[data-theme="dark"] .mark-card .badge-domain,
-[data-theme="dark"] .mark-detail-header .badge-domain {
-  background: transparent !important;
-  border: 1px solid #8A6E2F !important;
-  color: #C9A84C !important;
-  padding: 2px 8px !important;
-  border-radius: 4px !important;
-  font-size: 10px !important;
-  font-weight: 800 !important;
-  letter-spacing: 0.08em !important;
-  text-transform: uppercase !important;
-  font-family: var(--font-body) !important;
-}
+/* Domain tint comes from component utility classes; no heavy gold frame in dark */
 
 /* Engagement row — compact, single line, bookmark right-aligned */
 .mark-card .engagement-row {
-  font-size: 13px;
-  gap: 14px;
+  font-family: var(--font-body), system-ui, sans-serif;
+  font-size: 11.5px;
+  line-height: 1.35;
+  gap: 12px;
+  border-top-color: color-mix(in srgb, var(--border-subtle) 72%, transparent);
 }
 @media (min-width: 768px) {
   .mark-card .engagement-row {
-    gap: 16px;
+    gap: 14px;
   }
 }
 
-/* Engagement counts: always in gold */
-.mark-card .engagement-row a span:not([aria-hidden]),
-.mark-card .engagement-row button span:not([aria-hidden]) {
-  color: var(--accent);
+.mark-card .engagement-item {
+  color: color-mix(in srgb, var(--text-muted) 86%, var(--text-secondary) 14%);
+}
+.mark-card .engagement-item:hover:not(:disabled) {
+  color: color-mix(in srgb, var(--accent) 88%, #fff 12%);
+}
+.mark-card .engagement-challenge {
+  border-radius: 9999px !important;
+  padding: 4px 10px !important;
+  font-weight: 600 !important;
+  font-size: 11px !important;
+  letter-spacing: 0.02em !important;
+  color: var(--text-muted) !important;
+  background: rgba(255, 255, 255, 0.04) !important;
+  border: 1px solid rgba(255, 255, 255, 0.08) !important;
+}
+.mark-card .engagement-challenge:hover {
+  color: var(--accent) !important;
+  border-color: rgba(212, 176, 92, 0.35) !important;
+  background: rgba(212, 176, 92, 0.08) !important;
+}
+[data-theme="light"] .mark-card .engagement-challenge {
+  background: rgba(0, 0, 0, 0.04) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  color: var(--text-muted) !important;
+}
+[data-theme="light"] .mark-card .engagement-challenge:hover {
+  background: rgba(201, 162, 39, 0.1) !important;
+  border-color: rgba(201, 162, 39, 0.35) !important;
 }
 
-/* Dark-mode SOI label should be distinct gold */
-[data-theme="dark"] .mark-card .engagement-row a[href*="tab=soi"] span[aria-hidden],
-[data-theme="dark"] .mark-card .engagement-row a[href*="tab=soi"] span[aria-hidden] {
-  color: #C9A84C !important;
+/* Count numerals — muted; action colors from engagement-support / engagement-oppose */
+.mark-card .engagement-row a span:not([aria-hidden]),
+.mark-card .engagement-row button span:not([aria-hidden]) {
+  color: inherit;
+  font-variant-numeric: tabular-nums;
+}
+
+.mark-card .engagement-support,
+.mark-card .engagement-support span:not([aria-hidden]) {
+  color: #86efac !important;
+}
+.mark-card .engagement-support:hover:not(:disabled),
+.mark-card .engagement-support:hover:not(:disabled) span:not([aria-hidden]) {
+  color: #bbf7d0 !important;
+}
+.mark-card .engagement-support.is-active,
+.mark-card .engagement-support.is-active span:not([aria-hidden]) {
+  color: #4ade80 !important;
+}
+
+.mark-card .engagement-oppose,
+.mark-card .engagement-oppose span:not([aria-hidden]) {
+  color: #fca5a5 !important;
+}
+.mark-card .engagement-oppose:hover:not(:disabled),
+.mark-card .engagement-oppose:hover:not(:disabled) span:not([aria-hidden]) {
+  color: #fecaca !important;
+}
+.mark-card .engagement-oppose.is-active,
+.mark-card .engagement-oppose.is-active span:not([aria-hidden]) {
+  color: #f87171 !important;
+}
+
+/* Metadata: bold identity, quiet timestamp */
+.mark-card .mark-card-display-name,
+.mark-detail-card .mark-card-display-name {
+  font-size: 15px !important;
+  font-weight: 700 !important;
+  opacity: 1;
+  letter-spacing: -0.01em;
+}
+.mark-card .mark-card-meta,
+.mark-detail-card .mark-card-meta {
+  font-size: 11px !important;
+  font-weight: 500;
+  opacity: 0.52;
+  letter-spacing: 0.01em;
+}
+.mark-card .mark-card-handle,
+.mark-detail-card .mark-card-handle {
+  font-size: 12px !important;
+  font-weight: 500;
+  opacity: 0.55 !important;
+}
+.mark-card .badge-row,
+.mark-detail-card .badge-row {
+  opacity: 0.92;
+}
+
+/* Mark detail spacing rhythm */
+.mark-detail-card .mark-content-wrap {
+  margin-top: var(--space-8);
+}
+.mark-detail-card .mark-text {
+  margin-top: var(--space-2);
+  margin-bottom: var(--space-3);
+}
+
+.mark-composer-text {
+  font-family: Georgia, serif;
+  font-weight: 500;
+  line-height: 1.62;
+  letter-spacing: -0.01em;
+}
+
+/* Detail surface — match feed card language */
+.mark-detail-card {
+  border-color: var(--border-card) !important;
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+}
+[data-theme="light"] .mark-detail-card {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.06), 0 2px 4px -2px rgba(0, 0, 0, 0.04);
+}
+
+/* SOI — accent without loud gold fill */
+.mark-card .engagement-soi {
+  color: var(--accent-dim);
+}
+.mark-card .engagement-soi:hover {
+  color: var(--accent);
+}
+.mark-card .engagement-soi span:not([aria-hidden]) {
+  color: inherit;
 }
 
 /* Global badge (status, etc.) */
@@ -557,19 +677,20 @@ h1, h2, h3, .display-text {
   text-transform: uppercase;
 }
 
-/* Primary button — gold gradient and shadow */
+/* Primary CTA — metallic gold, smooth interaction */
 .btn-primary {
-  background: linear-gradient(135deg, #e8c66a, #caa33a);
-  border-radius: 10px;
-  box-shadow: 0 4px 15px rgba(212, 169, 58, 0.4);
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s ease;
+  background: linear-gradient(145deg, #e8d18c 0%, #d4b55e 45%, #b8923a 100%);
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(212, 176, 92, 0.28), inset 0 1px 0 rgba(255, 255, 255, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease, filter 0.2s ease;
 }
 .btn-primary:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(212, 169, 58, 0.5);
+  transform: translateY(-1px);
+  box-shadow: 0 8px 28px rgba(212, 176, 92, 0.35), inset 0 1px 0 rgba(255, 255, 255, 0.25);
+  filter: brightness(1.03);
 }
 .btn-primary:active {
-  transform: translateY(0) scale(0.98);
+  transform: scale(0.97);
 }
 
 @layer utilities {
@@ -603,7 +724,7 @@ h1, h2, h3, .display-text {
 }
 
 @keyframes feed-in {
-  from { opacity: 0; transform: translateY(10px); }
+  from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
 

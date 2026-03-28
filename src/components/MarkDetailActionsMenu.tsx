@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { ReportModal } from './ReportModal';
 
 export function MarkDetailActionsMenu({ markId, canReport }: { markId: string; canReport: boolean }) {
   const [menuOpen, setMenuOpen] = useState(false);
@@ -50,41 +51,13 @@ export function MarkDetailActionsMenu({ markId, canReport }: { markId: string; c
           </div>
         )}
       </div>
-      {reportOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4" onClick={() => setReportOpen(false)}>
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold text-foreground">Report this mark</h3>
-            <div className="mt-3 grid gap-2">
-              {(
-                [
-                  { id: 'not_a_mark', label: 'Not a mark' },
-                  { id: 'spam', label: 'Spam' },
-                  { id: 'abuse', label: 'Abuse' },
-                  { id: 'impersonation', label: 'Impersonation' },
-                ] as const
-              ).map((reason) => (
-                <button
-                  key={reason.id}
-                  type="button"
-                  disabled={reportPending}
-                  onClick={() => submitReport(reason.id)}
-                  className="rounded-lg border border-border px-3 py-2 text-left text-sm text-foreground hover:bg-accent/70 disabled:opacity-50"
-                >
-                  {reason.label}
-                </button>
-              ))}
-            </div>
-            {error && <p className="mt-2 text-xs text-red-600">{error}</p>}
-            <button
-              type="button"
-              onClick={() => setReportOpen(false)}
-              className="mt-3 text-xs text-muted-foreground hover:underline"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <ReportModal
+        isOpen={reportOpen}
+        pending={reportPending}
+        error={error}
+        onClose={() => setReportOpen(false)}
+        onSubmit={submitReport}
+      />
     </>
   );
 }

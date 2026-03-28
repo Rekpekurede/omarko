@@ -149,7 +149,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
       <EventTracker event="mark_viewed" />
       {/* Section 1–5: main mark card */}
       <div
-        className="overflow-hidden rounded-2xl border border-border bg-card p-4 sm:p-5 md:p-6"
+        className="mark-detail-card overflow-hidden rounded-2xl border border-border bg-card p-5 sm:p-6 md:p-8"
         data-status={mark.status}
       >
         {/* Section 1: header — identity, tags, bookmark / status top-right */}
@@ -166,7 +166,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                     >
                       {displayUsername}
                     </Link>
-                    <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums">
+                    <span className="mark-card-meta flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums">
                       <RelativeTime dateString={mark.created_at} />
                       {hasBeenEdited && (
                         <>
@@ -193,7 +193,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                     >
                       {displayPrimary}
                     </Link>
-                    <span className="flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums shrink-0">
+                    <span className="mark-card-meta flex flex-wrap items-baseline justify-end gap-x-1.5 text-[12px] text-[var(--text-muted)] tabular-nums shrink-0">
                       <RelativeTime dateString={mark.created_at} />
                       {hasBeenEdited && (
                         <>
@@ -210,7 +210,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
                   {showSecondaryUsername && (
                     <Link
                       href={`/profile/${encodeURIComponent(username)}`}
-                      className="mt-0.5 block text-[13px] text-[var(--text-muted)] opacity-65 hover:underline"
+                      className="mark-card-handle mt-0.5 block text-[13px] text-[var(--text-muted)] opacity-65 hover:underline"
                     >
                       @{username}
                     </Link>
@@ -248,7 +248,7 @@ export default async function MarkPage({ params, searchParams }: PageProps) {
         )}
 
         {/* Section 2: content only */}
-        <div className="mt-8 md:mt-10">
+        <div className="mark-content-wrap mt-8 md:mt-10">
           {isRemovedNotAMark ? (
             <div className="space-y-2">
               <p className="text-sm text-muted-foreground">

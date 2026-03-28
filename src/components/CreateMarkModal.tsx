@@ -527,11 +527,8 @@ export function CreateMarkModal() {
             <div className="flex items-start justify-between gap-4">
               <div>
                 <h2 id="create-mark-textarea-label" className="font-display text-[1.5rem] font-semibold tracking-tight text-[var(--text-primary)]">
-                  What is your mark?
+                  Create mark
                 </h2>
-                <p className="mt-1 font-body text-[0.85rem] italic text-[var(--text-secondary)]">
-                  Let it be known what you&apos;re responsible for.
-                </p>
               </div>
               <button
                 type="button"
@@ -648,15 +645,10 @@ export function CreateMarkModal() {
                     setBypassSoftValidation(false);
                   }}
                   aria-labelledby="create-mark-textarea-label"
-                  className="min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 font-display text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] focus:border-[var(--accent)] focus:outline-none"
+                  className="mark-composer-text min-h-[100px] w-full rounded-lg border border-[var(--border)] bg-[var(--bg-card)] px-3.5 py-3.5 text-base text-[var(--text-primary)] placeholder:text-[var(--text-muted)] placeholder:opacity-45 focus:border-[var(--accent)] focus:outline-none"
+                  placeholder="State your claim..."
                   rows={4}
                 />
-                <p className="font-body text-[0.82rem] text-[var(--text-secondary)]">
-                  Post a claim, contribution, or creation that came from you.
-                </p>
-                <p className="font-body text-[0.72rem] text-[var(--text-muted)]">
-                  Generic reactions, praise posts, status updates, ads, and spam may be removed as not a mark.
-                </p>
                 <div className="pt-1">
                   <button
                     type="button"

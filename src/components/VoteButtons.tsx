@@ -133,7 +133,7 @@ export function VoteButtons({
   };
 
   const statsRow = (
-    <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
+    <div className="font-body flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
       <span className="tabular-nums">Challenges: {challengeCount}</span>
       <StatSep />
       <span className="tabular-nums">Survived: {disputesSurvived}</span>
@@ -145,7 +145,7 @@ export function VoteButtons({
   if (isWithdrawn || !canVote) {
     return (
       <div className="mt-6 space-y-2">
-        <div className="flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
+        <div className="font-body flex flex-wrap items-center text-[11px] leading-snug text-muted-foreground sm:text-xs">
           <span className="tabular-nums">Challenges: {challengeCount}</span>
           <StatSep />
           <span className="tabular-nums">Survived: {disputesSurvived}</span>
@@ -164,13 +164,13 @@ export function VoteButtons({
   return (
     <div className="mt-6 space-y-4">
       {statsRow}
-      <div className="grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:max-w-xl sm:gap-3">
+      <div className="font-body grid w-full grid-cols-2 gap-2 sm:flex sm:w-auto sm:max-w-xl sm:gap-3">
         <button
           type="button"
           onClick={() => handleVote('SUPPORT')}
           disabled={isPending}
-          className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition disabled:opacity-50 sm:w-auto sm:min-w-[140px] bg-[#C9A84C] text-[#141210] hover:brightness-95 active:brightness-90 dark:text-[#141210] ${
-            vote === 'SUPPORT' ? 'shadow-sm ring-2 ring-[#8A6E2F]/50' : ''
+          className={`min-h-[44px] w-full rounded-xl px-4 py-2.5 text-sm font-semibold transition-all duration-200 active:scale-[0.97] disabled:opacity-50 sm:w-auto sm:min-w-[140px] bg-gradient-to-br from-emerald-600 to-emerald-700 text-white shadow-md shadow-emerald-900/25 hover:brightness-110 dark:from-emerald-600 dark:to-emerald-800 ${
+            vote === 'SUPPORT' ? 'ring-2 ring-emerald-400/50 shadow-lg' : ''
           }`}
         >
           <span className="inline-flex items-baseline gap-2">
@@ -182,10 +182,10 @@ export function VoteButtons({
           type="button"
           onClick={() => handleVote('OPPOSE')}
           disabled={isPending || isOwnMark}
-          className={`min-h-[44px] w-full rounded-xl border bg-transparent px-4 py-2.5 text-sm font-medium transition disabled:opacity-50 sm:w-auto sm:min-w-[140px] ${
+          className={`min-h-[44px] w-full rounded-xl border bg-transparent px-4 py-2.5 text-sm font-medium transition-all duration-200 active:scale-[0.97] disabled:opacity-50 sm:w-auto sm:min-w-[140px] ${
             vote === 'OPPOSE'
-              ? 'border-[#C9A84C]/70 text-[#C9A84C] dark:border-[#C9A84C]/60 dark:text-[#D4BC6A]'
-              : 'border-[#C9A84C]/35 text-muted-foreground hover:border-[#C9A84C]/55 hover:text-foreground dark:border-[#C9A84C]/28 dark:text-[#9A8A6A] dark:hover:border-[#C9A84C]/45 dark:hover:text-[#C9A84C]/90'
+              ? 'border-red-400/60 bg-red-500/10 text-red-200 ring-1 ring-red-400/30'
+              : 'border-white/15 text-zinc-400 hover:border-red-400/40 hover:bg-red-500/5 hover:text-red-200 dark:border-white/10 dark:text-zinc-500 dark:hover:border-red-500/35 dark:hover:text-red-300'
           }`}
         >
           <span className="inline-flex items-baseline gap-2">

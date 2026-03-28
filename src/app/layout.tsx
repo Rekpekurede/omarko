@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from "next";
-import { Playfair_Display, Noto_Sans } from "next/font/google";
+import { Playfair_Display, Plus_Jakarta_Sans } from "next/font/google";
 import "./globals.css";
 import { AppShell } from "@/components/AppShell";
 import { Header } from "@/components/Header";
@@ -16,7 +16,7 @@ const playfair = Playfair_Display({
   variable: "--font-display",
 });
 
-const notoSans = Noto_Sans({
+const plusJakarta = Plus_Jakarta_Sans({
   subsets: ["latin"],
   weight: ["400", "500", "600", "700"],
   variable: "--font-body",
@@ -45,7 +45,7 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   maximumScale: 5,
-  themeColor: "#0A0B0E",
+  themeColor: "#09090b",
 };
 
 export default async function RootLayout({
@@ -69,7 +69,7 @@ export default async function RootLayout({
   const isSignedIn = !!user;
 
   return (
-    <html lang="en" className={`${playfair.variable} ${notoSans.variable}`} suppressHydrationWarning>
+    <html lang="en" className={`${playfair.variable} ${plusJakarta.variable}`} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="manifest" href="/manifest.webmanifest" />

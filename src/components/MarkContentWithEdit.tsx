@@ -66,7 +66,7 @@ export function MarkContentWithEdit({
           </video>
         </div>
       )}
-      {content && <p className="mark-text min-w-0 text-base leading-relaxed">{content}</p>}
+      {content && <p className="mark-text min-w-0">{content}</p>}
       {canEdit && !hideInlineEditButton && (
         <button
           type="button"

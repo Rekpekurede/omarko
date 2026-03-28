@@ -9,20 +9,21 @@ import { TooltipGuide } from './TooltipGuide';
 import { Avatar } from './Avatar';
 import { RelativeTime } from './RelativeTime';
 import { ImageLightbox } from './ImageLightbox';
+import { ReportModal } from './ReportModal';
 import type { Mark } from '@/lib/types';
 
-/** Domain → precision label styling (bg, color, border) */
+/** Domain → soft pill tint (rounded-full; base pill chrome from globals) */
 const DOMAIN_BADGE_CLASS: Record<string, string> = {
-  Technology: 'bg-[rgba(6,182,212,0.12)] text-[#67E8F9] border border-[rgba(6,182,212,0.2)]',
-  Music: 'bg-[rgba(251,146,60,0.12)] text-[#FCA86A] border border-[rgba(251,146,60,0.2)]',
-  Science: 'bg-[rgba(52,211,153,0.12)] text-[#6EE7B7] border border-[rgba(52,211,153,0.2)]',
-  Sport: 'bg-[rgba(74,222,128,0.12)] text-[#86EFAC] border border-[rgba(74,222,128,0.2)]',
-  General: 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]',
-  Philosophy: 'bg-[rgba(167,139,250,0.12)] text-[#C4B5FD] border border-[rgba(167,139,250,0.2)]',
-  'Visual Art': 'bg-[rgba(192,132,252,0.12)] text-[#D8B4FE] border border-[rgba(192,132,252,0.2)]',
-  Religion: 'bg-[rgba(251,191,36,0.12)] text-[#FCD34D] border border-[rgba(251,191,36,0.2)]',
+  Technology: 'bg-cyan-500/15 text-cyan-200',
+  Music: 'bg-orange-500/15 text-orange-200',
+  Science: 'bg-emerald-500/15 text-emerald-200',
+  Sport: 'bg-lime-500/15 text-lime-200',
+  General: 'bg-zinc-500/15 text-zinc-300',
+  Philosophy: 'bg-violet-500/15 text-violet-200',
+  'Visual Art': 'bg-fuchsia-500/15 text-fuchsia-200',
+  Religion: 'bg-amber-500/15 text-amber-200',
 };
-const DOMAIN_DEFAULT = 'bg-[rgba(148,163,184,0.10)] text-[#94A3B8] border border-[rgba(148,163,184,0.15)]';
+const DOMAIN_DEFAULT = 'bg-zinc-500/15 text-zinc-300';
 
 function getProfile(profiles: Mark['profiles']): { username: string; avatar_url?: string | null; display_name?: string | null } | null {
   if (!profiles) return null;
@@ -188,7 +189,7 @@ export function MarkCard({
                       HISTORICAL FIGURE
                     </span>
                   </span>
-                  <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
+                  <RelativeTime dateString={mark.created_at} className="mark-card-meta font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                 </div>
               </div>
             </>
@@ -202,10 +203,10 @@ export function MarkCard({
                   <Link href={`/profile/${encodeURIComponent(username)}`} className="mark-card-display-name font-body text-[16px] font-semibold text-[var(--text-primary)] hover:underline cursor-pointer transition-colors duration-200 min-w-0 truncate" onClick={(e) => e.stopPropagation()}>
                     {displayPrimary}
                   </Link>
-                  <RelativeTime dateString={mark.created_at} className="font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
+                  <RelativeTime dateString={mark.created_at} className="mark-card-meta font-body text-[12px] text-[var(--text-muted)] tabular-nums shrink-0" />
                 </div>
                 {showSecondaryUsername && (
-                  <Link href={`/profile/${encodeURIComponent(username)}`} className="font-body text-[13px] text-[var(--text-muted)] opacity-65 hover:underline cursor-pointer block mt-0.5" onClick={(e) => e.stopPropagation()}>
+                  <Link href={`/profile/${encodeURIComponent(username)}`} className="mark-card-handle font-body text-[13px] text-[var(--text-muted)] opacity-65 hover:underline cursor-pointer block mt-0.5" onClick={(e) => e.stopPropagation()}>
                     @{username}
                   </Link>
                 )}
@@ -356,44 +357,16 @@ export function MarkCard({
         isOpen={lightboxOpen}
         onClose={() => setLightboxOpen(false)}
       />
-      {reportOpen && (
-        <div className="fixed inset-0 z-[90] flex items-center justify-center bg-black/50 p-4" onClick={() => setReportOpen(false)}>
-          <div className="w-full max-w-sm rounded-xl border border-border bg-card p-4" onClick={(e) => e.stopPropagation()}>
-            <h3 className="text-sm font-semibold text-foreground">Report this mark</h3>
-            <div className="mt-3 grid gap-2">
-              {(
-                [
-                  { id: 'not_a_mark', label: 'Not a mark' },
-                  { id: 'spam', label: 'Spam' },
-                  { id: 'abuse', label: 'Abuse' },
-                  { id: 'impersonation', label: 'Impersonation' },
-                ] as const
-              ).map((reason) => (
-                <button
-                  key={reason.id}
-                  type="button"
-                  disabled={reportPending}
-                  onClick={() => submitReport(reason.id)}
-                  className="rounded-lg border border-border px-3 py-2 text-left text-sm text-foreground hover:bg-accent/70 disabled:opacity-50"
-                >
-                  {reason.label}
-                </button>
-              ))}
-            </div>
-            {reportError && <p className="mt-2 text-xs text-red-600">{reportError}</p>}
-            <button
-              type="button"
-              onClick={() => setReportOpen(false)}
-              className="mt-3 text-xs text-muted-foreground hover:underline"
-            >
-              Cancel
-            </button>
-          </div>
-        </div>
-      )}
+      <ReportModal
+        isOpen={reportOpen}
+        pending={reportPending}
+        error={reportError}
+        onClose={() => setReportOpen(false)}
+        onSubmit={submitReport}
+      />
 
-      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-wrap items-center justify-between gap-2 text-text-muted md:flex-nowrap md:pt-3.5 md:gap-4" onClick={(e) => e.stopPropagation()}>
-        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-2 md:flex-nowrap md:justify-between md:gap-4">
+      <div className="engagement-row mt-3 border-t border-border-subtle pt-3 flex flex-wrap items-center justify-between gap-2 text-text-muted md:flex-nowrap md:pt-3 md:gap-3" onClick={(e) => e.stopPropagation()}>
+        <div className="flex min-w-0 flex-1 flex-wrap items-center gap-3 md:flex-nowrap md:justify-between md:gap-3">
           <TooltipGuide
             tooltipKey="support"
             tooltipText="Support this Mark — you believe this claim is valid"
@@ -404,8 +377,8 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('support')}
               disabled={!canVote || isWithdrawn || pending}
-              className={`tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-                vote === 'SUPPORT' ? 'text-accent' : 'hover:text-accent'
+              className={`engagement-item engagement-support tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${
+                vote === 'SUPPORT' ? 'is-active' : ''
               }`}
               aria-label="Support"
             >
@@ -418,7 +391,7 @@ export function MarkCard({
           {showChallenge && !isWithdrawn && (
             isHistorical ? (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <span className="engagement-challenge flex shrink-0 cursor-default items-center gap-1.5 whitespace-nowrap text-text-muted md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:transition-colors md:duration-150 md:hover:bg-[var(--accent-glow)]" title="Challenges on historical marks are reviewed by designated custodians.">
+                <span className="engagement-item engagement-challenge flex shrink-0 cursor-default items-center gap-1.5 whitespace-nowrap text-text-muted" title="Challenges on historical marks are reviewed by designated custodians.">
                   <span aria-hidden>⚔️ Challenge</span>
                   <span className="hidden md:inline" aria-hidden> · </span>
                   <span>{challengeCount}</span>
@@ -426,7 +399,7 @@ export function MarkCard({
               </TooltipGuide>
             ) : isOwner ? (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <Link href={`/mark/${mark.id}`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
+                <Link href={`/mark/${mark.id}`} className="engagement-item engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
                   <span aria-hidden className="text-[13px] leading-none">
                     ⚔️ Challenge
                   </span>
@@ -436,7 +409,7 @@ export function MarkCard({
               </TooltipGuide>
             ) : (
               <TooltipGuide tooltipKey="challenge" tooltipText={challengeTooltipText}>
-                <Link href={`/mark/${mark.id}?tab=challenges`} className="engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)] md:hover:bg-[var(--accent-glow)]">
+                <Link href={`/mark/${mark.id}?tab=challenges`} className="engagement-item engagement-challenge tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted transition-colors duration-150 hover:text-accent">
                   <span aria-hidden className="text-[13px] leading-none">
                     ⚔️ Challenge
                   </span>
@@ -447,7 +420,7 @@ export function MarkCard({
             )
           )}
           {!showChallenge && (
-            <span className="engagement-challenge flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted md:rounded-md md:border md:border-[var(--accent)] md:px-3 md:py-1 md:font-semibold md:text-[var(--accent)]">
+            <span className="engagement-item engagement-challenge flex shrink-0 items-center gap-1.5 whitespace-nowrap text-text-muted">
               <span aria-hidden className="text-[13px] leading-none">
                 ⚔️ Challenge
               </span>
@@ -456,7 +429,7 @@ export function MarkCard({
             </span>
           )}
           <TooltipGuide tooltipKey="soi" tooltipText="Sign of Influence — add evidence that this idea has spread">
-            <Link href={`/mark/${mark.id}?tab=soi`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap font-semibold tracking-wide transition-colors duration-150 hover:text-accent">
+            <Link href={`/mark/${mark.id}?tab=soi`} className="engagement-item engagement-soi tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap font-semibold tracking-wide transition-all duration-200">
               <span aria-hidden>SOI</span>
               <span>{soiCount}</span>
             </Link>
@@ -471,8 +444,8 @@ export function MarkCard({
               type="button"
               onClick={() => handleVote('oppose')}
               disabled={!canVote || isWithdrawn || pending}
-              className={`tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-50 ${
-                vote === 'OPPOSE' ? 'text-red-400' : 'hover:text-accent'
+              className={`engagement-item engagement-oppose tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-all duration-200 disabled:cursor-not-allowed disabled:opacity-50 ${
+                vote === 'OPPOSE' ? 'is-active' : ''
               }`}
               aria-label="Oppose"
             >
@@ -483,7 +456,7 @@ export function MarkCard({
             </button>
           </TooltipGuide>
           <TooltipGuide tooltipKey="comment" tooltipText="Comment on this Mark">
-            <Link href={`/mark/${mark.id}?tab=comments`} className="tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-colors duration-150 hover:text-accent">
+            <Link href={`/mark/${mark.id}?tab=comments`} className="engagement-item tap-press flex shrink-0 items-center gap-1.5 whitespace-nowrap transition-all duration-200 hover:text-[var(--accent)]">
               <span aria-hidden className="text-[13px] leading-none">
                 💬
               </span>
