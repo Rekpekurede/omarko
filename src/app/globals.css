@@ -302,12 +302,12 @@
 
 /* Gold ownership hero headline (both themes) */
 .hero-banner .hero-title {
-  color: var(--accent) !important;
-  font-family: var(--font-display), Georgia, serif;
+  color: var(--text-primary) !important;
+  font-family: Georgia, var(--font-display), serif;
   font-weight: 700;
 }
 .hero-banner .hero-subtitle {
-  color: var(--accent) !important;
+  color: var(--text-muted) !important;
   font-family: var(--font-display), Georgia, serif;
 }
 

@@ -24,11 +24,11 @@ export function FeedIntroBanner() {
           aria-label="OMarko"
         />
       </div>
-      <p className="hero-title display-text mt-6 text-2xl font-semibold tracking-tight text-text-primary sm:text-3xl">
-        You&apos;re claiming it&apos;s yours
+      <p className="hero-title display-text mt-6 text-4xl font-bold tracking-tight text-text-primary sm:text-5xl">
+        Is it yours?
       </p>
       {SHOW_HERO_SUBTEXT && (
-        <p className="hero-subtitle display-text mx-auto mt-4 max-w-xl text-base font-medium italic leading-relaxed text-accent">
+        <p className="hero-subtitle display-text mx-auto mt-4 max-w-xl text-sm font-medium italic leading-relaxed text-text-muted sm:text-base">
           Let people know.
         </p>
       )}
