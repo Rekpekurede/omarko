@@ -41,11 +41,10 @@ export default async function AuthPage({ searchParams }: PageProps) {
         <div className="space-y-6 md:space-y-12">
           <section>
             <h1 className="font-display text-[2.25rem] font-semibold leading-tight text-[var(--text-primary)] md:text-[3rem]">
-              Everything comes from someone.
+              Find who it came from.
             </h1>
             <p className="mt-4 font-body text-[1rem] leading-relaxed text-[var(--text-secondary)] md:text-[1.05rem]">
-              Omarko is where people record ideas, creations, predictions, and discoveries that
-              they were responsible for bringing into the world — so the world can later verify where it truly came from.
+              OMarko is where you put your name on what came from you. Post it. Timestamp it. Let it be challenged.
             </p>
           </section>
 
@@ -56,8 +55,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   Post a Mark
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Publicly claim something came from you — an idea, prediction, creation, argument, or
-                  discovery. No gatekeeping. No proof required. Your word is your mark.
+                  Say what&apos;s yours. No proof upfront. If it&apos;s wrong, it gets challenged.
                 </p>
               </div>
 
@@ -66,8 +64,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   The Community Decides
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  If anyone believes your claim isn&apos;t genuine, they can challenge it with evidence. The
-                  public votes. Truth wins over volume — not whoever shouts loudest.
+                  Anyone can challenge a claim. Evidence wins.
                 </p>
               </div>
 
@@ -76,8 +73,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   The Record Stands
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Win a challenge and your mark is permanent. Lose one and it is supplanted. Your
-                  profile reflects everything — what stood and what didn&apos;t.
+                  Win → it stands. Lose → it&apos;s replaced. Your record shows both.
                 </p>
               </div>
             </div>
@@ -85,7 +81,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
 
           <section>
             <p className="font-display text-[1.15rem] italic text-[var(--text-muted)]">
-              Instead of arguing about where something began — the world will simply look it up.
+              No more arguing about who said it first. We can just check.
             </p>
           </section>
 
