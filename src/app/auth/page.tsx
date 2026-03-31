@@ -44,7 +44,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
               Find who it came from.
             </h1>
             <p className="mt-4 font-body text-[1rem] leading-relaxed text-[var(--text-secondary)] md:text-[1.05rem]">
-              OMarko is where you put your name on what came from you. Post it. Timestamp it. Let it be challenged.
+              OMarko is where you put your name on what came from you. Post it. Timestamp it. Allow your claim to get challenged.
             </p>
           </section>
 
@@ -55,7 +55,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
                   Post a Mark
                 </p>
                 <p className="mt-2 font-body text-[0.95rem] leading-relaxed text-[var(--text-secondary)]">
-                  Say what&apos;s yours. No proof upfront. If it&apos;s wrong, it gets challenged.
+                  Reveal what&apos;s yours. No proof upfront. If it&apos;s wrong, it gets challenged.
                 </p>
               </div>
 
@@ -81,7 +81,7 @@ export default async function AuthPage({ searchParams }: PageProps) {
 
           <section>
             <p className="font-display text-[1.15rem] italic text-[var(--text-muted)]">
-              No more arguing about who said it first. We can just check.
+              See who the sources are for all that is around you.
             </p>
           </section>
 
