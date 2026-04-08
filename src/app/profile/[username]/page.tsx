@@ -124,15 +124,23 @@ export default async function ProfilePage({ params, searchParams }: PageProps) {
     let isFollowing = false;
     try {
       const [followersRes, followingRes, followRow] = await Promise.all([
-        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
-        supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
-        user ? supabase.from('follows').select('id').eq('follower_id', user.id).eq('following_id', profile.id).maybeSingle() : Promise.resolve({ data: null }),
+        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', profile.id),
+        supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('follower_id', profile.id),
+        user
+          ? supabase.from('follows').select('follower_id').eq('follower_id', user.id).eq('following_id', profile.id).maybeSingle()
+          : Promise.resolve({ data: null }),
       ]);
+      if (followersRes.error) {
+        console.error('[ProfilePage] followers count error', followersRes.error.message);
+      }
+      if (followingRes.error) {
+        console.error('[ProfilePage] following count error', followingRes.error.message);
+      }
       followersCount = followersRes.count ?? 0;
       followingCount = followingRes.count ?? 0;
       isFollowing = !!followRow.data;
-    } catch {
-      // follows table may not exist yet
+    } catch (e) {
+      console.error('[ProfilePage] follows query exception', e);
     }
 
     // Marks query (profiles!marks_user_id_fkey already in MARK_WITH_OWNER_USERNAME_SELECT)

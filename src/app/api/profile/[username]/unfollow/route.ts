@@ -3,8 +3,8 @@ import { NextResponse } from 'next/server';
 
 async function getCounts(supabase: Awaited<ReturnType<typeof createClient>>, profileId: string) {
   const [followersRes, followingRes] = await Promise.all([
-    supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profileId),
-    supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profileId),
+    supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', profileId),
+    supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('follower_id', profileId),
   ]);
   return {
     followersCount: followersRes.count ?? 0,

@@ -20,7 +20,7 @@ export async function GET(
   if (user) {
     const { data: row } = await supabase
       .from('follows')
-      .select('id')
+      .select('follower_id')
       .eq('follower_id', user.id)
       .eq('following_id', profile.id)
       .maybeSingle();
@@ -28,8 +28,8 @@ export async function GET(
   }
 
   const [followersRes, followingRes] = await Promise.all([
-    supabase.from('follows').select('id', { count: 'exact', head: true }).eq('following_id', profile.id),
-    supabase.from('follows').select('id', { count: 'exact', head: true }).eq('follower_id', profile.id),
+    supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('following_id', profile.id),
+    supabase.from('follows').select('follower_id', { count: 'exact', head: true }).eq('follower_id', profile.id),
   ]);
 
   return NextResponse.json({

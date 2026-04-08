@@ -545,7 +545,7 @@ export function CreateMarkModal({ username }: { username?: string | null } = {})
               </button>
             </div>
 
-            <form onSubmit={onSubmit} className="mt-5 flex flex-col gap-5">
+            <form onSubmit={onSubmit} className="mt-5 flex min-w-0 flex-col gap-5">
               {/* Claim type: 3 random pills + See all */}
               <div className="flex flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
@@ -594,12 +594,15 @@ export function CreateMarkModal({ username }: { username?: string | null } = {})
               </div>
 
               {/* Domain pills — scrollable with visible indicator */}
-              <div className="flex flex-col gap-2">
+              <div className="flex min-w-0 flex-col gap-2">
                 <label className="font-body text-[0.65rem] uppercase tracking-[0.1em] text-[var(--text-muted)]">
                   DOMAIN (the field it belongs to)
                 </label>
-                <div className="relative">
-                  <div className="scrollbar-hide flex gap-2 overflow-x-auto pb-2" style={{ WebkitOverflowScrolling: 'touch' }}>
+                <div className="relative min-w-0 w-full">
+                  <div
+                    className="scrollbar-hide flex min-w-0 flex-nowrap gap-2 overflow-x-auto overflow-y-hidden pb-2"
+                    style={{ WebkitOverflowScrolling: 'touch' }}
+                  >
                     {DOMAINS.map((d) => (
                       <button
                         key={d}
