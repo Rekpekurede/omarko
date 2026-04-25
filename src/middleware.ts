@@ -2,7 +2,7 @@ import { NextResponse, type NextRequest } from 'next/server';
 import { updateSession } from '@/lib/supabase/middleware';
 
 /** Set to `false` to reopen the site (single-line toggle). */
-const SITE_PRIVATE = true;
+const SITE_PRIVATE = false;
 
 export async function middleware(request: NextRequest) {
   if (SITE_PRIVATE) {
